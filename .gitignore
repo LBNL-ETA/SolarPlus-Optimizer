@@ -1,3 +1,13 @@
 # Data folder
 #############
 data/*
+
+# Dymola output files
+#####################
+*.mat
+*dsfinal.txt
+*dsin.txt
+*dslog.txt
+*dsmodel.c
+*dymosim
+
