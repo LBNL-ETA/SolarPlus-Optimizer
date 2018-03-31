@@ -6,7 +6,7 @@ This repository is for the development of the Solar+ Optimization software.
 
 ``process`` contains scripts to run analyses, MPC optimization, and other control-related algorithms.
 
-``doc`` contains documentation items, such as specifications and user guide.
+``doc`` contains documentation items, such as specifications, reports, and user guide.
 
 ``unittests`` contains testing for software development.
 
