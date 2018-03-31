@@ -19,7 +19,7 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
         annotation (Placement(transformation(extent={{-20,-90},{0,-70}})));
       Modelica.Blocks.Math.Gain heatingPowerGain(k=1/heatingEff)
         annotation (Placement(transformation(extent={{60,10},{80,30}})));
-      Modelica.Blocks.Math.Gain coolingPowerGain(k=-1/coolingCOP)
+      Modelica.Blocks.Math.Gain coolingPowerGain(k=1/coolingCOP)
         annotation (Placement(transformation(extent={{60,-90},{80,-70}})));
       Modelica.Blocks.Interfaces.RealOutput PCool(unit="W")
       "Cooling electrical power output"
@@ -31,7 +31,7 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
       Modelica.Blocks.Interfaces.RealInput uHeat(min=0,max=1)
       "Heating signal input"
         annotation (Placement(transformation(extent={{-140,60},{-100,100}})));
-      Modelica.Blocks.Interfaces.RealInput uCool(min=-1,max=0)
+      Modelica.Blocks.Interfaces.RealInput uCool(min=0,max=1)
       "Cooling signal input"
         annotation (Placement(transformation(extent={{-140,-100},{-100,-60}}),
             iconTransformation(extent={{-140,-100},{-100,-60}})));
@@ -40,6 +40,8 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
       Modelica.Blocks.Interfaces.RealOutput qCool(unit="W") "Cooling heatflow output"
         annotation (Placement(transformation(extent={{100,-50},{120,-30}}),
             iconTransformation(extent={{100,-50},{120,-30}})));
+      Modelica.Blocks.Math.Gain negHeatFlow(k=-1)
+      annotation (Placement(transformation(extent={{60,-50},{80,-30}})));
     equation
       connect(heatingCapGain.y, heatingPowerGain.u) annotation (Line(points={{1,80},{
               20,80},{20,20},{58,20}},                color={0,0,127}));
@@ -55,8 +57,10 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
                                    color={0,0,127}));
       connect(heatingCapGain.y, qHeat) annotation (Line(points={{1,80},{60,80},{60,60},
               {110,60}},         color={0,0,127}));
-      connect(coolingPowerGain.u, qCool) annotation (Line(points={{58,-80},{20,-80},
-              {20,-40},{110,-40}}, color={0,0,127}));
+    connect(coolingPowerGain.u, negHeatFlow.u) annotation (Line(points={{58,-80},
+            {20,-80},{20,-40},{58,-40}}, color={0,0,127}));
+    connect(negHeatFlow.y, qCool)
+      annotation (Line(points={{81,-40},{110,-40}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
               extent={{-100,100},{100,-100}},
@@ -196,7 +200,11 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
             extent={{20,42},{42,20}},
             lineColor={0,0,0},
             fillColor={135,135,135},
-            fillPattern=FillPattern.Solid)}));
+            fillPattern=FillPattern.Solid),
+            Text(
+              extent={{-250,170},{250,110}},
+              textString="%name",
+              lineColor={0,0,255})}));
     end Simple;
 
     package Examples
@@ -292,91 +300,21 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
             extent={{-48,-28},{0,-80}},
             lineColor={0,0,0},
             fillColor={28,108,200},
-            fillPattern=FillPattern.Solid)}),                        Diagram(
+            fillPattern=FillPattern.Solid),
+            Text(
+              extent={{-250,170},{250,110}},
+              textString="%name",
+              lineColor={0,0,255})}),                                Diagram(
             coordinateSystem(preserveAspectRatio=false)));
     end Simple;
   end PV;
 
   package Building "Package for building models"
-    model Simple
-      import SolarPlus = SolarPlusMPC;
-      Modelica.Blocks.Interfaces.RealInput weaTDryBul
-        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
-      Modelica.Blocks.Interfaces.RealInput uCool
-        annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
-      Modelica.Blocks.Interfaces.RealOutput Pcool "Output signal connector"
-        annotation (Placement(transformation(extent={{100,-70},{120,-50}})));
-      Modelica.Blocks.Interfaces.RealInput weaHGloHor
-        annotation (Placement(transformation(extent={{-140,60},{-100,100}})));
-      Modelica.Blocks.Interfaces.RealOutput Ppv "Output signal connector"
-        annotation (Placement(transformation(extent={{100,70},{120,90}})));
-      Modelica.Blocks.Interfaces.RealInput uCharge
-        annotation (Placement(transformation(extent={{-140,28},{-100,68}})));
-      Modelica.Blocks.Interfaces.RealOutput SOC
-        annotation (Placement(transformation(extent={{100,34},{120,54}})));
-      Modelica.Blocks.Interfaces.RealOutput Pcharge
-        annotation (Placement(transformation(extent={{100,20},{120,40}})));
-      Modelica.Blocks.Interfaces.RealOutput Pnet
-        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
-      Modelica.Blocks.Math.Sum sum1(                      nin=5, k={1,-1,-1,-1,1})
-        annotation (Placement(transformation(extent={{60,-10},{80,10}})));
-      Modelica.Blocks.Interfaces.RealInput othLoad
-        annotation (Placement(transformation(extent={{-140,-100},{-100,-60}})));
-    SolarPlus.PV.Simple pV(eff=0.15, A=5)
-      annotation (Placement(transformation(extent={{-60,70},{-40,90}})));
-      SolarPlus.Refrigeration.Refrigerator refrigerator(Cap(displayUnit="kW")=
-          1000, COP=3)
-        annotation (Placement(transformation(extent={{-60,-30},{-40,-10}})));
-      Modelica.Blocks.Interfaces.RealOutput Tref
-        "Absolute temperature as output signal"
-        annotation (Placement(transformation(extent={{100,-30},{120,-10}})));
-      Modelica.Blocks.Interfaces.RealInput uDischarge
-        annotation (Placement(transformation(extent={{-140,8},{-100,48}})));
-      Modelica.Blocks.Interfaces.RealOutput Pdischarge
-        annotation (Placement(transformation(extent={{100,10},{120,30}})));
-    equation
-      connect(battery.SOC, SOC)
-        annotation (Line(points={{-38,44},{110,44}}, color={0,0,127}));
-      connect(othLoad, sum1.u[4]) annotation (Line(points={{-120,-80},{52,-80},{52,
-              4},{58,4},{58,0.8},{58,0.8}}, color={0,0,127}));
-      connect(Pnet, sum1.y)
-        annotation (Line(points={{110,0},{81,0}}, color={0,0,127}));
-    connect(weaHGloHor, pV.Iinc)
-      annotation (Line(points={{-120,80},{-62,80}}, color={0,0,127}));
-    connect(pV.Pgen, Ppv)
-      annotation (Line(points={{-38,80},{110,80}}, color={0,0,127}));
-    connect(pV.Pgen, sum1.u[1]) annotation (Line(points={{-38,80},{40,80},{40,-1.6},
-            {58,-1.6}}, color={0,0,127}));
-      connect(weaTDryBul, refrigerator.Tamb) annotation (Line(points={{-120,0},{-72,
-              0},{-72,-20},{-62,-20}}, color={0,0,127}));
-      connect(uCool, refrigerator.uCool) annotation (Line(points={{-120,-40},{-72,
-              -40},{-72,-24},{-62,-24}}, color={0,0,127}));
-      connect(refrigerator.P, Pcool) annotation (Line(points={{-39,-26},{0,-26},{0,
-              -60},{110,-60}}, color={0,0,127}));
-      connect(refrigerator.P, sum1.u[3]) annotation (Line(points={{-39,-26},{0,-26},
-              {0,0},{58,0}},     color={0,0,127}));
-      connect(refrigerator.T, Tref)
-        annotation (Line(points={{-39,-20},{110,-20}}, color={0,0,127}));
-    connect(uCharge, battery.uCharge)
-      annotation (Line(points={{-120,48},{-62,48}}, color={0,0,127}));
-    connect(battery.uDischarge, uDischarge) annotation (Line(points={{-62,44},{
-            -76,44},{-76,28},{-120,28}}, color={0,0,127}));
-    connect(battery.Pcharge, sum1.u[2]) annotation (Line(points={{-38,36},{28,
-            36},{28,-0.8},{58,-0.8}}, color={0,0,127}));
-    connect(battery.Pdischarge, sum1.u[5]) annotation (Line(points={{-38,32},{
-            12,32},{12,1.6},{58,1.6}}, color={0,0,127}));
-    connect(battery.Pcharge, Pcharge) annotation (Line(points={{-38,36},{84,36},
-            {84,30},{110,30}}, color={0,0,127}));
-    connect(Pdischarge, battery.Pdischarge) annotation (Line(points={{110,20},{
-            70,20},{70,32},{-38,32}}, color={0,0,127}));
-      annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-            coordinateSystem(preserveAspectRatio=false)));
-    end Simple;
 
     model Thermal
     Envelope.R1C1 r1C1_1
       annotation (Placement(transformation(extent={{-12,-10},{8,10}})));
-    HVAC.SimpleHeaterCooler simpleHeaterCooler
+    HVAC.SimpleHeaterCooler simpleHeaterCooler(heatingCap=1000, coolingCap=1000)
       annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
     Modelica.Blocks.Interfaces.RealInput Tadj "Adjacent temperature"
       annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
@@ -421,18 +359,86 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
             lineColor={0,0,0},
             fillColor={255,170,170},
             fillPattern=FillPattern.Solid,
-            textString="Thermal")}),                               Diagram(
+            textString="Thermal"),
+            Text(
+              extent={{-250,170},{250,110}},
+              textString="%name",
+              lineColor={0,0,255})}),                              Diagram(
           coordinateSystem(preserveAspectRatio=false)));
     end Thermal;
 
     model Whole
     Thermal thermal
       annotation (Placement(transformation(extent={{-40,0},{-20,20}})));
-    Batteries.Simple simple
+    Batteries.Simple battery(
+      Ecap(displayUnit="kWh") = 21600000,
+      P_cap_charge=1000,
+      P_cap_discharge=1000,
+      SOC_0=1)
       annotation (Placement(transformation(extent={{-40,-40},{-20,-20}})));
-    PV.Simple simple1(A=10)
+    PV.Simple pv(A=5)
       annotation (Placement(transformation(extent={{-40,40},{-20,60}})));
-    annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+    Modelica.Blocks.Interfaces.RealInput uCharge "Control signal for charging"
+      annotation (Placement(transformation(extent={{-140,-80},{-100,-40}})));
+    Modelica.Blocks.Interfaces.RealInput uDischarge
+      "Control signal for discharging"
+      annotation (Placement(transformation(extent={{-140,-120},{-100,-80}})));
+    Modelica.Blocks.Interfaces.RealInput uCool
+      "Cooling signal input (must be negative)"
+      annotation (Placement(transformation(extent={{-140,-40},{-100,0}})));
+    Modelica.Blocks.Interfaces.RealInput uHeat
+      "Heating signal input (must be positive)"
+      annotation (Placement(transformation(extent={{-140,0},{-100,40}})));
+    Modelica.Blocks.Interfaces.RealInput weaHGlo
+      "Global horizontal irradiation"
+      annotation (Placement(transformation(extent={{-140,80},{-100,120}})));
+    Modelica.Blocks.Interfaces.RealInput weaTDryBul
+      "Outside air drybulb temperature"
+      annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
+    Modelica.Blocks.Math.MultiSum multiSum(nu=5, k={-1,1,1,1,-1})
+      annotation (Placement(transformation(extent={{34,-6},{46,6}})));
+    Modelica.Blocks.Interfaces.RealOutput Pnet
+      annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+    Modelica.Blocks.Interfaces.RealOutput SOC "Battery state of charge"
+      annotation (Placement(transformation(extent={{100,-90},{120,-70}})));
+    Modelica.Blocks.Interfaces.RealOutput Tzone1
+                                                "Zone air temperature"
+      annotation (Placement(transformation(extent={{100,-70},{120,-50}})));
+    equation
+    connect(battery.uCharge, uCharge) annotation (Line(points={{-42,-34},{-80,
+            -34},{-80,-60},{-120,-60}}, color={0,0,127}));
+    connect(battery.uDischarge, uDischarge) annotation (Line(points={{-42,-38},
+            {-60,-38},{-60,-100},{-120,-100}}, color={0,0,127}));
+    connect(thermal.uCool, uCool) annotation (Line(points={{-42,2},{-80,2},{-80,
+            -20},{-120,-20}}, color={0,0,127}));
+    connect(thermal.uHeat, uHeat) annotation (Line(points={{-42,6},{-80,6},{-80,
+            20},{-120,20}}, color={0,0,127}));
+    connect(pv.Iinc, weaHGlo) annotation (Line(points={{-42,50},{-60,50},{-60,
+            100},{-120,100}}, color={0,0,127}));
+    connect(thermal.Tadj, weaTDryBul) annotation (Line(points={{-42,16},{-60,16},
+            {-60,40},{-80,40},{-80,60},{-120,60}}, color={0,0,127}));
+    connect(pv.Pgen, multiSum.u[1]) annotation (Line(points={{-18.8,50},{4,50},
+            {4,3.36},{34,3.36}}, color={0,0,127}));
+    connect(thermal.PHeat, multiSum.u[2]) annotation (Line(points={{-19,6},{2,6},
+            {2,1.68},{34,1.68}}, color={0,0,127}));
+    connect(thermal.PCool, multiSum.u[3])
+      annotation (Line(points={{-19,2},{0,2},{0,0},{34,0}}, color={0,0,127}));
+    connect(battery.Pcharge, multiSum.u[4]) annotation (Line(points={{-18.8,-34},
+            {0,-34},{0,-1.68},{34,-1.68}}, color={0,0,127}));
+    connect(battery.Pdischarge, multiSum.u[5]) annotation (Line(points={{-18.8,
+            -38},{2,-38},{2,-3.36},{34,-3.36}}, color={0,0,127}));
+    connect(multiSum.y, Pnet)
+      annotation (Line(points={{47.02,0},{110,0}}, color={0,0,127}));
+    connect(battery.SOC, SOC) annotation (Line(points={{-18.8,-30},{-12,-30},{
+            -12,-80},{110,-80}}, color={0,0,127}));
+    connect(thermal.Tzone, Tzone1) annotation (Line(points={{-19,10},{-10,10},{
+            -10,-60},{110,-60}}, color={0,0,127}));
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+            Rectangle(
+            extent={{-100,100},{100,-100}},
+            lineColor={0,0,0},
+            fillColor={175,175,175},
+            fillPattern=FillPattern.Solid)}),                      Diagram(
           coordinateSystem(preserveAspectRatio=false)));
     end Whole;
   end Building;
@@ -442,68 +448,69 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
     model Simple
       extends Modelica.Icons.Example;
       import SolarPlus = SolarPlusMPC;
-      SolarPlus.Building.Simple simple
-        annotation (Placement(transformation(extent={{48,-10},{68,10}})));
       Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(filNam=
             "/home/dhb-lx/git/buildings/modelica-buildings/Buildings/Resources/weatherdata/DRYCOLD.mos")
-        annotation (Placement(transformation(extent={{-80,20},{-60,40}})));
+        annotation (Placement(transformation(extent={{-80,60},{-60,80}})));
       Buildings.BoundaryConditions.WeatherData.Bus weaBus annotation (Placement(
-            transformation(extent={{-48,20},{-32,38}}), iconTransformation(extent=
+            transformation(extent={{-48,60},{-32,78}}), iconTransformation(extent=
                {{-158,-42},{-138,-22}})));
-      Modelica.Blocks.Sources.Pulse uCool(period=3600*2, startTime=3600*2)
-        annotation (Placement(transformation(extent={{-80,-50},{-60,-30}})));
+      Modelica.Blocks.Sources.Pulse uCool(period=3600*2, startTime=3600)
+        annotation (Placement(transformation(extent={{-80,-30},{-60,-10}})));
       Modelica.Blocks.Sources.Pulse uCharge(
         offset=0,
         period=3600*6,
         startTime=3600*3,
         amplitude=0.5)
-        annotation (Placement(transformation(extent={{-80,-6},{-60,14}})));
-      Modelica.Blocks.Sources.Constant othLoad(k=0)
-        annotation (Placement(transformation(extent={{-80,-80},{-60,-60}})));
+        annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));
       Modelica.Blocks.Sources.Pulse uDischarge(
         offset=0,
         period=3600*6,
         startTime=0,
         amplitude=0.5)
-        annotation (Placement(transformation(extent={{-60,-30},{-40,-10}})));
+        annotation (Placement(transformation(extent={{-80,-90},{-60,-70}})));
+    SolarPlus.Building.Whole whole
+      annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+      Modelica.Blocks.Sources.Pulse uHeat(period=3600*2, startTime=3600*2)
+      annotation (Placement(transformation(extent={{-80,0},{-60,20}})));
     equation
       connect(weaDat.weaBus, weaBus) annotation (Line(
-          points={{-60,30},{-50,30},{-50,29},{-40,29}},
+          points={{-60,70},{-50,70},{-50,69},{-40,69}},
           color={255,204,51},
           thickness=0.5), Text(
           string="%second",
           index=1,
           extent={{6,3},{6,3}}));
-      connect(weaBus.HGloHor, simple.weaHGloHor) annotation (Line(
-          points={{-40,29},{2,29},{2,8},{46,8}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}}));
-      connect(weaBus.TDryBul, simple.weaTDryBul) annotation (Line(
-          points={{-40,29},{2,29},{2,0},{46,0}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}}));
-      connect(uCool.y, simple.uCool) annotation (Line(points={{-59,-40},{-4,-40},
-              {-4,-4},{46,-4}},   color={0,0,127}));
-      connect(othLoad.y, simple.othLoad) annotation (Line(points={{-59,-70},{0,
-              -70},{0,-8},{46,-8}},    color={0,0,127}));
-      connect(uCharge.y, simple.uCharge) annotation (Line(points={{-59,4},{-38,4},
-              {-38,4.8},{46,4.8}}, color={0,0,127}));
-      connect(uDischarge.y, simple.uDischarge) annotation (Line(points={{-39,-20},
-              {-20,-20},{-20,2.8},{46,2.8}}, color={0,0,127}));
+    connect(weaBus.HGloHor, whole.weaHGlo) annotation (Line(
+        points={{-40,69},{-26,69},{-26,68},{0,68},{0,10},{18,10}},
+        color={255,204,51},
+        thickness=0.5), Text(
+        string="%first",
+        index=-1,
+        extent={{-6,3},{-6,3}}));
+    connect(weaBus.TDryBul, whole.weaTDryBul) annotation (Line(
+        points={{-40,69},{-26,69},{-26,68},{0,68},{0,6},{18,6}},
+        color={255,204,51},
+        thickness=0.5), Text(
+        string="%first",
+        index=-1,
+        extent={{-6,3},{-6,3}}));
+    connect(uHeat.y, whole.uHeat) annotation (Line(points={{-59,10},{-6,10},{-6,
+            2},{18,2}}, color={0,0,127}));
+    connect(uCool.y, whole.uCool) annotation (Line(points={{-59,-20},{-6,-20},{
+            -6,-2},{18,-2}}, color={0,0,127}));
+    connect(uCharge.y, whole.uCharge) annotation (Line(points={{-59,-50},{0,-50},
+            {0,-6},{18,-6}}, color={0,0,127}));
+    connect(uDischarge.y, whole.uDischarge) annotation (Line(points={{-59,-80},
+            {4,-80},{4,-10},{18,-10}}, color={0,0,127}));
       annotation (
         Icon(coordinateSystem(preserveAspectRatio=false)),
         Diagram(coordinateSystem(preserveAspectRatio=false)),
         experiment(
-          StopTime=86400,
-          Interval=300,
-          Tolerance=1e-06,
-          __Dymola_Algorithm="Cvode"));
+        StartTime=15552000,
+        StopTime=15638400,
+        Interval=300,
+        Tolerance=1e-06,
+        __Dymola_Algorithm="Cvode"));
     end Simple;
   end Examples;
 
