@@ -140,7 +140,9 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
   end Refrigeration;
 
   package Batteries "Package for battery models"
-    model SimpleBattery
+
+    model Simple
+      "Simple battery model with SOC as state including charging, discharging, and standing losses seperately"
       parameter Modelica.SIunits.Energy Ecap  "Battery capacity";
       parameter Modelica.SIunits.Power P_cap_charge "Charging capacity";
       parameter Modelica.SIunits.Power P_cap_discharge "Discharging capacity";
@@ -152,42 +154,84 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
       Modelica.SIunits.Power P_loss_charge "Charging losses of battery";
       Modelica.SIunits.Power P_loss_discharge "Discharging losses of battery";
       Modelica.SIunits.Power P_loss_standing "Standing losses of battery";
-      Modelica.Blocks.Interfaces.RealInput u_charge(min=0, max=1) "Control signal for charging"
-        annotation (Placement(transformation(extent={{-140,60},{-100,100}})));
-      Modelica.Blocks.Interfaces.RealInput u_discharge(min=0, max=1) "Control signal for discharging"
-        annotation (Placement(transformation(extent={{-140,20},{-100,60}})));
+      Modelica.Blocks.Interfaces.RealInput uCharge(min=0, max=1)
+      "Control signal for charging"
+      annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
+      Modelica.Blocks.Interfaces.RealInput uDischarge(min=0, max=1)
+      "Control signal for discharging"
+      annotation (Placement(transformation(extent={{-140,-100},{-100,-60}})));
       Modelica.Blocks.Interfaces.RealOutput SOC "Battery state of charge"
-        annotation (Placement(transformation(extent={{100,20},{140,60}})));
-      Modelica.Blocks.Interfaces.RealOutput P_charge "Battery charging power"
-        annotation (Placement(transformation(extent={{100,-60},{140,-20}})));
-      Modelica.Blocks.Interfaces.RealOutput P_discharge "Battery discharging power"
-        annotation (Placement(transformation(extent={{100,-100},{140,-60}})));
+        annotation (Placement(transformation(extent={{100,-12},{124,12}})));
+      Modelica.Blocks.Interfaces.RealOutput Pcharge "Battery charging power"
+      annotation (Placement(transformation(extent={{100,-52},{124,-28}})));
+      Modelica.Blocks.Interfaces.RealOutput Pdischarge
+      "Battery discharging power"
+      annotation (Placement(transformation(extent={{100,-92},{124,-68}})));
     equation
       SOC = E/Ecap;
-      der(E) = P_charge-P_discharge-P_loss_charge-P_loss_discharge-P_loss_standing;
-      P_charge = u_charge*P_cap_charge;
-      P_discharge = u_discharge*P_cap_discharge;
-      P_loss_charge = P_charge*(1-eta_charge);
-      P_loss_discharge = P_discharge*(1-eta_discharge);
-      P_loss_standing = SOC*tau_sl/3600
-      annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-            coordinateSystem(preserveAspectRatio=false)));
-    end SimpleBattery;
+      der(E) =Pcharge - Pdischarge - P_loss_charge - P_loss_discharge -
+      P_loss_standing;
+    Pcharge = uCharge*P_cap_charge;
+    Pdischarge = uDischarge*P_cap_discharge;
+      P_loss_charge =Pcharge*(1 - eta_charge);
+      P_loss_discharge =Pdischarge*(1 - eta_discharge);
+      P_loss_standing = SOC*tau_sl/3600;
+    annotation (Icon(graphics={
+          Rectangle(
+            extent={{-100,100},{100,-100}},
+            lineColor={0,0,0},
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{-60,20},{62,-56}},
+            lineColor={0,0,0},
+            fillColor={135,135,135},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{-40,42},{-18,20}},
+            lineColor={0,0,0},
+            fillColor={135,135,135},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{20,42},{42,20}},
+            lineColor={0,0,0},
+            fillColor={135,135,135},
+            fillPattern=FillPattern.Solid)}));
+    end Simple;
 
     package Examples
       extends Modelica.Icons.ExamplesPackage;
       model BatteryTest
         extends Modelica.Icons.Example;
 
-        SolarPlusMPC.Batteries.SimpleBattery battery(Ecap(displayUnit="kWh")=
-          144000000, Pcap(displayUnit="kW") = 10000)
+        Modelica.Blocks.Sources.Pulse uCharge(
+          offset=0,
+          period=3600*6,
+          startTime=3600*3,
+          amplitude=0.5)
+          annotation (Placement(transformation(extent={{-60,0},{-40,20}})));
+        Modelica.Blocks.Sources.Pulse uDischarge(
+          offset=0,
+          period=3600*6,
+          startTime=0,
+          amplitude=0.5)
+          annotation (Placement(transformation(extent={{-60,-30},{-40,-10}})));
+      Simple simple(
+        Ecap(displayUnit="kWh") = 180000000,
+        P_cap_charge=500,
+        P_cap_discharge=500,
+        SOC_0=1)
         annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
-        Modelica.Blocks.Sources.Step step(startTime=1000)
-          annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
       equation
-        connect(step.y, battery.u)
-          annotation (Line(points={{-39,0},{-12,0}}, color={0,0,127}));
-        annotation (experiment(StopTime=15400, Interval=300));
+      connect(uCharge.y, simple.uCharge) annotation (Line(points={{-39,10},{-30,
+              10},{-30,-4},{-12,-4}}, color={0,0,127}));
+      connect(uDischarge.y, simple.uDischarge) annotation (Line(points={{-39,
+              -20},{-30,-20},{-30,-8},{-12,-8}}, color={0,0,127}));
+        annotation (experiment(
+          StopTime=86400,
+          Interval=300,
+          Tolerance=1e-06,
+          __Dymola_Algorithm="Cvode"));
       end BatteryTest;
     end Examples;
   end Batteries;
@@ -231,12 +275,6 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
         annotation (Placement(transformation(extent={{100,70},{120,90}})));
       Modelica.Blocks.Interfaces.RealInput uCharge
         annotation (Placement(transformation(extent={{-140,28},{-100,68}})));
-      SolarPlus.Batteries.SimpleBattery battery(
-        SOC_0=1,
-        P_cap_charge=500,
-        P_cap_discharge=500,
-        Ecap(displayUnit="kWh") = 18000000)
-        annotation (Placement(transformation(extent={{-60,30},{-40,50}})));
       Modelica.Blocks.Interfaces.RealOutput SOC
         annotation (Placement(transformation(extent={{100,34},{120,54}})));
       Modelica.Blocks.Interfaces.RealOutput Pcharge
@@ -282,18 +320,18 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
               {0,0},{58,0}},     color={0,0,127}));
       connect(refrigerator.T, Tref)
         annotation (Line(points={{-39,-20},{110,-20}}, color={0,0,127}));
-      connect(uCharge, battery.u_charge)
-        annotation (Line(points={{-120,48},{-62,48}}, color={0,0,127}));
-      connect(battery.u_discharge, uDischarge) annotation (Line(points={{-62,44},
-              {-76,44},{-76,28},{-120,28}}, color={0,0,127}));
-      connect(battery.P_charge, sum1.u[2]) annotation (Line(points={{-38,36},{28,
-              36},{28,-0.8},{58,-0.8}}, color={0,0,127}));
-      connect(battery.P_discharge, sum1.u[5]) annotation (Line(points={{-38,32},{
-              12,32},{12,1.6},{58,1.6}}, color={0,0,127}));
-      connect(battery.P_charge, Pcharge) annotation (Line(points={{-38,36},{84,36},
-              {84,30},{110,30}}, color={0,0,127}));
-      connect(Pdischarge, battery.P_discharge) annotation (Line(points={{110,20},
-              {70,20},{70,32},{-38,32}}, color={0,0,127}));
+    connect(uCharge, battery.uCharge)
+      annotation (Line(points={{-120,48},{-62,48}}, color={0,0,127}));
+    connect(battery.uDischarge, uDischarge) annotation (Line(points={{-62,44},{
+            -76,44},{-76,28},{-120,28}}, color={0,0,127}));
+    connect(battery.Pcharge, sum1.u[2]) annotation (Line(points={{-38,36},{28,
+            36},{28,-0.8},{58,-0.8}}, color={0,0,127}));
+    connect(battery.Pdischarge, sum1.u[5]) annotation (Line(points={{-38,32},{
+            12,32},{12,1.6},{58,1.6}}, color={0,0,127}));
+    connect(battery.Pcharge, Pcharge) annotation (Line(points={{-38,36},{84,36},
+            {84,30},{110,30}}, color={0,0,127}));
+    connect(Pdischarge, battery.Pdischarge) annotation (Line(points={{110,20},{
+            70,20},{70,32},{-38,32}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
             coordinateSystem(preserveAspectRatio=false)));
     end Simple;
@@ -353,6 +391,8 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
     model Whole
     Thermal thermal
       annotation (Placement(transformation(extent={{-40,20},{-20,40}})));
+    Batteries.Simple simple
+      annotation (Placement(transformation(extent={{-40,-20},{-20,0}})));
     annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
           coordinateSystem(preserveAspectRatio=false)));
     end Whole;
