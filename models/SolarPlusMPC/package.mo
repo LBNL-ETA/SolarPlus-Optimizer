@@ -237,27 +237,64 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
   end Batteries;
 
   package PV "Package for PV models"
-    model PVSimple
+    model Simple
+      "A simple PV model that uses single efficiency to account for module and inverter losses"
       parameter Modelica.SIunits.Area A "PV array area";
-      parameter Modelica.SIunits.DimensionlessRatio eff "Total efficiency of panel";
-      Modelica.Blocks.Interfaces.RealInput I "Solar irradiation incident on array"
-        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
-      Modelica.Blocks.Interfaces.RealOutput P "Power genereated by array"
-        annotation (Placement(transformation(extent={{100,-20},{140,20}})));
-      Modelica.Blocks.Math.Gain gain(k=A)
-        annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
-      Modelica.Blocks.Math.Gain gain1(k=eff)
-        annotation (Placement(transformation(extent={{0,-10},{20,10}})));
+      parameter Modelica.SIunits.DimensionlessRatio eff=0.20 "Total efficiency of panel";
+      Modelica.Blocks.Interfaces.RealInput Iinc
+      "Solar irradiation incident on array"
+      annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Modelica.Blocks.Interfaces.RealOutput Pgen "Power genereated by array"
+      annotation (Placement(transformation(extent={{100,-12},{124,12}})));
+      Modelica.Blocks.Math.Gain gainA(k=A)
+      annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
+      Modelica.Blocks.Math.Gain gainEff(k=eff)
+      annotation (Placement(transformation(extent={{0,-10},{20,10}})));
     equation
-      connect(gain.u, I)
-        annotation (Line(points={{-62,0},{-120,0}}, color={0,0,127}));
-      connect(gain.y, gain1.u)
-        annotation (Line(points={{-39,0},{-2,0}}, color={0,0,127}));
-      connect(gain1.y, P)
-        annotation (Line(points={{21,0},{120,0}}, color={0,0,127}));
-      annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+    connect(gainA.u, Iinc)
+      annotation (Line(points={{-62,0},{-120,0}}, color={0,0,127}));
+    connect(gainA.y, gainEff.u)
+      annotation (Line(points={{-39,0},{-2,0}}, color={0,0,127}));
+    connect(gainEff.y, Pgen)
+      annotation (Line(points={{21,0},{112,0}}, color={0,0,127}));
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+          Rectangle(
+            extent={{-100,100},{100,-100}},
+            lineColor={0,0,0},
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{-48,76},{0,24}},
+            lineColor={0,0,0},
+            fillColor={28,108,200},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{0,76},{48,24}},
+            lineColor={0,0,0},
+            fillColor={28,108,200},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{0,24},{48,-28}},
+            lineColor={0,0,0},
+            fillColor={28,108,200},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{-48,24},{0,-28}},
+            lineColor={0,0,0},
+            fillColor={28,108,200},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{0,-28},{48,-80}},
+            lineColor={0,0,0},
+            fillColor={28,108,200},
+            fillPattern=FillPattern.Solid),
+          Rectangle(
+            extent={{-48,-28},{0,-80}},
+            lineColor={0,0,0},
+            fillColor={28,108,200},
+            fillPattern=FillPattern.Solid)}),                        Diagram(
             coordinateSystem(preserveAspectRatio=false)));
-    end PVSimple;
+    end Simple;
   end PV;
 
   package Building "Package for building models"
@@ -285,8 +322,8 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
         annotation (Placement(transformation(extent={{60,-10},{80,10}})));
       Modelica.Blocks.Interfaces.RealInput othLoad
         annotation (Placement(transformation(extent={{-140,-100},{-100,-60}})));
-      SolarPlus.PV.PVSimple pV(eff=0.15, A=5)
-        annotation (Placement(transformation(extent={{-60,70},{-40,90}})));
+    SolarPlus.PV.Simple pV(eff=0.15, A=5)
+      annotation (Placement(transformation(extent={{-60,70},{-40,90}})));
       SolarPlus.Refrigeration.Refrigerator refrigerator(Cap(displayUnit="kW")=
           1000, COP=3)
         annotation (Placement(transformation(extent={{-60,-30},{-40,-10}})));
@@ -304,12 +341,12 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
               4},{58,4},{58,0.8},{58,0.8}}, color={0,0,127}));
       connect(Pnet, sum1.y)
         annotation (Line(points={{110,0},{81,0}}, color={0,0,127}));
-      connect(weaHGloHor, pV.I)
-        annotation (Line(points={{-120,80},{-62,80}}, color={0,0,127}));
-      connect(pV.P, Ppv)
-        annotation (Line(points={{-38,80},{110,80}}, color={0,0,127}));
-      connect(pV.P, sum1.u[1]) annotation (Line(points={{-38,80},{40,80},{40,-1.6},
-              {58,-1.6}}, color={0,0,127}));
+    connect(weaHGloHor, pV.Iinc)
+      annotation (Line(points={{-120,80},{-62,80}}, color={0,0,127}));
+    connect(pV.Pgen, Ppv)
+      annotation (Line(points={{-38,80},{110,80}}, color={0,0,127}));
+    connect(pV.Pgen, sum1.u[1]) annotation (Line(points={{-38,80},{40,80},{40,-1.6},
+            {58,-1.6}}, color={0,0,127}));
       connect(weaTDryBul, refrigerator.Tamb) annotation (Line(points={{-120,0},{-72,
               0},{-72,-20},{-62,-20}}, color={0,0,127}));
       connect(uCool, refrigerator.uCool) annotation (Line(points={{-120,-40},{-72,
@@ -390,9 +427,11 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
 
     model Whole
     Thermal thermal
-      annotation (Placement(transformation(extent={{-40,20},{-20,40}})));
+      annotation (Placement(transformation(extent={{-40,0},{-20,20}})));
     Batteries.Simple simple
-      annotation (Placement(transformation(extent={{-40,-20},{-20,0}})));
+      annotation (Placement(transformation(extent={{-40,-40},{-20,-20}})));
+    PV.Simple simple1(A=10)
+      annotation (Placement(transformation(extent={{-40,40},{-20,60}})));
     annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
           coordinateSystem(preserveAspectRatio=false)));
     end Whole;
