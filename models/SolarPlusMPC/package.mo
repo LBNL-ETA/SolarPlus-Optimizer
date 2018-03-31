@@ -5,160 +5,80 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
 
 
 
-  package Zone "Package for zone thermal models"
-    model R1C1 "Zone thermal model"
-    Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor
-      annotation (Placement(transformation(extent={{-10,0},{10,20}})));
-    Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor
-      annotation (Placement(transformation(extent={{-50,-10},{-30,10}})));
-    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a port_a
-      annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
-    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a port_a1 annotation (
-        Placement(transformation(extent={{-110,16},{-90,36}}),
-          iconTransformation(extent={{90,-8},{110,12}})));
-    equation
-    connect(thermalResistor.port_b, heatCapacitor.port)
-      annotation (Line(points={{-30,0},{0,0}}, color={191,0,0}));
-    connect(thermalResistor.port_a, port_a)
-      annotation (Line(points={{-50,0},{-100,0}}, color={191,0,0}));
-    annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
-          Rectangle(
-            extent={{-100,100},{100,-100}},
-            lineColor={0,0,0},
-            fillColor={255,231,231},
-            fillPattern=FillPattern.Solid),
-          Rectangle(
-            extent={{-64,6},{-22,-8}},
-            lineColor={0,0,0},
-            fillColor={255,231,231},
-            fillPattern=FillPattern.Solid),
-          Line(points={{-64,0},{-100,0}}, color={0,0,0}),
-          Line(points={{2,0},{-22,0}}, color={0,0,0}),
-          Line(points={{2,0},{2,-14}}, color={0,0,0}),
-          Line(points={{14,-14},{-10,-14}}, color={0,0,0}),
-          Line(points={{14,-22},{-10,-22}}, color={0,0,0}),
-          Line(points={{14,-36},{-10,-36}}, color={0,0,0}),
-          Line(points={{2,-22},{2,-36}}, color={0,0,0}),
-          Line(points={{12,-40},{-8,-40}}, color={0,0,0}),
-          Line(points={{10,-44},{-6,-44}}, color={0,0,0}),
-          Text(
-            extent={{-50,34},{-38,20}},
-            lineColor={0,0,0},
-            fillColor={255,231,231},
-            fillPattern=FillPattern.Solid,
-            fontSize=12,
-            textString="Ra"),
-          Text(
-            extent={{28,-10},{40,-24}},
-            lineColor={0,0,0},
-            fillColor={255,231,231},
-            fillPattern=FillPattern.Solid,
-            fontSize=12,
-            textString="C"),
-          Line(points={{26,0},{2,0}}, color={0,0,0}),
-          Rectangle(
-            extent={{26,6},{68,-8}},
-            lineColor={0,0,0},
-            fillColor={255,231,231},
-            fillPattern=FillPattern.Solid),
-          Line(points={{104,0},{68,0}}, color={0,0,0}),
-          Text(
-            extent={{40,34},{52,20}},
-            lineColor={0,0,0},
-            fillColor={255,231,231},
-            fillPattern=FillPattern.Solid,
-            fontSize=12,
-            textString="Rb")}), Diagram(coordinateSystem(preserveAspectRatio=
-              false)));
-    end R1C1;
-
-    model Store
-    Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor
-      annotation (Placement(transformation(extent={{40,40},{60,60}})));
-    Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor
-      annotation (Placement(transformation(extent={{12,30},{32,50}})));
-    Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor1
-      annotation (Placement(transformation(extent={{-30,30},{-10,50}})));
-    Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor1
-      annotation (Placement(transformation(extent={{-60,40},{-40,60}})));
-    Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor2
-      annotation (Placement(transformation(extent={{-50,-40},{-30,-20}})));
-    Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor3
-      annotation (Placement(transformation(extent={{30,-40},{50,-20}})));
-    Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor2
-      annotation (Placement(transformation(extent={{-10,-50},{10,-30}})));
-    Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor3
-      annotation (Placement(transformation(extent={{-80,-50},{-60,-30}})));
-    Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor4
-      annotation (Placement(transformation(extent={{60,-50},{80,-30}})));
-    Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature Toa
-      annotation (Placement(transformation(extent={{-100,-80},{-80,-60}})));
-    Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor4
-      annotation (Placement(transformation(extent={{-10,70},{10,90}})));
-    Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor5
-      annotation (Placement(transformation(
-          extent={{-10,-10},{10,10}},
-          rotation=90,
-          origin={0,6})));
-    Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow Freezer
-      annotation (Placement(transformation(extent={{-80,10},{-60,30}})));
-    Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow Refrigerator
-      annotation (Placement(transformation(extent={{80,10},{60,30}})));
-    Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor6
-      annotation (Placement(transformation(extent={{20,60},{40,80}})));
-    Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow RTU1
-      annotation (Placement(transformation(extent={{-80,-98},{-60,-78}})));
-    Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow RTU2
-      annotation (Placement(transformation(extent={{80,-100},{60,-80}})));
-    equation
-    connect(thermalResistor.port_b, heatCapacitor.port)
-      annotation (Line(points={{32,40},{50,40}}, color={191,0,0}));
-    connect(heatCapacitor1.port, thermalResistor1.port_a)
-      annotation (Line(points={{-50,40},{-30,40}}, color={191,0,0}));
-    connect(thermalResistor2.port_b, heatCapacitor3.port)
-      annotation (Line(points={{10,-40},{40,-40}}, color={191,0,0}));
-    connect(thermalResistor2.port_a, heatCapacitor2.port)
-      annotation (Line(points={{-10,-40},{-40,-40}}, color={191,0,0}));
-    connect(thermalResistor3.port_b, heatCapacitor2.port)
-      annotation (Line(points={{-60,-40},{-40,-40}}, color={191,0,0}));
-    connect(heatCapacitor3.port, thermalResistor4.port_a)
-      annotation (Line(points={{40,-40},{60,-40}}, color={191,0,0}));
-    connect(Toa.port, thermalResistor3.port_a) annotation (Line(points={{-80,-70},
-            {-70,-70},{-70,-52},{-90,-52},{-90,-40},{-80,-40}}, color={191,0,0}));
-    connect(Toa.port, thermalResistor4.port_b) annotation (Line(points={{-80,-70},
-            {90,-70},{90,-40},{80,-40}}, color={191,0,0}));
-    connect(thermalResistor1.port_b, heatCapacitor4.port)
-      annotation (Line(points={{-10,40},{0,40},{0,70}}, color={191,0,0}));
-    connect(thermalResistor.port_a, heatCapacitor4.port)
-      annotation (Line(points={{12,40},{0,40},{0,70}}, color={191,0,0}));
-    connect(thermalResistor5.port_b, heatCapacitor4.port)
-      annotation (Line(points={{0,16},{0,70}}, color={191,0,0}));
-    connect(thermalResistor5.port_a, heatCapacitor3.port) annotation (Line(points=
-           {{0,-4},{0,-20},{20,-20},{20,-40},{40,-40}}, color={191,0,0}));
-    connect(heatCapacitor2.port, thermalResistor5.port_a) annotation (Line(points=
-           {{-40,-40},{-20,-40},{-20,-20},{0,-20},{0,-4}}, color={191,0,0}));
-    connect(Freezer.port, heatCapacitor1.port)
-      annotation (Line(points={{-60,20},{-50,20},{-50,40}}, color={191,0,0}));
-    connect(Refrigerator.port, heatCapacitor.port)
-      annotation (Line(points={{60,20},{50,20},{50,40}}, color={191,0,0}));
-    connect(heatCapacitor4.port, thermalResistor6.port_a)
-      annotation (Line(points={{0,70},{20,70}}, color={191,0,0}));
-    connect(Toa.port, thermalResistor6.port_b) annotation (Line(points={{-80,-70},
-            {90,-70},{90,70},{40,70}}, color={191,0,0}));
-    connect(RTU1.port, heatCapacitor2.port)
-      annotation (Line(points={{-60,-88},{-40,-88},{-40,-40}}, color={191,0,0}));
-    connect(RTU2.port, heatCapacitor3.port)
-      annotation (Line(points={{60,-90},{40,-90},{40,-40}}, color={191,0,0}));
-    annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-          coordinateSystem(preserveAspectRatio=false)));
-    end Store;
-  end Zone;
 
   package HVAC "Package for HVAC models"
-    model RTU
-    annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-          coordinateSystem(preserveAspectRatio=false)));
-    end RTU;
+    model SimpleHeaterCooler
+      "A simple heater and cooler with constant efficiency and COP"
+      parameter Modelica.SIunits.Power heatingCap = 10000 "Capacity of heater";
+      parameter Modelica.SIunits.DimensionlessRatio heatingEff = 0.99 "Efficiency of heater";
+      parameter Modelica.SIunits.Power coolingCap = 10000 "Capacity of cooler";
+      parameter Modelica.SIunits.DimensionlessRatio coolingCOP = 3 "COP of cooler";
+      Modelica.Blocks.Math.Gain heatingCapGain(k=heatingCap)
+        annotation (Placement(transformation(extent={{-20,70},{0,90}})));
+      Modelica.Blocks.Math.Gain coolingCapGain(k=coolingCap)
+        annotation (Placement(transformation(extent={{-20,-90},{0,-70}})));
+      Modelica.Blocks.Math.Gain heatingPowerGain(k=1/heatingEff)
+        annotation (Placement(transformation(extent={{60,10},{80,30}})));
+      Modelica.Blocks.Math.Gain coolingPowerGain(k=-1/coolingCOP)
+        annotation (Placement(transformation(extent={{60,-90},{80,-70}})));
+      Modelica.Blocks.Interfaces.RealOutput PCool(unit="W")
+      "Cooling electrical power output"
+        annotation (Placement(transformation(extent={{100,-90},{120,-70}})));
+      Modelica.Blocks.Interfaces.RealOutput PHeat(unit="W")
+      "Heating electrical power output"
+        annotation (Placement(transformation(extent={{100,10},{120,30}}),
+            iconTransformation(extent={{100,10},{120,30}})));
+      Modelica.Blocks.Interfaces.RealInput uHeat(min=0,max=1)
+      "Heating signal input"
+        annotation (Placement(transformation(extent={{-140,60},{-100,100}})));
+      Modelica.Blocks.Interfaces.RealInput uCool(min=-1,max=0)
+      "Cooling signal input"
+        annotation (Placement(transformation(extent={{-140,-100},{-100,-60}}),
+            iconTransformation(extent={{-140,-100},{-100,-60}})));
+      Modelica.Blocks.Interfaces.RealOutput qHeat(unit="W") "Heating heatflow output"
+        annotation (Placement(transformation(extent={{100,50},{120,70}})));
+      Modelica.Blocks.Interfaces.RealOutput qCool(unit="W") "Cooling heatflow output"
+        annotation (Placement(transformation(extent={{100,-50},{120,-30}}),
+            iconTransformation(extent={{100,-50},{120,-30}})));
+    equation
+      connect(heatingCapGain.y, heatingPowerGain.u) annotation (Line(points={{1,80},{
+              20,80},{20,20},{58,20}},                color={0,0,127}));
+      connect(coolingCapGain.y, coolingPowerGain.u) annotation (Line(points={{1,-80},
+              {58,-80}},                 color={0,0,127}));
+      connect(coolingPowerGain.y, PCool)
+        annotation (Line(points={{81,-80},{110,-80}}, color={0,0,127}));
+      connect(heatingPowerGain.y, PHeat)
+        annotation (Line(points={{81,20},{110,20}}, color={0,0,127}));
+      connect(heatingCapGain.u, uHeat) annotation (Line(points={{-22,80},{-120,80}},
+                              color={0,0,127}));
+      connect(uCool, coolingCapGain.u) annotation (Line(points={{-120,-80},{-22,-80}},
+                                   color={0,0,127}));
+      connect(heatingCapGain.y, qHeat) annotation (Line(points={{1,80},{60,80},{60,60},
+              {110,60}},         color={0,0,127}));
+      connect(coolingPowerGain.u, qCool) annotation (Line(points={{58,-80},{20,-80},
+              {20,-40},{110,-40}}, color={0,0,127}));
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+              Rectangle(
+              extent={{-100,100},{100,-100}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid),
+            Rectangle(
+              extent={{-100,100},{100,0}},
+              lineColor={0,0,0},
+              fillColor={238,46,47},
+              fillPattern=FillPattern.Solid),
+            Rectangle(
+              extent={{-100,0},{100,-100}},
+              lineColor={0,0,0},
+              fillColor={28,108,200},
+              fillPattern=FillPattern.Solid),
+            Text(
+              extent={{-150,140},{150,100}},
+              textString="%name",
+              lineColor={0,0,255})}),                                Diagram(
+            coordinateSystem(preserveAspectRatio=false)));
+    end SimpleHeaterCooler;
   end HVAC;
 
   package Refrigeration "Package for refrigeration models"
@@ -259,7 +179,7 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
       model BatteryTest
         extends Modelica.Icons.Example;
 
-        SolarPlusMPC.Batteries.SimpleBattery battery(Ecap(displayUnit="kWh") =
+        SolarPlusMPC.Batteries.SimpleBattery battery(Ecap(displayUnit="kWh")=
           144000000, Pcap(displayUnit="kW") = 10000)
         annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
         Modelica.Blocks.Sources.Step step(startTime=1000)
@@ -377,6 +297,65 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
       annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
             coordinateSystem(preserveAspectRatio=false)));
     end Simple;
+
+    model Thermal
+    Envelope.R1C1 r1C1_1
+      annotation (Placement(transformation(extent={{-12,-10},{8,10}})));
+    HVAC.SimpleHeaterCooler simpleHeaterCooler
+      annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
+    Modelica.Blocks.Interfaces.RealInput Tadj "Adjacent temperature"
+      annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
+    Modelica.Blocks.Interfaces.RealInput uCool
+      "Cooling signal input (must be negative)"
+      annotation (Placement(transformation(extent={{-140,-100},{-100,-60}})));
+    Modelica.Blocks.Interfaces.RealInput uHeat
+      "Heating signal input (must be positive)"
+      annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
+    Modelica.Blocks.Interfaces.RealOutput Tzone "Zone air temperature"
+      annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+    Modelica.Blocks.Interfaces.RealOutput PHeat
+      "Heating electrical power output"
+      annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
+    Modelica.Blocks.Interfaces.RealOutput PCool
+      "Cooling electrical power output"
+      annotation (Placement(transformation(extent={{100,-90},{120,-70}})));
+    equation
+    connect(simpleHeaterCooler.qHeat, r1C1_1.qHeat) annotation (Line(points={{
+            -39,6},{-28,6},{-28,-4},{-14,-4}}, color={0,0,127}));
+    connect(simpleHeaterCooler.qCool, r1C1_1.qCool) annotation (Line(points={{
+            -39,-4},{-34,-4},{-34,-8},{-14,-8}}, color={0,0,127}));
+    connect(r1C1_1.Tadj, Tadj) annotation (Line(points={{-14,6},{-20,6},{-20,60},
+            {-120,60}}, color={0,0,127}));
+    connect(simpleHeaterCooler.uCool, uCool) annotation (Line(points={{-62,-8},
+            {-80,-8},{-80,-80},{-120,-80}}, color={0,0,127}));
+    connect(simpleHeaterCooler.uHeat, uHeat) annotation (Line(points={{-62,8},{
+            -90,8},{-90,-40},{-120,-40}}, color={0,0,127}));
+    connect(r1C1_1.Tzone, Tzone)
+      annotation (Line(points={{9,0},{110,0}}, color={0,0,127}));
+    connect(simpleHeaterCooler.PHeat, PHeat) annotation (Line(points={{-39,2},{
+            -30,2},{-30,-40},{110,-40}}, color={0,0,127}));
+    connect(simpleHeaterCooler.PCool, PCool) annotation (Line(points={{-39,-8},
+            {-36,-8},{-36,-80},{110,-80}}, color={0,0,127}));
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+            Rectangle(
+            extent={{-100,100},{100,-100}},
+            lineColor={0,0,0},
+            fillColor={255,170,170},
+            fillPattern=FillPattern.Solid), Text(
+            extent={{-26,8},{26,-4}},
+            lineColor={0,0,0},
+            fillColor={255,170,170},
+            fillPattern=FillPattern.Solid,
+            textString="Thermal")}),                               Diagram(
+          coordinateSystem(preserveAspectRatio=false)));
+    end Thermal;
+
+    model Whole
+    Thermal thermal
+      annotation (Placement(transformation(extent={{-40,20},{-20,40}})));
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+          coordinateSystem(preserveAspectRatio=false)));
+    end Whole;
   end Building;
 
   package Examples
