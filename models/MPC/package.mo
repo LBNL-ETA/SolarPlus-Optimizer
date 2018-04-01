@@ -3,7 +3,7 @@ package MPC "This package contains models for MPC control optimization."
 
   package Envelope "Package for envelope thermal response models"
     model R1C1 "Zone thermal model"
-      parameter Modelica.SIunits.HeatCapacity C=1e5 "Heat capacity of zone";
+      parameter Modelica.SIunits.HeatCapacity C=1e6 "Heat capacity of zone";
       parameter Modelica.SIunits.ThermalResistance R=0.01 "Thermal resistance of zone";
       parameter Modelica.SIunits.Temperature Tzone_0 "Initial temperature of zone";
       Modelica.Thermal.HeatTransfer.Components.HeatCapacitor capAir(C=C, T(
@@ -111,11 +111,9 @@ package MPC "This package contains models for MPC control optimization."
       "Heating electrical power output"
         annotation (Placement(transformation(extent={{100,10},{120,30}}),
             iconTransformation(extent={{100,10},{120,30}})));
-      Modelica.Blocks.Interfaces.RealInput uHeat(min=0,max=1)
-      "Heating signal input"
+      Modelica.Blocks.Interfaces.RealInput uHeat "Heating signal input"
         annotation (Placement(transformation(extent={{-140,60},{-100,100}})));
-      Modelica.Blocks.Interfaces.RealInput uCool(min=0,max=1)
-      "Cooling signal input"
+      Modelica.Blocks.Interfaces.RealInput uCool "Cooling signal input"
         annotation (Placement(transformation(extent={{-140,-100},{-100,-60}}),
             iconTransformation(extent={{-140,-100},{-100,-60}})));
       Modelica.Blocks.Interfaces.RealOutput qHeat(unit="W") "Heating heatflow output"
@@ -398,7 +396,8 @@ package MPC "This package contains models for MPC control optimization."
       parameter Modelica.SIunits.Temperature Tzone_0 "Initial temperature of zone";
       Envelope.R1C1 r1C1_1(         Tzone_0=Tzone_0)
       annotation (Placement(transformation(extent={{-12,-10},{8,10}})));
-      HVAC.SimpleHeaterCooler simpleHeaterCooler(heatingCap=1000, coolingCap=1000)
+      HVAC.SimpleHeaterCooler simpleHeaterCooler(heatingCap=2000, coolingCap=
+          2000)
       annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
       Modelica.Blocks.Interfaces.RealInput Tadj "Adjacent temperature"
       annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
