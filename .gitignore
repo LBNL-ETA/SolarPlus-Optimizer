@@ -11,3 +11,13 @@ data/*
 *dsmodel.c
 *dymosim
 
+# JModelica output files
+########################
+*.fmu
+*result.txt
+*log.txt
+
+# MPCPy output files
+####################
+*.mop
+
