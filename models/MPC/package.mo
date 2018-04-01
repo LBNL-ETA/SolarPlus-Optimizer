@@ -1,5 +1,5 @@
 within ;
-package SolarPlusMPC "This package contains models for MPC control optimization."
+package MPC "This package contains models for MPC control optimization."
 
   package Envelope "Package for envelope thermal response models"
     model R1C1 "Zone thermal model"
@@ -560,7 +560,7 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
     extends Modelica.Icons.ExamplesPackage;
     model Simple
       extends Modelica.Icons.Example;
-      import SolarPlus = SolarPlusMPC;
+      import SolarPlus = MPC;
       Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(filNam=
           "/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/models/weatherdata/DRYCOLDTMY.mos")
         annotation (Placement(transformation(extent={{-80,60},{-60,80}})));
@@ -628,4 +628,4 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
   end Examples;
 
 annotation (uses(Modelica(version="3.2.2"), Buildings(version="5.0.0")));
-end SolarPlusMPC;
+end MPC;
