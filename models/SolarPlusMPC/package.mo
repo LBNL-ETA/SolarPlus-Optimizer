@@ -562,7 +562,7 @@ package SolarPlusMPC "This package contains models for MPC control optimization.
       extends Modelica.Icons.Example;
       import SolarPlus = SolarPlusMPC;
       Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(filNam=
-            "/home/dhb-lx/git/buildings/modelica-buildings/Buildings/Resources/weatherdata/DRYCOLD.mos")
+          "/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/models/weatherdata/DRYCOLDTMY.mos")
         annotation (Placement(transformation(extent={{-80,60},{-60,80}})));
       Buildings.BoundaryConditions.WeatherData.Bus weaBus annotation (Placement(
             transformation(extent={{-48,60},{-32,78}}), iconTransformation(extent=
