@@ -5,7 +5,9 @@ package MPC "This package contains models for MPC control optimization."
     model R1C1 "Zone thermal model"
       parameter Modelica.SIunits.HeatCapacity C=1e5 "Heat capacity of zone";
       parameter Modelica.SIunits.ThermalResistance R=0.01 "Thermal resistance of zone";
-    Modelica.Thermal.HeatTransfer.Components.HeatCapacitor capAir(C=C)
+      parameter Modelica.SIunits.Temperature Tzone_0 "Initial temperature of zone";
+      Modelica.Thermal.HeatTransfer.Components.HeatCapacitor capAir(C=C, T(
+                                                                         start = Tzone_0))
         annotation (Placement(transformation(extent={{-10,0},{10,20}})));
     Modelica.Thermal.HeatTransfer.Components.ThermalResistor resAdj(R=R)
         annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
@@ -234,7 +236,7 @@ package MPC "This package contains models for MPC control optimization."
       parameter Modelica.SIunits.DimensionlessRatio eta_charge=0.9 "Charging efficiency";
       parameter Modelica.SIunits.DimensionlessRatio eta_discharge=0.9 "Discharging efficiency";
       parameter Modelica.SIunits.DimensionlessRatio tau_sl=0.001 "Standing loss coefficient";
-      parameter Real SOC_0 = 0 "Initial state of charge";
+      parameter Modelica.SIunits.DimensionlessRatio SOC_0 "Initial state of charge";
       Modelica.SIunits.Energy E(start=SOC_0*Ecap) "Battery energy level";
       Modelica.SIunits.Power P_loss_charge "Charging losses of battery";
       Modelica.SIunits.Power P_loss_discharge "Discharging losses of battery";
@@ -393,24 +395,25 @@ package MPC "This package contains models for MPC control optimization."
   package Building "Package for building models"
 
     model Thermal
-    Envelope.R1C1 r1C1_1(R=0.005)
+      parameter Modelica.SIunits.Temperature Tzone_0 "Initial temperature of zone";
+      Envelope.R1C1 r1C1_1(         Tzone_0=Tzone_0)
       annotation (Placement(transformation(extent={{-12,-10},{8,10}})));
-    HVAC.SimpleHeaterCooler simpleHeaterCooler(heatingCap=1000, coolingCap=1000)
+      HVAC.SimpleHeaterCooler simpleHeaterCooler(heatingCap=1000, coolingCap=1000)
       annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
-    Modelica.Blocks.Interfaces.RealInput Tadj "Adjacent temperature"
+      Modelica.Blocks.Interfaces.RealInput Tadj "Adjacent temperature"
       annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
-    Modelica.Blocks.Interfaces.RealInput uCool
+      Modelica.Blocks.Interfaces.RealInput uCool
         "Cooling signal input (must be negative)"
       annotation (Placement(transformation(extent={{-140,-100},{-100,-60}})));
-    Modelica.Blocks.Interfaces.RealInput uHeat
+      Modelica.Blocks.Interfaces.RealInput uHeat
         "Heating signal input (must be positive)"
       annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
-    Modelica.Blocks.Interfaces.RealOutput Tzone "Zone air temperature"
+      Modelica.Blocks.Interfaces.RealOutput Tzone "Zone air temperature"
       annotation (Placement(transformation(extent={{100,-10},{120,10}})));
-    Modelica.Blocks.Interfaces.RealOutput PHeat
+      Modelica.Blocks.Interfaces.RealOutput PHeat
         "Heating electrical power output"
       annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
-    Modelica.Blocks.Interfaces.RealOutput PCool
+      Modelica.Blocks.Interfaces.RealOutput PCool
         "Cooling electrical power output"
       annotation (Placement(transformation(extent={{100,-90},{120,-70}})));
     equation
@@ -449,13 +452,15 @@ package MPC "This package contains models for MPC control optimization."
     end Thermal;
 
     model Whole
-    Thermal thermal
+      parameter Modelica.SIunits.Temperature Tzone_0=22+273.15 "Initial temperature of zone";
+      parameter Modelica.SIunits.DimensionlessRatio SOC_0 = 0.5 "Initial SOC of battery";
+      Thermal thermal(Tzone_0=Tzone_0)
       annotation (Placement(transformation(extent={{-40,0},{-20,20}})));
       Batteries.Simple battery(
         Ecap(displayUnit="kWh") = 21600000,
         P_cap_charge=1000,
         P_cap_discharge=1000,
-        SOC_0=1)
+      SOC_0=SOC_0)
         annotation (Placement(transformation(extent={{-40,-40},{-20,-20}})));
       PV.Simple pv(A=5)
         annotation (Placement(transformation(extent={{-40,40},{-20,60}})));
@@ -560,7 +565,6 @@ package MPC "This package contains models for MPC control optimization."
     extends Modelica.Icons.ExamplesPackage;
     model Simple
       extends Modelica.Icons.Example;
-      import SolarPlus = MPC;
       Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(filNam=
           "/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/models/weatherdata/DRYCOLDTMY.mos")
         annotation (Placement(transformation(extent={{-80,60},{-60,80}})));
@@ -581,7 +585,7 @@ package MPC "This package contains models for MPC control optimization."
         startTime=0,
         amplitude=0.5)
         annotation (Placement(transformation(extent={{-80,-90},{-60,-70}})));
-      SolarPlus.Building.Whole whole
+      MPC.Building.Whole whole(Tzone_0(displayUnit="degC") = 295.15, SOC_0=0.5)
         annotation (Placement(transformation(extent={{20,-10},{40,10}})));
       Modelica.Blocks.Sources.Pulse uHeat(period=3600*2, startTime=3600*2)
         annotation (Placement(transformation(extent={{-80,0},{-60,20}})));
