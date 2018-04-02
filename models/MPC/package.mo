@@ -6,7 +6,7 @@ package MPC "This package contains models for MPC control optimization."
       parameter Modelica.SIunits.HeatCapacity C=1e6 "Heat capacity of zone";
       parameter Modelica.SIunits.ThermalResistance R=0.01 "Thermal resistance of zone";
       parameter Modelica.SIunits.Temperature Tzone_0 "Initial temperature of zone";
-      Modelica.Thermal.HeatTransfer.Components.HeatCapacitor capAir(C=C, T(
+      Modelica.Thermal.HeatTransfer.Components.HeatCapacitor capAir(C=C, T(fixed=true,
                                                                          start = Tzone_0))
         annotation (Placement(transformation(extent={{-10,0},{10,20}})));
     Modelica.Thermal.HeatTransfer.Components.ThermalResistor resAdj(R=R)
@@ -235,7 +235,7 @@ package MPC "This package contains models for MPC control optimization."
       parameter Modelica.SIunits.DimensionlessRatio eta_discharge=0.9 "Discharging efficiency";
       parameter Modelica.SIunits.DimensionlessRatio tau_sl=0.001 "Standing loss coefficient";
       parameter Modelica.SIunits.DimensionlessRatio SOC_0 "Initial state of charge";
-      Modelica.SIunits.Energy E(start=SOC_0*Ecap) "Battery energy level";
+      Modelica.SIunits.Energy E(fixed=true,start=SOC_0*Ecap) "Battery energy level";
       Modelica.SIunits.Power P_loss_charge "Charging losses of battery";
       Modelica.SIunits.Power P_loss_discharge "Discharging losses of battery";
       Modelica.SIunits.Power P_loss_standing "Standing losses of battery";

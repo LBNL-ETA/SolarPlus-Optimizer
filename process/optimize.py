@@ -23,7 +23,7 @@ modelpath = 'MPC.Building.Whole'
 meas_list = ['Tzone', 'SOC', 'Ppv', 'Pheat', 'Pcool', 'Pcharge', 'Pdischarge', 'Pnet']
 sample_rate = 3600;
 # Optimization objective
-objective = 'EnergyMin'
+objective = 'EnergyCostMin'
 # Optimization constraints (adjustable)
 Tzone_max = 25.0
 Tzone_min = 20.0
@@ -33,9 +33,10 @@ SOC_min = 0.25
 peak_start = 14
 peak_end = 17
 multiplier = 10
-# --------------------------------------------------------------------------
+# Initial states
+Tzone_0 = 22 # deg C
+SOC_0 = 0.5 # unit 1
 
-# Initialize
 # --------------------------------------------------------------------------
 
 # Exodata
@@ -44,6 +45,19 @@ multiplier = 10
 weather = exodata.WeatherFromEPW(epwpath);
 # Collect weather data
 weather.collect_data(start_time, final_time);
+# Create parameter df
+pars = {'Name':      ['Tzone_0', 'SOC_0'], 
+        'Free':      [False,     False],
+        'Value':     [Tzone_0,   SOC_0],
+        'Minimum':   [0,         0],
+        'Maximum':   [350,       1],
+        'Covariance':[0,         0],
+        'Unit' :     ['degC',   '1']}
+par_df = pd.DataFrame(pars).set_index('Name')
+# Instantiate parameter object
+parameters = exodata.ParameterFromDF(par_df)
+# Collect parameters
+parameters.collect_data()
 # --------------------------------------------------------------------------
 
 # Measurements
@@ -140,6 +154,7 @@ model = models.Modelica(models.JModelica,
                         moinfo = moinfo,
                         weather_data = weather.data,
                         control_data = controls.data,
+                        parameter_data = parameters.data,
                         tz_name = weather.tz_name)
 # --------------------------------------------------------------------------
 
