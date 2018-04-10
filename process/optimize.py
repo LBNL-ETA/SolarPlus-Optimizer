@@ -24,7 +24,7 @@ meas_list = ['Tzone', 'SOC', 'Ppv', 'Pheat', 'Pcool', 'Pcharge', 'Pdischarge', '
 sample_rate = 3600;
 # Optimization objective
 objective = 'EnergyCostMin'
-# Optimization constraints (adjustable)
+# Optimization constraints
 Tzone_max = 25.0
 Tzone_min = 20.0
 SOC_max = 1.0
@@ -33,9 +33,9 @@ SOC_min = 0.25
 peak_start = 14
 peak_end = 17
 multiplier = 10
-# Initial states
+# Initial states (must satisfy optimization constraints)
 Tzone_0 = 22 # deg C
-SOC_0 = 0.5 # unit 1
+SOC_0 = 0.26 # unit 1
 
 # --------------------------------------------------------------------------
 
