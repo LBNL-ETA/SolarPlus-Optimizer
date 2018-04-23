@@ -119,6 +119,8 @@ constraints_df.loc[time,'uCharge_max'] = 1.0
 constraints_df.loc[time,'uCharge_min'] = 0.0
 constraints_df.loc[time,'uDischarge_max'] = 1.0
 constraints_df.loc[time,'uDischarge_min'] = 0.0
+constraints_df.loc[time,'duHeat_max'] = 0.001
+constraints_df.loc[time,'duHeat_min'] = -0.001
 constraints_df.loc[time,'duCharge_max'] = 0.0005
 constraints_df.loc[time,'duCharge_min'] = -0.0005
 constraints_df.loc[time,'Pnet_max'] = P_demand_limit
@@ -135,6 +137,8 @@ vm_constraints = {'Tzone_max' : ('Tzone', 'LTE', units.degC),
                   'uCharge_min' : ('uCharge', 'GTE', units.unit1),
                   'uDischarge_max' : ('uCharge', 'LTE', units.unit1),
                   'uDischarge_min' : ('uCharge', 'GTE', units.unit1),
+                  'duHeat_max' : ('duHeat', 'LTE', units.unit1),
+                  'duHeat_min' : ('duHeat', 'GTE', units.unit1),
                   'duCharge_max' : ('duCharge', 'LTE', units.unit1),
                   'duCharge_min' : ('duCharge', 'GTE', units.unit1),
                   'Pnet_max' : ('Pnet', 'LTE', units.W),}
