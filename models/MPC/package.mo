@@ -227,18 +227,16 @@ package MPC "This package contains models for MPC control optimization."
   package Batteries "Package for battery models"
 
     model Simple
-      "Simple battery model with SOC as state including charging, discharging, and standing losses seperately"
+      "Simple battery model with SOC as state including charging, discharging"
       parameter Modelica.SIunits.Energy Ecap  "Battery capacity";
       parameter Modelica.SIunits.Power P_cap_charge "Charging capacity";
       parameter Modelica.SIunits.Power P_cap_discharge "Discharging capacity";
       parameter Modelica.SIunits.DimensionlessRatio eta_charge=0.9 "Charging efficiency";
       parameter Modelica.SIunits.DimensionlessRatio eta_discharge=0.9 "Discharging efficiency";
-      parameter Modelica.SIunits.DimensionlessRatio tau_sl=0.001 "Standing loss coefficient";
       parameter Modelica.SIunits.DimensionlessRatio SOC_0 "Initial state of charge";
       Modelica.SIunits.Energy E(fixed=true,start=SOC_0*Ecap) "Battery energy level";
       Modelica.SIunits.Power P_loss_charge "Charging losses of battery";
       Modelica.SIunits.Power P_loss_discharge "Discharging losses of battery";
-      Modelica.SIunits.Power P_loss_standing "Standing losses of battery";
       Modelica.Blocks.Interfaces.RealInput uCharge(min=0, max=1)
         "Control signal for charging"
         annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
@@ -254,13 +252,11 @@ package MPC "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{100,-92},{124,-68}})));
     equation
       SOC = E/Ecap;
-      der(E) =Pcharge - Pdischarge - P_loss_charge - P_loss_discharge -
-        P_loss_standing;
+      der(E) =Pcharge - Pdischarge - P_loss_charge - P_loss_discharge;
       Pcharge = uCharge*P_cap_charge;
       Pdischarge = uDischarge*P_cap_discharge;
       P_loss_charge =Pcharge*(1 - eta_charge);
       P_loss_discharge =Pdischarge*(1 - eta_discharge);
-      P_loss_standing = SOC*tau_sl/3600;
       annotation (Icon(graphics={
             Rectangle(
               extent={{-100,100},{100,-100}},
@@ -453,6 +449,10 @@ package MPC "This package contains models for MPC control optimization."
     model Whole
       parameter Modelica.SIunits.Temperature Tzone_0=22+273.15 "Initial temperature of zone";
       parameter Modelica.SIunits.DimensionlessRatio SOC_0 = 0.5 "Initial SOC of battery";
+      parameter Modelica.SIunits.DimensionlessRatio uHeat_0 = 0.0 "Initial heating signal";
+      parameter Modelica.SIunits.DimensionlessRatio uCool_0 = 0.0 "Initial cooling signal";
+      parameter Modelica.SIunits.DimensionlessRatio uCharge_0 = 0.0 "Initial charging signal";
+      parameter Modelica.SIunits.DimensionlessRatio uDischarge_0 = 0.0 "Initial discharging signal";
       Thermal thermal(Tzone_0=Tzone_0)
       annotation (Placement(transformation(extent={{-40,0},{-20,20}})));
       Batteries.Simple battery(
@@ -463,17 +463,17 @@ package MPC "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{-40,-40},{-20,-20}})));
       PV.Simple pv(A=5)
         annotation (Placement(transformation(extent={{-40,40},{-20,60}})));
-      Modelica.Blocks.Interfaces.RealInput uCharge
-        "Control signal for charging"
+      Modelica.Blocks.Interfaces.RealInput duCharge
+        "Derivative of control signal for charging"
         annotation (Placement(transformation(extent={{-140,-80},{-100,-40}})));
-      Modelica.Blocks.Interfaces.RealInput uDischarge
-        "Control signal for discharging"
+      Modelica.Blocks.Interfaces.RealInput duDischarge
+        "Derivative of control signal for discharging"
         annotation (Placement(transformation(extent={{-140,-120},{-100,-80}})));
-      Modelica.Blocks.Interfaces.RealInput uCool
-        "Cooling signal input (must be negative)"
+      Modelica.Blocks.Interfaces.RealInput duCool
+        "Derivative of cooling signal input"
         annotation (Placement(transformation(extent={{-140,-40},{-100,0}})));
-      Modelica.Blocks.Interfaces.RealInput uHeat
-        "Heating signal input (must be positive)"
+      Modelica.Blocks.Interfaces.RealInput duHeat
+        "Derivative of heating signal input"
         annotation (Placement(transformation(extent={{-140,0},{-100,40}})));
       Modelica.Blocks.Interfaces.RealInput weaHGloHor
         "Global horizontal irradiation"
@@ -486,11 +486,11 @@ package MPC "This package contains models for MPC control optimization."
       Modelica.Blocks.Interfaces.RealOutput Pnet
         annotation (Placement(transformation(extent={{100,-10},{120,10}})));
       Modelica.Blocks.Interfaces.RealOutput SOC "Battery state of charge"
-        annotation (Placement(transformation(extent={{100,-90},{120,-70}})));
+        annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
       Modelica.Blocks.Interfaces.RealOutput Tzone "Zone air temperature"
-        annotation (Placement(transformation(extent={{100,-70},{120,-50}})));
+        annotation (Placement(transformation(extent={{100,-30},{120,-10}})));
       Modelica.Blocks.Math.Gain gainPVGen(k=-1)
-        annotation (Placement(transformation(extent={{-14,44},{-2,56}})));
+        annotation (Placement(transformation(extent={{28,94},{40,106}})));
       Modelica.Blocks.Interfaces.RealOutput Ppv "Power generated by PV system"
         annotation (Placement(transformation(extent={{100,90},{120,110}})));
       Modelica.Blocks.Interfaces.RealOutput Pheat
@@ -506,16 +506,32 @@ package MPC "This package contains models for MPC control optimization."
         "Battery discharging power generation"
         annotation (Placement(transformation(extent={{100,10},{120,30}})));
       Modelica.Blocks.Math.Gain gainBatteryGen(k=-1)
-        annotation (Placement(transformation(extent={{0,-44},{12,-32}})));
+        annotation (Placement(transformation(extent={{28,14},{40,26}})));
+      Modelica.Blocks.Continuous.Integrator intHeat(initType=Modelica.Blocks.Types.Init.InitialState, y_start=
+          uHeat_0)
+        annotation (Placement(transformation(extent={{-94,16},{-86,24}})));
+      Modelica.Blocks.Continuous.Integrator intCool(initType=Modelica.Blocks.Types.Init.InitialState, y_start=
+          uCool_0)
+        annotation (Placement(transformation(extent={{-94,-24},{-86,-16}})));
+      Modelica.Blocks.Continuous.Integrator intCharge(initType=Modelica.Blocks.Types.Init.InitialState, y_start=
+          uCharge_0)
+        annotation (Placement(transformation(extent={{-94,-64},{-86,-56}})));
+      Modelica.Blocks.Continuous.Integrator intDischarge(initType=Modelica.Blocks.Types.Init.InitialState, y_start=
+          uDischarge_0)
+        annotation (Placement(transformation(extent={{-94,-104},{-86,-96}})));
+    Modelica.Blocks.Interfaces.RealOutput uHeat
+      "Connector of Real output signal"
+      annotation (Placement(transformation(extent={{100,-70},{120,-50}})));
+    Modelica.Blocks.Interfaces.RealOutput uCool
+      "Connector of Real output signal"
+      annotation (Placement(transformation(extent={{100,-90},{120,-70}})));
+    Modelica.Blocks.Interfaces.RealOutput uCharge
+      "Connector of Real output signal"
+      annotation (Placement(transformation(extent={{100,-110},{120,-90}})));
+    Modelica.Blocks.Interfaces.RealOutput uDischarge
+      "Connector of Real output signal"
+      annotation (Placement(transformation(extent={{100,-130},{120,-110}})));
     equation
-      connect(battery.uCharge, uCharge) annotation (Line(points={{-42,-34},{-80,
-              -34},{-80,-60},{-120,-60}}, color={0,0,127}));
-      connect(battery.uDischarge, uDischarge) annotation (Line(points={{-42,-38},
-              {-60,-38},{-60,-100},{-120,-100}}, color={0,0,127}));
-      connect(thermal.uCool, uCool) annotation (Line(points={{-42,2},{-80,2},{
-              -80,-20},{-120,-20}}, color={0,0,127}));
-      connect(thermal.uHeat, uHeat) annotation (Line(points={{-42,6},{-80,6},{
-              -80,20},{-120,20}}, color={0,0,127}));
       connect(pv.Iinc, weaHGloHor) annotation (Line(points={{-42,50},{-60,50},{
               -60,100},{-120,100}}, color={0,0,127}));
       connect(thermal.Tadj, weaTDryBul) annotation (Line(points={{-42,16},{-60,
@@ -523,13 +539,14 @@ package MPC "This package contains models for MPC control optimization."
       connect(multiSum.y, Pnet)
         annotation (Line(points={{89.02,0},{110,0}}, color={0,0,127}));
       connect(battery.SOC, SOC) annotation (Line(points={{-18.8,-30},{-12,-30},
-              {-12,-80},{110,-80}}, color={0,0,127}));
+            {-12,-40},{110,-40}},   color={0,0,127}));
       connect(thermal.Tzone, Tzone) annotation (Line(points={{-19,10},{-10,10},
-              {-10,-60},{110,-60}}, color={0,0,127}));
+            {-10,-20},{110,-20}},   color={0,0,127}));
       connect(pv.Pgen, gainPVGen.u)
-        annotation (Line(points={{-18.8,50},{-15.2,50}}, color={0,0,127}));
-      connect(gainPVGen.y, Ppv) annotation (Line(points={{-1.4,50},{12,50},{12,
-              100},{110,100}}, color={0,0,127}));
+        annotation (Line(points={{-18.8,50},{12,50},{12,100},{26.8,100}},
+                                                         color={0,0,127}));
+      connect(gainPVGen.y, Ppv) annotation (Line(points={{40.6,100},{110,100}},
+                               color={0,0,127}));
       connect(thermal.PHeat, Pheat) annotation (Line(points={{-19,6},{14,6},{14,
               80},{110,80}}, color={0,0,127}));
       connect(thermal.PCool, Pcool) annotation (Line(points={{-19,2},{16,2},{16,
@@ -537,9 +554,10 @@ package MPC "This package contains models for MPC control optimization."
       connect(battery.Pcharge, Pcharge) annotation (Line(points={{-18.8,-34},{
               18,-34},{18,40},{110,40}}, color={0,0,127}));
       connect(battery.Pdischarge, gainBatteryGen.u)
-        annotation (Line(points={{-18.8,-38},{-1.2,-38}}, color={0,0,127}));
-      connect(gainBatteryGen.y, Pdischarge) annotation (Line(points={{12.6,-38},
-              {20,-38},{20,20},{110,20}}, color={0,0,127}));
+        annotation (Line(points={{-18.8,-38},{20,-38},{20,20},{26.8,20}},
+                                                          color={0,0,127}));
+      connect(gainBatteryGen.y, Pdischarge) annotation (Line(points={{40.6,20},
+            {110,20}},                    color={0,0,127}));
       connect(multiSum.u[1], Ppv) annotation (Line(points={{76,3.36},{48,3.36},
               {48,100},{110,100}}, color={0,0,127}));
       connect(multiSum.u[2], Pheat) annotation (Line(points={{76,1.68},{52,1.68},
@@ -550,6 +568,33 @@ package MPC "This package contains models for MPC control optimization."
               -1.68},{60,40},{110,40}}, color={0,0,127}));
       connect(multiSum.u[5], Pdischarge) annotation (Line(points={{76,-3.36},{
               64,-3.36},{64,20},{110,20}}, color={0,0,127}));
+      connect(thermal.uHeat, intHeat.y) annotation (Line(points={{-42,6},{-62,6},
+            {-62,20},{-85.6,20}},
+                               color={0,0,127}));
+      connect(intHeat.u, duHeat)
+        annotation (Line(points={{-94.8,20},{-120,20}}, color={0,0,127}));
+      connect(thermal.uCool, intCool.y) annotation (Line(points={{-42,2},{-64,2},
+            {-64,-20},{-85.6,-20}},
+                                 color={0,0,127}));
+      connect(intCool.u, duCool)
+        annotation (Line(points={{-94.8,-20},{-120,-20}}, color={0,0,127}));
+      connect(battery.uCharge, intCharge.y) annotation (Line(points={{-42,-34},
+            {-64,-34},{-64,-60},{-85.6,-60}},
+                                           color={0,0,127}));
+      connect(intCharge.u, duCharge)
+        annotation (Line(points={{-94.8,-60},{-120,-60}}, color={0,0,127}));
+      connect(battery.uDischarge, intDischarge.y) annotation (Line(points={{-42,-38},
+            {-70,-38},{-70,-100},{-85.6,-100}},   color={0,0,127}));
+      connect(intDischarge.u, duDischarge)
+        annotation (Line(points={{-94.8,-100},{-120,-100}}, color={0,0,127}));
+    connect(intHeat.y, uHeat) annotation (Line(points={{-85.6,20},{-62,20},{-62,
+            -60},{110,-60}}, color={0,0,127}));
+    connect(uCool, intCool.y) annotation (Line(points={{110,-80},{-60,-80},{-60,
+            -20},{-64,-20},{-64,-20},{-85.6,-20}}, color={0,0,127}));
+    connect(uCharge, intCharge.y) annotation (Line(points={{110,-100},{-64,-100},
+            {-64,-34},{-64,-34},{-64,-60},{-85.6,-60}}, color={0,0,127}));
+    connect(uDischarge, intDischarge.y) annotation (Line(points={{110,-120},{
+            -70,-120},{-70,-100},{-85.6,-100}}, color={0,0,127}));
     annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
               extent={{-100,100},{100,-100}},
@@ -562,72 +607,6 @@ package MPC "This package contains models for MPC control optimization."
 
   package Examples
     extends Modelica.Icons.ExamplesPackage;
-    model Simple
-      extends Modelica.Icons.Example;
-      Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(filNam=
-          "/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/models/weatherdata/DRYCOLDTMY.mos")
-        annotation (Placement(transformation(extent={{-80,60},{-60,80}})));
-      Buildings.BoundaryConditions.WeatherData.Bus weaBus annotation (Placement(
-            transformation(extent={{-48,60},{-32,78}}), iconTransformation(extent=
-               {{-158,-42},{-138,-22}})));
-      Modelica.Blocks.Sources.Pulse uCool(period=3600*2, startTime=3600)
-        annotation (Placement(transformation(extent={{-80,-30},{-60,-10}})));
-      Modelica.Blocks.Sources.Pulse uCharge(
-        offset=0,
-        period=3600*6,
-        startTime=3600*3,
-        amplitude=0.5)
-        annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));
-      Modelica.Blocks.Sources.Pulse uDischarge(
-        offset=0,
-        period=3600*6,
-        startTime=0,
-        amplitude=0.5)
-        annotation (Placement(transformation(extent={{-80,-90},{-60,-70}})));
-      MPC.Building.Whole whole(Tzone_0(displayUnit="degC") = 295.15, SOC_0=0.5)
-        annotation (Placement(transformation(extent={{20,-10},{40,10}})));
-      Modelica.Blocks.Sources.Pulse uHeat(period=3600*2, startTime=3600*2)
-        annotation (Placement(transformation(extent={{-80,0},{-60,20}})));
-    equation
-      connect(weaDat.weaBus, weaBus) annotation (Line(
-          points={{-60,70},{-50,70},{-50,69},{-40,69}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%second",
-          index=1,
-          extent={{6,3},{6,3}}));
-      connect(weaBus.HGloHor, whole.weaHGloHor) annotation (Line(
-          points={{-40,69},{-26,69},{-26,68},{0,68},{0,10},{18,10}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}}));
-      connect(weaBus.TDryBul, whole.weaTDryBul) annotation (Line(
-          points={{-40,69},{-26,69},{-26,68},{0,68},{0,6},{18,6}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}}));
-      connect(uHeat.y, whole.uHeat) annotation (Line(points={{-59,10},{-6,10},{
-              -6,2},{18,2}}, color={0,0,127}));
-      connect(uCool.y, whole.uCool) annotation (Line(points={{-59,-20},{-6,-20},
-              {-6,-2},{18,-2}}, color={0,0,127}));
-      connect(uCharge.y, whole.uCharge) annotation (Line(points={{-59,-50},{0,
-              -50},{0,-6},{18,-6}}, color={0,0,127}));
-      connect(uDischarge.y, whole.uDischarge) annotation (Line(points={{-59,-80},
-              {4,-80},{4,-10},{18,-10}}, color={0,0,127}));
-      annotation (
-        Icon(coordinateSystem(preserveAspectRatio=false)),
-        Diagram(coordinateSystem(preserveAspectRatio=false)),
-        experiment(
-          StartTime=15552000,
-          StopTime=15638400,
-          Interval=300,
-          Tolerance=1e-06,
-          __Dymola_Algorithm="Cvode"));
-    end Simple;
   end Examples;
 
 annotation (uses(Modelica(version="3.2.2"), Buildings(version="5.0.0")));
