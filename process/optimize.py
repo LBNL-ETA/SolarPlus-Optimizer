@@ -20,7 +20,10 @@ epwpath = 'models/weatherdata/DRYCOLDTMY.epw'
 mopath = 'models/MPC/package.mo'
 modelpath = 'MPC.Building.Whole'
 # Model measurements
-meas_list = ['Tzone', 'SOC', 'Ppv', 'Pheat', 'Pcool', 'Pcharge', 'Pdischarge', 'Pnet', 'uCharge', 'uDischarge', 'uHeat', 'uCool']
+meas_list = ['Tzone', 'SOC', 
+             'Ppv', 'Pheat', 'Pcool', 'Pcharge', 'Pdischarge', 'Pnet', 
+             'uCharge', 'uDischarge', 'uHeat', 'uCool', 
+             'duCharge', 'duDischarge', 'duHeat', 'duCool']
 sample_rate = 3600;
 # Optimization objective
 objective = 'EnergyCostMin'
@@ -29,12 +32,12 @@ Tzone_max = 25.0
 Tzone_min = 20.0
 SOC_max = 1.0
 SOC_min = 0.25
-P_demand_limit = 1500
+P_demand_limit = 3000
 # Price signal
 build_price = True
 peak_start = 14
 peak_end = 17
-multiplier = 5
+multiplier = 10
 price_vec = [1,1,1.5,2,3,3.5,4,5,5.5,6,7,9,11,20,20,20,11,9,7,5.5,4,2.5,1.5,1,1] # if not build
 # Initial states (must satisfy optimization constraints)
 Tzone_0 = 22 # deg C
@@ -116,6 +119,8 @@ constraints_df.loc[time,'uCharge_max'] = 1.0
 constraints_df.loc[time,'uCharge_min'] = 0.0
 constraints_df.loc[time,'uDischarge_max'] = 1.0
 constraints_df.loc[time,'uDischarge_min'] = 0.0
+constraints_df.loc[time,'duCharge_max'] = 0.0005
+constraints_df.loc[time,'duCharge_min'] = -0.0005
 constraints_df.loc[time,'Pnet_max'] = P_demand_limit
 # Define variable map
 vm_constraints = {'Tzone_max' : ('Tzone', 'LTE', units.degC),
@@ -130,6 +135,8 @@ vm_constraints = {'Tzone_max' : ('Tzone', 'LTE', units.degC),
                   'uCharge_min' : ('uCharge', 'GTE', units.unit1),
                   'uDischarge_max' : ('uCharge', 'LTE', units.unit1),
                   'uDischarge_min' : ('uCharge', 'GTE', units.unit1),
+                  'duCharge_max' : ('duCharge', 'LTE', units.unit1),
+                  'duCharge_min' : ('duCharge', 'GTE', units.unit1),
                   'Pnet_max' : ('Pnet', 'LTE', units.W),}
 # Instantiate object                  
 constraints = exodata.ConstraintFromDF(constraints_df, 
@@ -219,7 +226,7 @@ opt_statistics = opt_problem.get_optimization_statistics()
 # Post Process
 # --------------------------------------------------------------------------
 # Plot
-fig, ax = plt.subplots(5,1,sharex=True)
+fig, ax = plt.subplots(6,1,sharex=True)
 meas_opt = opt_problem.display_measurements('Simulated')
 ax[0].plot(meas_opt['Tzone']-273.15, label='Tzone', color='r')
 ax[0].set_title('Zone Temperature [degC]')
@@ -239,5 +246,9 @@ for meas in ['uCharge', 'uDischarge']:
     ax[4].plot(meas_opt[meas], label=meas)
 ax[4].legend()
 ax[4].set_title('Signal [-]')
+for meas in ['duCharge', 'duDischarge']:
+    ax[5].plot(meas_opt[meas], label=meas)
+ax[5].legend()
+ax[5].set_title('Derivative Signal [-]')
 plt.savefig('process/results/optimal_{0}.png'.format(objective))
 plt.show()
