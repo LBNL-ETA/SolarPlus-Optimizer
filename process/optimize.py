@@ -29,8 +29,9 @@ Tzone_max = 25.0
 Tzone_min = 20.0
 SOC_max = 1.0
 SOC_min = 0.25
+P_demand_limit = 1500
 # Price signal
-build_price = False
+build_price = True
 peak_start = 14
 peak_end = 17
 multiplier = 5
@@ -111,6 +112,7 @@ constraints_df.loc[time,'uCharge_max'] = 1.0
 constraints_df.loc[time,'uCharge_min'] = 0.0
 constraints_df.loc[time,'uDischarge_max'] = 1.0
 constraints_df.loc[time,'uDischarge_min'] = 0.0
+constraints_df.loc[time,'Pnet_max'] = P_demand_limit
 # Define variable map
 vm_constraints = {'Tzone_max' : ('Tzone', 'LTE', units.degC),
                   'Tzone_min' : ('Tzone', 'GTE', units.degC),
@@ -123,7 +125,8 @@ vm_constraints = {'Tzone_max' : ('Tzone', 'LTE', units.degC),
                   'uCharge_max' : ('uCharge', 'LTE', units.unit1),
                   'uCharge_min' : ('uCharge', 'GTE', units.unit1),
                   'uDischarge_max' : ('uCharge', 'LTE', units.unit1),
-                  'uDischarge_min' : ('uCharge', 'GTE', units.unit1)}
+                  'uDischarge_min' : ('uCharge', 'GTE', units.unit1),
+                  'Pnet_max' : ('Pnet', 'LTE', units.W),}
 # Instantiate object                  
 constraints = exodata.ConstraintFromDF(constraints_df, 
                                        vm_constraints, 
