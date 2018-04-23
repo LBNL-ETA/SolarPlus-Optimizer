@@ -20,7 +20,7 @@ epwpath = 'models/weatherdata/DRYCOLDTMY.epw'
 mopath = 'models/MPC/package.mo'
 modelpath = 'MPC.Building.Whole'
 # Model measurements
-meas_list = ['Tzone', 'SOC', 'Ppv', 'Pheat', 'Pcool', 'Pcharge', 'Pdischarge', 'Pnet']
+meas_list = ['Tzone', 'SOC', 'Ppv', 'Pheat', 'Pcool', 'Pcharge', 'Pdischarge', 'Pnet', 'uCharge', 'uDischarge']
 sample_rate = 3600;
 # Optimization objective
 objective = 'EnergyCostMin'
@@ -30,9 +30,11 @@ Tzone_min = 20.0
 SOC_max = 1.0
 SOC_min = 0.25
 # Price signal
+build_price = False
 peak_start = 14
 peak_end = 17
-multiplier = 10
+multiplier = 5
+price_vec = [1,1,1.5,2,3,3.5,4,5,5.5,6,7,9,11,20,20,20,11,9,7,5.5,4,2.5,1.5,1,1]
 # Initial states (must satisfy optimization constraints)
 Tzone_0 = 22 # deg C
 SOC_0 = 0.26 # unit 1
@@ -105,6 +107,10 @@ constraints_df.loc[time,'uHeat_max'] = 1.0
 constraints_df.loc[time,'uHeat_min'] = 0.0
 constraints_df.loc[time,'uCool_max'] = 1.0
 constraints_df.loc[time,'uCool_min'] = 0.0
+constraints_df.loc[time,'uCharge_max'] = 1.0
+constraints_df.loc[time,'uCharge_min'] = 0.0
+constraints_df.loc[time,'uDischarge_max'] = 1.0
+constraints_df.loc[time,'uDischarge_min'] = 0.0
 # Define variable map
 vm_constraints = {'Tzone_max' : ('Tzone', 'LTE', units.degC),
                   'Tzone_min' : ('Tzone', 'GTE', units.degC),
@@ -113,7 +119,11 @@ vm_constraints = {'Tzone_max' : ('Tzone', 'LTE', units.degC),
                   'uHeat_max' : ('uHeat', 'LTE', units.unit1),
                   'uHeat_min' : ('uHeat', 'GTE', units.unit1),
                   'uCool_max' : ('uCool', 'LTE', units.unit1),
-                  'uCool_min' : ('uCool', 'GTE', units.unit1)}
+                  'uCool_min' : ('uCool', 'GTE', units.unit1),
+                  'uCharge_max' : ('uCharge', 'LTE', units.unit1),
+                  'uCharge_min' : ('uCharge', 'GTE', units.unit1),
+                  'uDischarge_max' : ('uCharge', 'LTE', units.unit1),
+                  'uDischarge_min' : ('uCharge', 'GTE', units.unit1)}
 # Instantiate object                  
 constraints = exodata.ConstraintFromDF(constraints_df, 
                                        vm_constraints, 
@@ -125,13 +135,17 @@ constraints.collect_data(start_time, final_time)
 # Prices
 # --------------------------------------------------------------------------
 # Build dataframe
-time = pd.date_range(start_time, final_time, freq='5T')
-prices_df = pd.DataFrame(index=time)
-for t in time:
-    if (t.hour < peak_start) or (t.hour > peak_end):
-        prices_df.loc[t,'energy_price'] = 1
-    else:
-        prices_df.loc[t,'energy_price'] = multiplier
+if build_price:
+    time = pd.date_range(start_time, final_time, freq='5T')
+    prices_df = pd.DataFrame(index=time)
+    for t in time:
+        if (t.hour < peak_start) or (t.hour > peak_end):
+            prices_df.loc[t,'energy_price'] = 1
+        else:
+            prices_df.loc[t,'energy_price'] = multiplier
+else:
+    time = pd.date_range(start_time, final_time, freq='H')
+    prices_df = pd.DataFrame(index=time, data=price_vec,columns=['energy_price'])
 
 # Define variable map
 vm_prices = {'energy_price' : ('pi_e', units.dol_kWh)}
@@ -176,7 +190,9 @@ opt_problem = optimization.Optimization(model,
                                         tz_name = weather.tz_name)
 # Set options
 opt_options = opt_problem.get_optimization_options()
-opt_options['n_e'] = 24
+opt_options['n_e'] = 24*4
+opt_options['n_cp'] = 3
+opt_options['IPOPT_options']['tol'] = 1e-10
 opt_problem.set_optimization_options(opt_options)
 # --------------------------------------------------------------------------
 
@@ -196,7 +212,7 @@ opt_statistics = opt_problem.get_optimization_statistics()
 # Post Process
 # --------------------------------------------------------------------------
 # Plot
-fig, ax = plt.subplots(4,1,sharex=True)
+fig, ax = plt.subplots(5,1,sharex=True)
 meas_opt = opt_problem.display_measurements('Simulated')
 ax[0].plot(meas_opt['Tzone']-273.15, label='Tzone', color='r')
 ax[0].set_title('Zone Temperature [degC]')
@@ -212,5 +228,9 @@ ax[2].set_ylim([-2500,2500])
 ax[3].plot(prices.display_data(),label='Energy Price')
 ax[3].set_title('Electricity Price [$/kWh]')
 ax[3].set_ylim([0,15])
+for meas in ['uCharge', 'uDischarge']:
+    ax[4].plot(meas_opt[meas], label=meas)
+ax[4].legend()
+ax[4].set_title('Signal [-]')
 plt.savefig('process/results/optimal_{0}.png'.format(objective))
 plt.show()
