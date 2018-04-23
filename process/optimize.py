@@ -32,7 +32,7 @@ Tzone_max = 25.0
 Tzone_min = 20.0
 SOC_max = 1.0
 SOC_min = 0.25
-P_demand_limit = 3000
+P_demand_limit = 1500
 # Price signal
 build_price = True
 peak_start = 14
