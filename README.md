@@ -20,4 +20,10 @@ An optimization process can be run by:
 2. ``$ python process/optimize.py`` to run the optimization script.
 
 ## Edits, Enhancements, and New Features
-Large edits, enhancements, new features, and bug fixes should be made on separate branches from the master, and merged to the master only after completion. Please label the new branch accordingly, as briefDescription.
+Large edits, enhancements, new features, and bug fixes should be made on separate branches from the master, and merged to the master only after completion. Do this by the following process:
+
+1) Create new issue.
+2) Create new branch locally with name issueNo_briefDescription.
+3) Make edits, enhancements, new features on new branch locally.
+4) Merge latest master to new branch locally and ensure proper operation.
+5) Merge branch to master through pull request.
