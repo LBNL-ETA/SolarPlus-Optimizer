@@ -31,11 +31,11 @@ SOC_max = 1.0
 SOC_min = 0.25
 P_demand_limit = 1500
 # Price signal
-build_price = True
+build_price = False
 peak_start = 14
 peak_end = 17
 multiplier = 5
-price_vec = [1,1,1.5,2,3,3.5,4,5,5.5,6,7,9,11,20,20,20,11,9,7,5.5,4,2.5,1.5,1,1]
+price_vec = [1,1,1.5,2,3,3.5,4,5,5.5,6,7,9,11,20,20,20,11,9,7,5.5,4,2.5,1.5,1,1] # if not build
 # Initial states (must satisfy optimization constraints)
 Tzone_0 = 22 # deg C
 SOC_0 = 0.26 # unit 1
