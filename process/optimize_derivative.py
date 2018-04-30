@@ -18,7 +18,7 @@ final_time = '6/2/2017 00:00:00'
 epwpath = 'models/weatherdata/DRYCOLDTMY.epw'
 # Model definition
 mopath = 'models/MPC/package.mo'
-modelpath = 'MPC.Building.Whole'
+modelpath = 'MPC.Building.Whole_Derivative'
 # Model measurements
 meas_list = ['Tzone', 'SOC', 
              'Ppv', 'Pheat', 'Pcool', 'Pcharge', 'Pdischarge', 'Pnet', 
