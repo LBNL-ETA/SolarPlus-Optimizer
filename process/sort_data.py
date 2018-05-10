@@ -6,7 +6,6 @@ This script sorts the downloaded csv data into a more useable format.
 import pandas as pd
 import os
 from matplotlib import pyplot as plt
-import numpy as np
 
 def Temperature():
     # Temperature Data
@@ -34,8 +33,6 @@ def Power():
                'Total.Real.Power.4':'Building',
                'Total.Real.Power.5':'HVAC1',
                'Total.Real.Power.6':'HVAC2'}
-    # Initialize dataframe list for all panels
-    df_list = [];
     # Locate files
     directory = os.path.join('data','Cleaned_Daily_Data','Power')
     csvs = os.listdir(directory)
