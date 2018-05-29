@@ -79,7 +79,7 @@ def ref_operation(start_time, final_time):
     df_power.index = pd.to_datetime(df_power.index.values)
     # Bin power
     df_power_bin = df_power.resample('60T').mean()
-    df_power_bin = df_power_bin.resample('1T').fillna('pad')
+    df_power_bin = df_power_bin.resample('1T').interpolate()
     
     fix,ax = plt.subplots(3,1, sharex=True)
     ax[0].plot(df_temp['Refrigerator East'].loc[start_time:final_time], label='East', alpha=0.75)
@@ -106,7 +106,7 @@ def fre_operation(start_time, final_time):
     df_power.index = pd.to_datetime(df_power.index.values)
     # Bin power
     df_power_bin = df_power.resample('60T').mean()
-    df_power_bin = df_power_bin.resample('1T').fillna('pad')
+    df_power_bin = df_power_bin.resample('1T').interpolate()
     
     fix,ax = plt.subplots(3,1, sharex=True)
     ax[0].plot(df_temp['Freezer'].loc[start_time:final_time], label='Freezer')
@@ -130,7 +130,7 @@ def HVAC_operation(start_time, final_time):
     df_power.index = pd.to_datetime(df_power.index.values)
     # Bin power
     df_power_bin = df_power.resample('60T').mean()
-    df_power_bin = df_power_bin.resample('1T').fillna('pad')
+    df_power_bin = df_power_bin.resample('1T').interpolate()
     
     fix,ax = plt.subplots(3,1, sharex=True)
     ax[0].plot(df_temp['Break Area'].loc[start_time:final_time], label='Break Area', alpha=0.75)
@@ -219,5 +219,5 @@ def all_operation(start_time, final_time):
     
     
 HVAC_operation('4/8/2018 00:00:00', '4/10/2018 00:00:00')
-    
-    
+fre_operation('4/8/2018 00:00:00', '4/10/2018 00:00:00')
+ref_operation('4/8/2018 00:00:00', '4/10/2018 00:00:00')
