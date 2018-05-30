@@ -1,4 +1,4 @@
-FROM michaelwetter/ubuntu-1604_jmodelica_trunk_2
+FROM michaelwetter/ubuntu-1604_jmodelica_trunk
 
 ENV ROOT_DIR /usr/local
 
