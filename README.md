@@ -12,10 +12,13 @@ This repository is for the development of the Solar+ Optimization software.
 
 ``unittests`` contains testing for software development.
 
+## Build the Docker Image
+``$ make build``
+
 ## Running an Optimization Process
 An optimization process can be run by:
 
-1. ``$ make run`` to start the Docker container and enter its terminal.  Note that the Docker images must be obtained or built already (see ``docker`` directory for building images from a ``Dockerfile``).
+1. ``$ make run`` to start the Docker container and enter its terminal.  Note that the Docker image must be built already (see ``Build the Docker Image`` above).
 
 2. ``$ python process/optimize.py`` to run the optimization script.
 

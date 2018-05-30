@@ -4,6 +4,8 @@ ENV ROOT_DIR /usr/local
 
 USER root
 
+# Install MPCPy
+# -------------
 RUN apt-get update && apt-get install -y \
 	libgeos-dev \
 	git
