@@ -91,6 +91,34 @@ package MPC "This package contains models for MPC control optimization."
               false)));
     end R1C1;
 
+    package Training
+      extends Modelica.Icons.ExamplesPackage;
+      model R1C1
+      import MPC;
+        extends Modelica.Icons.Example;
+      MPC.Envelope.R1C1 r1C1_1
+        annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+      Modelica.Blocks.Interfaces.RealOutput Tzone "Zone air temperature"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      Modelica.Blocks.Interfaces.RealInput qHeat "Heat floww for heating"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Modelica.Blocks.Interfaces.RealInput qCool "Heat flow for cooling"
+        annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
+      Modelica.Blocks.Interfaces.RealInput Tadj "Adjacent temperature"
+        annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
+      equation
+      connect(r1C1_1.Tzone, Tzone)
+        annotation (Line(points={{11,0},{110,0}}, color={0,0,127}));
+      connect(r1C1_1.qHeat, qHeat) annotation (Line(points={{-12,-4},{-40,-4},{
+              -40,0},{-120,0}}, color={0,0,127}));
+      connect(r1C1_1.qCool, qCool) annotation (Line(points={{-12,-8},{-40,-8},{
+              -40,-40},{-120,-40}}, color={0,0,127}));
+      connect(r1C1_1.Tadj, Tadj) annotation (Line(points={{-12,6},{-20,6},{-20,
+              60},{-120,60}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)));
+      end R1C1;
+    end Training;
   end Envelope;
 
   package HVAC "Package for HVAC models"
@@ -252,7 +280,7 @@ package MPC "This package contains models for MPC control optimization."
       Modelica.Blocks.Interfaces.RealOutput Pcharge "Battery charging power"
         annotation (Placement(transformation(extent={{100,-52},{124,-28}})));
       Modelica.Blocks.Interfaces.RealOutput Pdischarge
-        "Battery discharging power"
+      "Battery discharging power"
         annotation (Placement(transformation(extent={{100,-92},{124,-68}})));
     equation
       SOC = E/Ecap;
@@ -311,11 +339,24 @@ package MPC "This package contains models for MPC control optimization."
           P_cap_discharge=500,
           SOC_0=1)
           annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+      Modelica.Blocks.Interfaces.RealOutput SOC "Battery state of charge"
+        annotation (Placement(transformation(extent={{100,10},{120,30}})));
+      Modelica.Blocks.Interfaces.RealOutput Pcharge "Battery charging power"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      Modelica.Blocks.Interfaces.RealOutput Pdischarge
+        "Battery discharging power"
+        annotation (Placement(transformation(extent={{100,-30},{120,-10}})));
       equation
         connect(uCharge.y, simple.uCharge) annotation (Line(points={{-39,10},{
                 -30,10},{-30,-4},{-12,-4}}, color={0,0,127}));
         connect(uDischarge.y, simple.uDischarge) annotation (Line(points={{-39,
                 -20},{-30,-20},{-30,-8},{-12,-8}}, color={0,0,127}));
+      connect(simple.SOC, SOC) annotation (Line(points={{11.2,0},{76,0},{76,20},
+              {110,20}}, color={0,0,127}));
+      connect(simple.Pcharge, Pcharge) annotation (Line(points={{11.2,-4},{80,
+              -4},{80,0},{110,0}}, color={0,0,127}));
+      connect(simple.Pdischarge, Pdischarge) annotation (Line(points={{11.2,-8},
+              {80,-8},{80,-20},{110,-20}}, color={0,0,127}));
         annotation (experiment(
             StopTime=86400,
             Interval=300,
@@ -323,6 +364,33 @@ package MPC "This package contains models for MPC control optimization."
             __Dymola_Algorithm="Cvode"));
       end BatteryTest;
     end Examples;
+
+    package Training
+      extends Modelica.Icons.ExamplesPackage;
+      model Simple
+      import MPC;
+        extends Modelica.Icons.Example;
+      MPC.Batteries.Simple simple
+        annotation (Placement(transformation(extent={{-10,-8},{10,12}})));
+      Modelica.Blocks.Interfaces.RealInput uCharge
+        "Control signal for charging"
+        annotation (Placement(transformation(extent={{-140,20},{-100,60}})));
+      Modelica.Blocks.Interfaces.RealInput uDischarge
+        "Control signal for discharging"
+        annotation (Placement(transformation(extent={{-140,-40},{-100,0}})));
+      Modelica.Blocks.Interfaces.RealOutput SOC "Battery state of charge"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      equation
+      connect(simple.uCharge, uCharge) annotation (Line(points={{-12,-2},{-26,
+              -2},{-26,-2},{-40,-2},{-40,40},{-120,40}}, color={0,0,127}));
+      connect(simple.uDischarge, uDischarge) annotation (Line(points={{-12,-6},
+              {-40,-6},{-40,-20},{-120,-20}}, color={0,0,127}));
+      connect(simple.SOC, SOC) annotation (Line(points={{11.2,2},{30,2},{30,0},
+              {110,0}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)));
+      end Simple;
+    end Training;
   end Batteries;
 
   package PV "Package for PV models"
@@ -331,7 +399,7 @@ package MPC "This package contains models for MPC control optimization."
       parameter Modelica.SIunits.Area A "PV array area";
       parameter Modelica.SIunits.DimensionlessRatio eff=0.20 "Total efficiency of panel";
       Modelica.Blocks.Interfaces.RealInput Iinc
-        "Solar irradiation incident on array"
+      "Solar irradiation incident on array"
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Modelica.Blocks.Interfaces.RealOutput Pgen "Power genereated by array"
         annotation (Placement(transformation(extent={{100,-12},{124,12}})));
@@ -388,6 +456,65 @@ package MPC "This package contains models for MPC control optimization."
               lineColor={0,0,255})}),                                Diagram(
             coordinateSystem(preserveAspectRatio=false)));
     end Simple;
+
+    package Examples
+      extends Modelica.Icons.ExamplesPackage;
+      model Simple
+        extends Modelica.Icons.Example;
+        import MPC;
+        MPC.PV.Simple simple(A=10)
+          annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+        Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
+            computeWetBulbTemperature=false, filNam="/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/models/weatherdata/USA_CA_San.Francisco.Intl.AP.724940_TMY3.mos")
+          annotation (Placement(transformation(extent={{-100,80},{-80,100}})));
+        Buildings.BoundaryConditions.WeatherData.Bus weaBus1
+                   "Weather data bus"
+          annotation (Placement(transformation(extent={{-70,80},{-50,100}})));
+        Modelica.Blocks.Interfaces.RealOutput Pgen "Power genereated by array"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      equation
+        connect(weaDat.weaBus, weaBus1) annotation (Line(
+            points={{-80,90},{-60,90}},
+            color={255,204,51},
+            thickness=0.5), Text(
+            string="%second",
+            index=1,
+            extent={{6,3},{6,3}}));
+        connect(weaBus1.HGloHor, simple.Iinc) annotation (Line(
+            points={{-60,90},{-60,0},{-12,0}},
+            color={255,204,51},
+            thickness=0.5), Text(
+            string="%first",
+            index=-1,
+            extent={{-6,3},{-6,3}}));
+        connect(simple.Pgen, Pgen)
+          annotation (Line(points={{11.2,0},{110,0}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)));
+      end Simple;
+    end Examples;
+
+    package Training
+      extends Modelica.Icons.ExamplesPackage;
+      model Simple
+      import MPC;
+        extends Modelica.Icons.Example;
+      MPC.PV.Simple simple
+        annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+      Modelica.Blocks.Interfaces.RealOutput Pgen "Power genereated by array"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      Modelica.Blocks.Interfaces.RealInput Iinc
+        "Solar irradiation incident on array"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      equation
+      connect(simple.Pgen, Pgen)
+        annotation (Line(points={{11.2,0},{110,0}}, color={0,0,127}));
+      connect(simple.Iinc, Iinc)
+        annotation (Line(points={{-12,0},{-120,0}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)));
+      end Simple;
+    end Training;
   end PV;
 
   package Building "Package for building models"
@@ -828,7 +955,7 @@ package MPC "This package contains models for MPC control optimization."
         parameter Modelica.SIunits.Temperature Tfre_0 = 3.5+273.15 "Initial temperature of freezer";
         Envelope.R1C1 rtuZone(Tzone_0=Trtu_0)
           annotation (Placement(transformation(extent={{-10,80},{10,100}})));
-        HVAC.SimpleHeaterCooler RTU1(heatingCap=2000, coolingCap=18000)
+        HVAC.SimpleHeaterCooler RTU1(heatingCap=2000, coolingCap=16998)
           annotation (Placement(transformation(extent={{-60,70},{-40,90}})));
         Modelica.Blocks.Interfaces.RealInput Tout "Adjacent temperature"
         annotation (Placement(transformation(extent={{-140,80},{-100,120}})));
@@ -845,7 +972,7 @@ package MPC "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealOutput Tref "Refrigerator air temperature"
           annotation (Placement(transformation(extent={{100,30},{120,50}})));
         HVAC.SimpleHeaterCooler refCooler(                 heatingCap=0,
-          coolingCap=1500)
+          coolingCap=5861)
           annotation (Placement(transformation(extent={{-10,10},{10,30}})));
         Modelica.Blocks.Math.Add addRTU
           annotation (Placement(transformation(extent={{50,50},{70,70}})));
@@ -865,7 +992,7 @@ package MPC "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealOutput Pfre "Freezer power"
           annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
         HVAC.SimpleHeaterCooler freCooler(                 heatingCap=0,
-          coolingCap=1500)
+          coolingCap=6096)
           annotation (Placement(transformation(extent={{-10,-50},{10,-30}})));
         Modelica.Blocks.Interfaces.RealInput uFreCool
           "Cooling signal input for freezer"
