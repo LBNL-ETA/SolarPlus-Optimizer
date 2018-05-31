@@ -75,7 +75,7 @@ package HVACR "Package for HVAC models"
           coordinateSystem(preserveAspectRatio=false)));
   end SimpleHeaterCooler;
 
-  model SingleStageController
+  model SingleStageCoolingController
     parameter Real deadband = 1 "Deadband of controller";
     Modelica.Blocks.Interfaces.RealInput Tset "Temperature setpoint"
       annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
@@ -133,9 +133,9 @@ package HVACR "Package for HVAC models"
             textString="%name",
             lineColor={0,0,255})}),                                Diagram(
           coordinateSystem(preserveAspectRatio=false)));
-  end SingleStageController;
+  end SingleStageCoolingController;
 
-  model TwoStageController
+  model TwoStageCoolingController
     parameter Real deadband = 1 "Deadband of controller";
     Modelica.Blocks.Interfaces.RealInput Tset "Temperature setpoint"
       annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
@@ -229,5 +229,95 @@ package HVACR "Package for HVAC models"
             textString="%name",
             lineColor={0,0,255})}),                                Diagram(
           coordinateSystem(preserveAspectRatio=false)));
-  end TwoStageController;
+  end TwoStageCoolingController;
+
+  model SingleStageHeatingController
+    parameter Real deadband = 1 "Deadband of controller";
+    Modelica.Blocks.Interfaces.RealInput Tset "Temperature setpoint"
+      annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
+    Modelica.Blocks.Interfaces.RealInput Tmeas "Temperature measured"
+      annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
+    Modelica.Blocks.Logical.OnOffController onOffController(bandwidth=deadband)
+      annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+    Modelica.Blocks.Math.BooleanToReal booleanToReal
+      annotation (Placement(transformation(extent={{42,-10},{62,10}})));
+    Modelica.Blocks.Interfaces.RealOutput y "Controller output"
+      annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+  equation
+    connect(Tmeas, onOffController.u) annotation (Line(points={{-120,-40},{-60,-40},
+            {-60,-6},{-12,-6}}, color={0,0,127}));
+    connect(Tset, onOffController.reference) annotation (Line(points={{-120,60},{-60,
+            60},{-60,6},{-12,6}}, color={0,0,127}));
+    connect(booleanToReal.y, y)
+      annotation (Line(points={{63,0},{110,0}}, color={0,0,127}));
+    connect(onOffController.y, booleanToReal.u)
+      annotation (Line(points={{11,0},{40,0}}, color={255,0,255}));
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+          Rectangle(
+            extent={{-100,100},{100,-100}},
+            lineColor={0,0,0},
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-100,60},{100,60}}, color={0,0,0}),
+          Line(
+            points={{-100,90},{100,90}},
+            color={0,0,0},
+            pattern=LinePattern.Dot),
+          Line(
+            points={{-100,30},{100,30}},
+            color={0,0,0},
+            pattern=LinePattern.Dot),
+          Line(points={{-100,80},{-68,90},{-22,30},{28,90},{74,30}}, color={238,
+                46,47}),
+          Line(points={{-100,-72},{100,-72}}, color={0,0,0}),
+          Rectangle(
+            extent={{-20,0},{30,-72}},
+            lineColor={238,46,47},
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(
+            extent={{-150,140},{150,100}},
+            textString="%name",
+            lineColor={0,0,255})}),                                Diagram(
+          coordinateSystem(preserveAspectRatio=false)));
+  end SingleStageHeatingController;
+
+  model RTUController
+    Modelica.Blocks.Interfaces.RealInput Tset "Temperature setpoint"
+      annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
+    Modelica.Blocks.Interfaces.RealInput Tmeas "Temperature measured"
+      annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
+    TwoStageCoolingController twoStageCoolingController
+      annotation (Placement(transformation(extent={{-60,40},{-40,60}})));
+    Modelica.Blocks.Interfaces.RealOutput yCool "Controller output for cooling"
+      annotation (Placement(transformation(extent={{100,40},{120,60}})));
+    Modelica.Blocks.Interfaces.RealOutput yHeat "Controller output for heating"
+      annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
+    SingleStageHeatingController singleStageHeatingController
+      annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
+  equation
+    connect(Tset, twoStageCoolingController.Tset) annotation (Line(points={{
+            -120,60},{-92,60},{-92,56},{-62,56}}, color={0,0,127}));
+    connect(Tmeas, twoStageCoolingController.Tmeas) annotation (Line(points={{
+            -120,-40},{-80,-40},{-80,46},{-62,46}}, color={0,0,127}));
+    connect(twoStageCoolingController.y, yCool)
+      annotation (Line(points={{-39,50},{110,50}}, color={0,0,127}));
+    connect(Tset, singleStageHeatingController.Tset) annotation (Line(points={{
+            -120,60},{-92,60},{-92,-24},{-62,-24}}, color={0,0,127}));
+    connect(Tmeas, singleStageHeatingController.Tmeas) annotation (Line(points=
+            {{-120,-40},{-80,-40},{-80,-34},{-62,-34}}, color={0,0,127}));
+    connect(singleStageHeatingController.y, yHeat) annotation (Line(points={{
+            -39,-30},{20,-30},{20,-40},{110,-40}}, color={0,0,127}));
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+            Rectangle(
+            extent={{-100,100},{100,-100}},
+            lineColor={0,0,0},
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(
+            extent={{-150,140},{150,100}},
+            textString="%name",
+            lineColor={0,0,255})}), Diagram(coordinateSystem(
+            preserveAspectRatio=false)));
+  end RTUController;
 end HVACR;

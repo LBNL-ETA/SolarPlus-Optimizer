@@ -705,20 +705,20 @@ package MPC "This package contains models for MPC control optimization."
       Buildings.BoundaryConditions.WeatherData.Bus weaBus1
                    "Weather data bus"
         annotation (Placement(transformation(extent={{-50,80},{-30,100}})));
-      HVACR.TwoStageController rtu_control
-        annotation (Placement(transformation(extent={{-60,24},{-40,44}})));
       Modelica.Blocks.Sources.Constant rtu_set(k=273.15 + 21)
         annotation (Placement(transformation(extent={{-100,30},{-80,50}})));
-      HVACR.SingleStageController ref_control
+      HVACR.SingleStageCoolingController ref_control(deadband=1.5)
         annotation (Placement(transformation(extent={{-60,-8},{-40,12}})));
       Modelica.Blocks.Sources.Constant ref_set(k=273.15 + 3)
         annotation (Placement(transformation(extent={{-100,-2},{-80,18}})));
-      HVACR.SingleStageController fre_control
+      HVACR.SingleStageCoolingController fre_control(deadband=1.5)
         annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
       Modelica.Blocks.Sources.Constant fre_set(k=273.15 - 25)
         annotation (Placement(transformation(extent={{-100,-34},{-80,-14}})));
       Modelica.Blocks.Sources.Constant off(k=0)
         annotation (Placement(transformation(extent={{-100,-80},{-80,-60}})));
+      HVACR.TwoStageCoolingController rtu_cool_control
+        annotation (Placement(transformation(extent={{-60,24},{-40,44}})));
       equation
       connect(weaDat.weaBus, weaBus1) annotation (Line(
           points={{-80,90},{-40,90}},
@@ -741,12 +741,6 @@ package MPC "This package contains models for MPC control optimization."
           string="%first",
           index=-1,
           extent={{-6,3},{-6,3}}));
-      connect(rtu_set.y, rtu_control.Tset)
-        annotation (Line(points={{-79,40},{-62,40}}, color={0,0,127}));
-      connect(rtu_control.y, store.uCool) annotation (Line(points={{-39,34},{
-              -28,34},{-28,48},{-12,48}}, color={0,0,127}));
-      connect(store.Trtu, rtu_control.Tmeas) annotation (Line(points={{11,42},{
-              16,42},{16,22},{-68,22},{-68,30},{-62,30}}, color={0,0,127}));
       connect(ref_set.y, ref_control.Tset)
         annotation (Line(points={{-79,8},{-62,8}}, color={0,0,127}));
       connect(store.Tref, ref_control.Tmeas) annotation (Line(points={{11,38},{
@@ -765,8 +759,14 @@ package MPC "This package contains models for MPC control optimization."
               -70},{-20,40},{-12,40}}, color={0,0,127}));
       connect(store.uFreDef, store.uCharge) annotation (Line(points={{-12,32},{
               -20,32},{-20,44},{-12,44}}, color={0,0,127}));
-      connect(off.y, store.uHeat) annotation (Line(points={{-79,-70},{-20,-70},
-              {-20,52},{-12,52}}, color={0,0,127}));
+      connect(rtu_set.y, rtu_cool_control.Tset)
+        annotation (Line(points={{-79,40},{-62,40}}, color={0,0,127}));
+      connect(store.Trtu, rtu_cool_control.Tmeas) annotation (Line(points={{11,
+              42},{16,42},{16,22},{-68,22},{-68,30},{-62,30}}, color={0,0,127}));
+      connect(rtu_cool_control.y, store.uCool) annotation (Line(points={{-39,34},
+              {-32,34},{-32,48},{-12,48}}, color={0,0,127}));
+      connect(store.uHeat, store.uCharge) annotation (Line(points={{-12,52},{
+              -20,52},{-20,44},{-12,44}}, color={0,0,127}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
               coordinateSystem(preserveAspectRatio=false)),
         experiment(
@@ -898,9 +898,9 @@ package MPC "This package contains models for MPC control optimization."
         parameter Modelica.SIunits.Temperature Tfre_0 = 3.5+273.15 "Initial temperature of freezer";
         Envelope.R1C1 rtuZone(Tzone_0=Trtu_0,
         C=1e6,
-        R=0.0005)
+        R=0.0004)
           annotation (Placement(transformation(extent={{-10,80},{10,100}})));
-      HVACR.SimpleHeaterCooler RTU1(heatingCap=2000, coolingCap=16998)
+      HVACR.SimpleHeaterCooler RTU1(coolingCap=16998, heatingCap=10000)
         annotation (Placement(transformation(extent={{-60,70},{-40,90}})));
         Modelica.Blocks.Interfaces.RealInput Tout "Adjacent temperature"
         annotation (Placement(transformation(extent={{-140,80},{-100,120}})));
@@ -913,8 +913,8 @@ package MPC "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealOutput Prtu "RTU power"
           annotation (Placement(transformation(extent={{100,70},{120,90}})));
         Envelope.R1C1 refZone(Tzone_0=Tref_0,
-        C=5e6,
-        R=0.025)
+        C=1e6,
+        R=0.007)
           annotation (Placement(transformation(extent={{40,20},{60,40}})));
         Modelica.Blocks.Interfaces.RealOutput Tref "Refrigerator air temperature"
           annotation (Placement(transformation(extent={{100,30},{120,50}})));
@@ -932,8 +932,8 @@ package MPC "This package contains models for MPC control optimization."
           "Cooling signal input for refrigerator"
           annotation (Placement(transformation(extent={{-140,-40},{-100,0}})));
         Envelope.R1C1 freZone(Tzone_0=Tfre_0,
-        C=7e6,
-        R=0.01)
+        R=0.008,
+        C=3e6)
           annotation (Placement(transformation(extent={{40,-40},{60,-20}})));
         Modelica.Blocks.Math.Add addFre
           annotation (Placement(transformation(extent={{50,-70},{70,-50}})));
@@ -1024,21 +1024,86 @@ package MPC "This package contains models for MPC control optimization."
               -30},{66,-30},{66,-20},{70,-20}}, color={191,0,0}));
       connect(senTfre.T, Tfre)
         annotation (Line(points={{90,-20},{110,-20}}, color={0,0,127}));
+      connect(Tref, Tref) annotation (Line(points={{110,40},{105,40},{105,40},{
+              110,40}}, color={0,0,127}));
+      connect(Trtu, Trtu) annotation (Line(points={{110,100},{104,100},{104,100},
+              {110,100}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
               extent={{-100,100},{100,-100}},
               lineColor={0,0,0},
-              fillColor={255,170,170},
-              fillPattern=FillPattern.Solid), Text(
-              extent={{-26,8},{26,-4}},
-              lineColor={0,0,0},
-              fillColor={255,170,170},
-              fillPattern=FillPattern.Solid,
-              textString="Thermal"),
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid),
               Text(
                 extent={{-250,170},{250,110}},
                 textString="%name",
-                lineColor={0,0,255})}),                              Diagram(
+                lineColor={0,0,255}),
+            Rectangle(
+              extent={{-92,88},{90,-88}},
+              lineColor={0,0,0},
+              fillColor={212,212,212},
+              fillPattern=FillPattern.Solid),
+            Rectangle(
+              extent={{-72,52},{-16,12}},
+              lineColor={0,0,0},
+              fillColor={166,166,166},
+              fillPattern=FillPattern.Solid),
+            Rectangle(
+              extent={{-16,52},{74,12}},
+              lineColor={0,0,0},
+              fillColor={166,166,166},
+              fillPattern=FillPattern.Solid),
+            Line(
+              points={{0,-32},{74,-32},{74,82},{74,96},{100,96}},
+              color={0,0,0},
+              pattern=LinePattern.Dot),
+            Ellipse(
+              extent={{16,38},{32,22}},
+              lineColor={0,0,0},
+              fillColor={238,46,47},
+              fillPattern=FillPattern.Solid),
+            Text(
+              extent={{16,36},{32,26}},
+              lineColor={0,0,0},
+              fillColor={238,46,47},
+              fillPattern=FillPattern.Solid,
+              textString="T"),
+            Line(
+              points={{32,30},{88,30},{88,40},{100,40}},
+              color={0,0,0},
+              pattern=LinePattern.Dot),
+            Line(
+              points={{-46,24},{-46,-20},{100,-20}},
+              color={0,0,0},
+              pattern=LinePattern.Dot),
+            Ellipse(
+              extent={{-54,38},{-38,22}},
+              lineColor={0,0,0},
+              fillColor={238,46,47},
+              fillPattern=FillPattern.Solid),
+            Text(
+              extent={{-54,36},{-38,26}},
+              lineColor={0,0,0},
+              fillColor={238,46,47},
+              fillPattern=FillPattern.Solid,
+              textString="T"),
+            Text(
+              extent={{-10,-26},{6,-36}},
+              lineColor={0,0,0},
+              fillColor={238,46,47},
+              fillPattern=FillPattern.Solid,
+              textString="T"),
+            Ellipse(
+              extent={{-10,-24},{6,-40}},
+              lineColor={0,0,0},
+              fillColor={238,46,47},
+              fillPattern=FillPattern.Solid),
+            Text(
+              extent={{-10,-26},{6,-36}},
+              lineColor={0,0,0},
+              fillColor={238,46,47},
+              fillPattern=FillPattern.Solid,
+              textString="T")}),                                     Diagram(
             coordinateSystem(preserveAspectRatio=false)));
       end Thermal;
     end BaseClasses;
