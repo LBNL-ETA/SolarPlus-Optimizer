@@ -281,43 +281,4 @@ package HVACR "Package for HVAC models"
             lineColor={0,0,255})}),                                Diagram(
           coordinateSystem(preserveAspectRatio=false)));
   end SingleStageHeatingController;
-
-  model RTUController
-    Modelica.Blocks.Interfaces.RealInput Tset "Temperature setpoint"
-      annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
-    Modelica.Blocks.Interfaces.RealInput Tmeas "Temperature measured"
-      annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
-    TwoStageCoolingController twoStageCoolingController
-      annotation (Placement(transformation(extent={{-60,40},{-40,60}})));
-    Modelica.Blocks.Interfaces.RealOutput yCool "Controller output for cooling"
-      annotation (Placement(transformation(extent={{100,40},{120,60}})));
-    Modelica.Blocks.Interfaces.RealOutput yHeat "Controller output for heating"
-      annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
-    SingleStageHeatingController singleStageHeatingController
-      annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
-  equation
-    connect(Tset, twoStageCoolingController.Tset) annotation (Line(points={{
-            -120,60},{-92,60},{-92,56},{-62,56}}, color={0,0,127}));
-    connect(Tmeas, twoStageCoolingController.Tmeas) annotation (Line(points={{
-            -120,-40},{-80,-40},{-80,46},{-62,46}}, color={0,0,127}));
-    connect(twoStageCoolingController.y, yCool)
-      annotation (Line(points={{-39,50},{110,50}}, color={0,0,127}));
-    connect(Tset, singleStageHeatingController.Tset) annotation (Line(points={{
-            -120,60},{-92,60},{-92,-24},{-62,-24}}, color={0,0,127}));
-    connect(Tmeas, singleStageHeatingController.Tmeas) annotation (Line(points=
-            {{-120,-40},{-80,-40},{-80,-34},{-62,-34}}, color={0,0,127}));
-    connect(singleStageHeatingController.y, yHeat) annotation (Line(points={{
-            -39,-30},{20,-30},{20,-40},{110,-40}}, color={0,0,127}));
-    annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
-            Rectangle(
-            extent={{-100,100},{100,-100}},
-            lineColor={0,0,0},
-            fillColor={255,255,255},
-            fillPattern=FillPattern.Solid),
-          Text(
-            extent={{-150,140},{150,100}},
-            textString="%name",
-            lineColor={0,0,255})}), Diagram(coordinateSystem(
-            preserveAspectRatio=false)));
-  end RTUController;
 end HVACR;
