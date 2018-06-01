@@ -180,10 +180,37 @@ package MPC "This package contains models for MPC control optimization."
               lineColor={0,0,255})}));
     end Simple;
 
-    model Controller
-    annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-          coordinateSystem(preserveAspectRatio=false)));
-    end Controller;
+    package Controllers
+      model Controller
+        // Controller
+        parameter Modelica.SIunits.Time peakStart = 8*3600 "Daily start time of peak period" annotation(Dialog(group="Controller"));
+        parameter Modelica.SIunits.Time peakEnd = 16*3600 "Daily end time of peak period" annotation(Dialog(group="Controller"));
+        parameter Modelica.SIunits.Power interchangeLimit "Limit of interchange power (+ for import limit, - for export limit)" annotation(Dialog(group="Controller"));
+        // Battery Characteristics
+        parameter Modelica.SIunits.Energy Ecap  "Battery capacity" annotation(Dialog(group="Battery Characteristics"));
+        parameter Modelica.SIunits.Power P_cap_charge "Charging capacity" annotation(Dialog(group="Battery Characteristics"));
+        parameter Modelica.SIunits.Power P_cap_discharge "Discharging capacity" annotation(Dialog(group="Battery Characteristics"));
+        Modelica.Blocks.Interfaces.RealInput clockTime "Clock time"
+          annotation (Placement(transformation(extent={{-140,60},{-100,100}})));
+        Modelica.Blocks.Interfaces.RealInput SOC "Measured SOC of battery"
+          annotation (Placement(transformation(extent={{-140,20},{-100,60}})));
+        Modelica.Blocks.Interfaces.RealInput Pnet "Net metered power"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+        Modelica.Blocks.Interfaces.RealInput yCharge "Charging signal"
+          annotation (Placement(transformation(extent={{100,20},{140,60}}),
+            iconTransformation(extent={{100,20},{140,60}})));
+        Modelica.Blocks.Interfaces.RealInput yDischarging "Discharging signal"
+          annotation (Placement(transformation(extent={{100,-60},{140,-20}}),
+            iconTransformation(extent={{100,-60},{140,-20}})));
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+                Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                fillColor={255,255,255},
+                fillPattern=FillPattern.Solid)}),                    Diagram(
+            coordinateSystem(preserveAspectRatio=false)));
+      end Controller;
+    end Controllers;
 
     package Examples
       extends Modelica.Icons.ExamplesPackage;
@@ -232,6 +259,70 @@ package MPC "This package contains models for MPC control optimization."
             Tolerance=1e-06,
             __Dymola_Algorithm="Cvode"));
       end BatteryTest;
+
+      model FeedbackControl
+        extends Modelica.Icons.Example;
+        parameter Modelica.SIunits.Energy Ecap = 180000000 "Battery capacity";
+        parameter Modelica.SIunits.Power P_cap_charge = 500 "Charging capacity";
+        parameter Modelica.SIunits.Power P_cap_discharge = 500 "Discharging capacity";
+        Simple simple(
+          SOC_0=1,
+          P_cap_charge=P_cap_charge,
+          P_cap_discharge=P_cap_discharge,
+        Ecap(displayUnit="kWh") = Ecap)
+          annotation (Placement(transformation(extent={{30,-10},{50,10}})));
+      Modelica.Blocks.Interfaces.RealOutput SOC "Battery state of charge"
+        annotation (Placement(transformation(extent={{100,10},{120,30}})));
+      Modelica.Blocks.Interfaces.RealOutput Pcharge "Battery charging power"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      Modelica.Blocks.Interfaces.RealOutput Pdischarge
+        "Battery discharging power"
+        annotation (Placement(transformation(extent={{100,-30},{120,-10}})));
+        Controllers.Controller controller(
+          Ecap=E_cap,
+          P_cap_charge=P_cap_charge,
+          P_cap_discharge=P_cap_discharge)
+          annotation (Placement(transformation(extent={{-20,0},{0,20}})));
+        Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
+            computeWetBulbTemperature=false, filNam=
+            "/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/models/weatherdata/USA_CA_San.Francisco.Intl.AP.724940_TMY3.mos")
+          annotation (Placement(transformation(extent={{-100,80},{-80,100}})));
+      Buildings.BoundaryConditions.WeatherData.Bus weaBus1
+                   "Weather data bus"
+        annotation (Placement(transformation(extent={{-50,80},{-30,100}})));
+      equation
+      connect(simple.SOC, SOC) annotation (Line(points={{51.2,0},{86,0},{86,20},{110,20}},
+                         color={0,0,127}));
+      connect(simple.Pcharge, Pcharge) annotation (Line(points={{51.2,-4},{90,-4},{90,
+                0},{110,0}},       color={0,0,127}));
+      connect(simple.Pdischarge, Pdischarge) annotation (Line(points={{51.2,-8},{90,-8},
+                {90,-20},{110,-20}},       color={0,0,127}));
+        connect(controller.yCharge, simple.uCharge) annotation (Line(points={{2,14},{14,
+                14},{14,-4},{28,-4}}, color={0,0,127}));
+        connect(controller.yDischarging, simple.uDischarge)
+          annotation (Line(points={{2,6},{12,6},{12,-8},{28,-8}}, color={0,0,127}));
+        connect(simple.SOC, controller.SOC) annotation (Line(points={{51.2,0},{60,0},{
+                60,-20},{-30,-20},{-30,14},{-22,14}}, color={0,0,127}));
+        connect(weaDat.weaBus, weaBus1) annotation (Line(
+            points={{-80,90},{-40,90}},
+            color={255,204,51},
+            thickness=0.5), Text(
+            string="%second",
+            index=1,
+            extent={{6,3},{6,3}}));
+        connect(weaBus1.cloTim, controller.clockTime) annotation (Line(
+            points={{-40,90},{-32,90},{-32,18},{-22,18}},
+            color={255,204,51},
+            thickness=0.5), Text(
+            string="%first",
+            index=-1,
+            extent={{-6,3},{-6,3}}));
+        annotation (experiment(
+            StopTime=86400,
+            Interval=300,
+            Tolerance=1e-06,
+            __Dymola_Algorithm="Cvode"));
+      end FeedbackControl;
     end Examples;
 
     package Training
@@ -715,17 +806,17 @@ package MPC "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{-50,80},{-30,100}})));
       Modelica.Blocks.Sources.Constant rtu_set(k=273.15 + 21)
         annotation (Placement(transformation(extent={{-100,30},{-80,50}})));
-      HVACR.SingleStageCoolingController ref_control(deadband=1.5)
+      HVACR.Controllers.SingleStageCoolingController ref_control(deadband=1.5)
         annotation (Placement(transformation(extent={{-60,-8},{-40,12}})));
       Modelica.Blocks.Sources.Constant ref_set(k=273.15 + 3)
         annotation (Placement(transformation(extent={{-100,-2},{-80,18}})));
-      HVACR.SingleStageCoolingController fre_control(deadband=1.5)
+      HVACR.Controllers.SingleStageCoolingController fre_control(deadband=1.5)
         annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
       Modelica.Blocks.Sources.Constant fre_set(k=273.15 - 25)
         annotation (Placement(transformation(extent={{-100,-34},{-80,-14}})));
       Modelica.Blocks.Sources.Constant off(k=0)
         annotation (Placement(transformation(extent={{-100,-80},{-80,-60}})));
-      HVACR.TwoStageCoolingController rtu_cool_control
+      HVACR.Controllers.TwoStageCoolingController rtu_cool_control
         annotation (Placement(transformation(extent={{-60,24},{-40,44}})));
       equation
       connect(weaDat.weaBus, weaBus1) annotation (Line(
