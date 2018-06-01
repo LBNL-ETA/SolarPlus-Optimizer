@@ -804,7 +804,7 @@ package MPC "This package contains models for MPC control optimization."
       Buildings.BoundaryConditions.WeatherData.Bus weaBus1
                    "Weather data bus"
         annotation (Placement(transformation(extent={{-50,80},{-30,100}})));
-      Modelica.Blocks.Sources.Constant rtu_set(k=273.15 + 21)
+      Modelica.Blocks.Sources.Constant rtu_cool_set(k=273.15 + 22.2)
         annotation (Placement(transformation(extent={{-100,30},{-80,50}})));
       HVACR.Controllers.SingleStageCoolingController ref_control(deadband=1.5)
         annotation (Placement(transformation(extent={{-60,-8},{-40,12}})));
@@ -818,6 +818,10 @@ package MPC "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{-100,-80},{-80,-60}})));
       HVACR.Controllers.TwoStageCoolingController rtu_cool_control
         annotation (Placement(transformation(extent={{-60,24},{-40,44}})));
+      HVACR.Controllers.SingleStageHeatingController rtu_heat_control
+        annotation (Placement(transformation(extent={{-66,54},{-46,74}})));
+      Modelica.Blocks.Sources.Constant rtu_heat_set(k=273.15 + 20)
+        annotation (Placement(transformation(extent={{-100,60},{-80,80}})));
       equation
       connect(weaDat.weaBus, weaBus1) annotation (Line(
           points={{-80,90},{-40,90}},
@@ -858,19 +862,24 @@ package MPC "This package contains models for MPC control optimization."
               -70},{-20,40},{-12,40}}, color={0,0,127}));
       connect(store.uFreDef, store.uCharge) annotation (Line(points={{-12,32},{
               -20,32},{-20,44},{-12,44}}, color={0,0,127}));
-      connect(rtu_set.y, rtu_cool_control.Tset)
+      connect(rtu_cool_set.y, rtu_cool_control.Tset)
         annotation (Line(points={{-79,40},{-62,40}}, color={0,0,127}));
       connect(store.Trtu, rtu_cool_control.Tmeas) annotation (Line(points={{11,
               42},{16,42},{16,22},{-68,22},{-68,30},{-62,30}}, color={0,0,127}));
       connect(rtu_cool_control.y, store.uCool) annotation (Line(points={{-39,34},
               {-32,34},{-32,48},{-12,48}}, color={0,0,127}));
-      connect(store.uHeat, store.uCharge) annotation (Line(points={{-12,52},{
-              -20,52},{-20,44},{-12,44}}, color={0,0,127}));
+      connect(rtu_heat_set.y, rtu_heat_control.Tset)
+        annotation (Line(points={{-79,70},{-68,70}}, color={0,0,127}));
+      connect(rtu_heat_control.Tmeas, rtu_cool_control.Tmeas) annotation (Line(
+            points={{-68,60},{-74,60},{-74,50},{-68,50},{-68,30},{-62,30}},
+            color={0,0,127}));
+      connect(rtu_heat_control.y, store.uHeat) annotation (Line(points={{-45,64},
+              {-32,64},{-32,52},{-12,52}}, color={0,0,127}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
               coordinateSystem(preserveAspectRatio=false)),
         experiment(
-          StartTime=15465600,
-          StopTime=15638400,
+          StartTime=7776000,
+          StopTime=7948800,
           Interval=300,
           Tolerance=1e-06,
           __Dymola_Algorithm="Cvode"));
@@ -1129,9 +1138,9 @@ package MPC "This package contains models for MPC control optimization."
         Envelope.R1C1 rtuZone(Tzone_0=Trtu_0,
         C=1e6,
         R=0.0004)
-          annotation (Placement(transformation(extent={{-10,80},{10,100}})));
-      HVACR.SimpleHeaterCooler RTU1(coolingCap=16998, heatingCap=10000)
-        annotation (Placement(transformation(extent={{-60,70},{-40,90}})));
+          annotation (Placement(transformation(extent={{-4,80},{16,100}})));
+      HVACR.SimpleHeaterCooler RTU1(coolingCap=16998, heatingCap=15000)
+        annotation (Placement(transformation(extent={{-70,70},{-50,90}})));
         Modelica.Blocks.Interfaces.RealInput Tout "Adjacent temperature"
         annotation (Placement(transformation(extent={{-140,80},{-100,120}})));
         Modelica.Blocks.Interfaces.RealInput uCool "Cooling signal input for RTU"
@@ -1150,8 +1159,6 @@ package MPC "This package contains models for MPC control optimization."
           annotation (Placement(transformation(extent={{100,30},{120,50}})));
       HVACR.SimpleHeaterCooler refCooler(heatingCap=0, coolingCap=5861)
         annotation (Placement(transformation(extent={{-10,10},{10,30}})));
-        Modelica.Blocks.Math.Add addRTU
-          annotation (Placement(transformation(extent={{50,50},{70,70}})));
         Modelica.Blocks.Interfaces.RealOutput Pref "Refrigerator power"
           annotation (Placement(transformation(extent={{100,10},{120,30}})));
         Modelica.Blocks.Math.Add addRef
@@ -1187,21 +1194,19 @@ package MPC "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{70,30},{90,50}})));
       Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor senTfre
         annotation (Placement(transformation(extent={{70,-30},{90,-10}})));
+        Modelica.Blocks.Sources.Constant gamingHeat(k=10000)
+          annotation (Placement(transformation(extent={{-78,40},{-58,60}})));
+        Modelica.Blocks.Math.Add add
+          annotation (Placement(transformation(extent={{-36,78},{-26,88}})));
+        Modelica.Blocks.Interfaces.RealOutput Grtu "RTU gas power"
+        annotation (Placement(transformation(extent={{100,50},{120,70}})));
       equation
-        connect(RTU1.qHeat, rtuZone.qHeat)
-          annotation (Line(points={{-39,86},{-12,86}}, color={0,0,127}));
-        connect(RTU1.qCool, rtuZone.qCool) annotation (Line(points={{-39,76},{-22,76},
-                {-22,82},{-12,82}}, color={0,0,127}));
-        connect(RTU1.uCool, uCool) annotation (Line(points={{-62,72},{-80,72},{-80,20},
+        connect(RTU1.qCool, rtuZone.qCool) annotation (Line(points={{-49,76},{-22,76},
+                {-22,82},{-6,82}},  color={0,0,127}));
+        connect(RTU1.uCool, uCool) annotation (Line(points={{-72,72},{-80,72},{-80,20},
                 {-120,20}}, color={0,0,127}));
-        connect(RTU1.uHeat, uHeat) annotation (Line(points={{-62,88},{-90,88},{-90,60},
+        connect(RTU1.uHeat, uHeat) annotation (Line(points={{-72,88},{-90,88},{-90,60},
                 {-120,60}}, color={0,0,127}));
-        connect(RTU1.PHeat, addRTU.u1) annotation (Line(points={{-39,82},{-30,82},{-30,
-                66},{48,66}},   color={0,0,127}));
-        connect(RTU1.PCool, addRTU.u2) annotation (Line(points={{-39,72},{-34,72},{-34,
-                54},{48,54}},     color={0,0,127}));
-        connect(addRTU.y, Prtu) annotation (Line(points={{71,60},{80,60},{80,80},{110,
-                80}},                            color={0,0,127}));
         connect(refCooler.qCool, refZone.qCool) annotation (Line(points={{11,16},{32,16},
                 {32,22},{38,22}}, color={0,0,127}));
         connect(addRef.y, Pref)
@@ -1236,16 +1241,16 @@ package MPC "This package contains models for MPC control optimization."
           annotation (Line(points={{110,-20},{110,-20}}, color={0,0,127}));
       connect(Tout, preTout.T)
         annotation (Line(points={{-120,100},{-42,100}}, color={0,0,127}));
-      connect(preTout.port, rtuZone.port_adj) annotation (Line(points={{-20,100},
-              {-16,100},{-16,96},{-10,96}}, color={191,0,0}));
-      connect(rtuZone.port_cap, senTrtu.port) annotation (Line(points={{0.2,90},
-              {20,90},{20,100},{70,100}}, color={191,0,0}));
+      connect(preTout.port, rtuZone.port_adj) annotation (Line(points={{-20,100},{-16,
+                100},{-16,96},{-4,96}},     color={191,0,0}));
+      connect(rtuZone.port_cap, senTrtu.port) annotation (Line(points={{6.2,90},{20,90},
+                {20,100},{70,100}},       color={191,0,0}));
       connect(senTrtu.T, Trtu)
         annotation (Line(points={{90,100},{110,100}}, color={0,0,127}));
-      connect(rtuZone.port_cap, refZone.port_adj) annotation (Line(points={{0.2,
-              90},{20,90},{20,36},{40,36}}, color={191,0,0}));
-      connect(rtuZone.port_cap, freZone.port_adj) annotation (Line(points={{0.2,
-              90},{20,90},{20,-24},{40,-24}}, color={191,0,0}));
+      connect(rtuZone.port_cap, refZone.port_adj) annotation (Line(points={{6.2,90},{20,
+                90},{20,36},{40,36}},       color={191,0,0}));
+      connect(rtuZone.port_cap, freZone.port_adj) annotation (Line(points={{6.2,90},{20,
+                90},{20,-24},{40,-24}},       color={191,0,0}));
       connect(refZone.port_cap, senTref.port) annotation (Line(points={{50.2,30},
               {66,30},{66,40},{70,40}}, color={191,0,0}));
       connect(senTref.T, Tref)
@@ -1258,6 +1263,16 @@ package MPC "This package contains models for MPC control optimization."
               110,40}}, color={0,0,127}));
       connect(Trtu, Trtu) annotation (Line(points={{110,100},{104,100},{104,100},
               {110,100}}, color={0,0,127}));
+        connect(gamingHeat.y, add.u2) annotation (Line(points={{-57,50},{-40,50},{-40,
+                80},{-37,80}}, color={0,0,127}));
+        connect(RTU1.qHeat, add.u1)
+          annotation (Line(points={{-49,86},{-37,86}}, color={0,0,127}));
+        connect(add.y, rtuZone.qHeat) annotation (Line(points={{-25.5,83},{-22.75,83},
+                {-22.75,86},{-6,86}}, color={0,0,127}));
+      connect(RTU1.PCool, Prtu) annotation (Line(points={{-49,72},{80,72},{80,
+              80},{110,80}}, color={0,0,127}));
+      connect(RTU1.PHeat, Grtu) annotation (Line(points={{-49,82},{-44,82},{-44,
+              60},{110,60}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
               extent={{-100,100},{100,-100}},
