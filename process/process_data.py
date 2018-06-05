@@ -8,6 +8,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import os
 import numpy as np
+from datetime import timedelta
 
 # microgrid headers
 # PVPower_kW	
@@ -214,10 +215,83 @@ def all_operation(start_time, final_time):
     ax[5].plot(df_power['FreComp'].loc[start_time:final_time], label='Fre Comp')
     ax[5].legend()
     plt.show()
-        
     
+def clean_power_data(start_time, final_time, plot=True):
+    # Detect defrost time
+    # Get power from historic data
+    csvpath = os.path.join('data','Power.csv')
+    df_power = pd.read_csv(csvpath, index_col = 'Time')
+    df_power.index = pd.to_datetime(df_power.index.values)
+    df_power = df_power.loc[start_time:final_time]
+    # Initialize new column
+    df_power['Defrost'] = np.where(df_power['FreComp']>600,True,False)
+    # Find when each defrost cycle starts
+    times = []
+    skip = False
+    for time in df_power.index:
+        if (df_power['FreComp'].loc[time]>600) and (not skip):
+            times.append(time)
+            skip = True
+        elif (df_power['FreComp'].loc[time]<=600):
+            skip = False        
+    for time in times:
+        if (time-times[-1] <= timedelta(minutes=20)):
+            df_power['Defrost'].loc[time:time+timedelta(minutes=20)] = True
     
+    df_power['FreComp_Split'] = np.where(df_power['Defrost']==True,0,df_power['FreComp'])
+    df_power['FreHeater_Split'] = np.where(df_power['Defrost']==True,df_power['FreComp'],0)
+    # Plot 
+    if plot:           
+        fix,ax = plt.subplots(4,1, sharex=True)
+        ax[0].plot(df_power['FreComp'].loc[start_time:final_time], label='Compressor')
+        ax[0].legend()
+        ax[1].plot(df_power['Defrost'].loc[start_time:final_time], label='Defrost')
+        ax[1].legend()
+        ax[2].plot(df_power['FreComp_Split'].loc[start_time:final_time], label='Compressor_DF')
+        ax[2].legend()
+        ax[3].plot(df_power['FreHeater_Split'].loc[start_time:final_time], label='Heater_DF')
+        ax[3].legend()
+        plt.show()
+
+    # Normalize to [0,1]
+    for key in ['FreComp_Split', 'FreHeater_Split', 'RefComp', 'HVAC1']:
+        key_new = key+'_Norm'
+        df_power[key_new] = df_power[key]/df_power[key].max()
+        if 'HVAC' in key:
+            df_power[key_new] = np.round(df_power[key_new]*2)/2
+        else:
+            df_power[key_new] = np.round(df_power[key_new])
+        # Plot 
+        if plot:
+            fix,ax = plt.subplots(2,1, sharex=True)
+            ax[0].plot(df_power[key], label = 'raw')
+            ax[1].plot(df_power[key_new], label = 'rounded')
+            plt.legend()
+            plt.show()
+            
+    df_power.index.name = 'Time'
     
-HVAC_operation('4/8/2018 00:00:00', '4/10/2018 00:00:00')
-fre_operation('4/8/2018 00:00:00', '4/10/2018 00:00:00')
-ref_operation('4/8/2018 00:00:00', '4/10/2018 00:00:00')
+    return df_power
+    
+def clean_temperature_data(start_time, final_time, plot=True):
+    # Get temperature from historic data
+    csvpath = os.path.join('data','Temperature.csv')
+    df_temp = pd.read_csv(csvpath, index_col = 'Time')
+    df_temp.index = pd.to_datetime(df_temp.index.values)
+    df_temp = df_temp.loc[start_time:final_time]
+    # Clean with Interpolation
+    for key in df_temp.columns:
+        key_new = key+'_Int'
+        df_temp[key_new] = df_temp[key].interpolate()
+        # Plot 
+        if plot:
+            plt.figure()
+            plt.plot(df_temp[key_new], label = 'interpolated')
+            plt.plot(df_temp[key], label = 'raw')
+            plt.title(key)
+            plt.legend()
+            plt.show()
+            
+    df_temp.index.name = 'Time'
+    
+    return df_temp
