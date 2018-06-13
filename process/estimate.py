@@ -12,10 +12,10 @@ from matplotlib import pyplot as plt
 # --------------------------------------------------------------------------
 # Estimation periods
 start_time = '4/9/2018 13:00:00' # local time
-final_time = '4/9/2018 21:00:00' # local time
+final_time = '4/9/2018 18:00:00' # local time
 local_time = 'America/Los_Angeles'
 # Input data
-csvpath = '/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/data/Temperature.csv'
+csvpath = 'data/Temperature.csv'
 # Model definition
 mopath = 'models/SolarPlus.mo'
 modelpath = 'SolarPlus.Building.Training.Thermal'
@@ -26,6 +26,8 @@ sample_rate = 300;
 Trtu_0 = 22 # deg C
 Tref_0 = 3.5 # deg C
 Tfre_0 = -25 # deg C
+# Simulate Initial Option
+simulate_initial = False
 # --------------------------------------------------------------------------
 
 # Exodata
@@ -33,7 +35,7 @@ Tfre_0 = -25 # deg C
 # Weather
 vm_weather = {'Outdoor' : ('weaTDryBul', units.degC)}
 geography = (40.88, -124)
-csv_weather = '/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/data/Temperature.csv'
+csv_weather = 'data/Temperature.csv'
 weather = exodata.WeatherFromCSV(csv_weather,vm_weather,geography, tz_name=local_time)
 weather.collect_data(start_time, final_time);
 # Controls
@@ -45,7 +47,7 @@ vm_controls = {'HVAC1_Norm' : ('uCool', units.unit1),
 controls = exodata.ControlFromDF(df_power, vm_controls, tz_name = weather.tz_name)
 controls.collect_data(start_time, final_time);               
 # Parameters
-csv_parameters = '/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/models/pars_thermal.csv'
+csv_parameters = 'models/pars_thermal.csv'
 parameters = exodata.ParameterFromCSV(csv_parameters)
 parameters.collect_data()
 # --------------------------------------------------------------------------
@@ -59,10 +61,11 @@ for meas in meas_list:
 vm_measurements = {'HVAC East_Int' : ('Trtu', units.degC),
                    'Refrigerator West_Int' : ('Tref', units.degC),
                    'Freezer_Int' : ('Tfre', units.degC)}
-csv_measurements = '/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/models/temp_clean.csv'
+csv_measurements = 'models/temp_clean.csv'
 df_temp.to_csv(csv_measurements)
 store = systems.RealFromCSV(csv_measurements, measurements, vm_measurements, tz_name = weather.tz_name)
 store.collect_measurements(start_time, final_time)
+os.remove(csv_measurements)
 # --------------------------------------------------------------------------
 
 # Model
@@ -81,28 +84,28 @@ model = models.Modelica(models.JModelica,
                         tz_name = weather.tz_name)
 # --------------------------------------------------------------------------
 
-## Simulate Initial Guess
-## --------------------------------------------------------------------------
-#model.simulate(start_time, final_time)
-#fix,ax = plt.subplots(2,1, sharex=True)
-#for key in model.measurements.keys():
-#    if model.measurements[key]['Simulated'].get_base_unit_name() is 'K':
-#        x = 0
-#        y = -273.15
-#    else:
-#        x = 1    
-#        y = 0
-#    ax[x].plot(model.display_measurements('Simulated')[key]+y, label=key)
-#    ax[x].legend()
-#plt.show()
-## --------------------------------------------------------------------------
+# Simulate Initial Guess
+# --------------------------------------------------------------------------
+if simulate_initial:
+    model.simulate(start_time, final_time)
+    fix,ax = plt.subplots(2,1, sharex=True)
+    for key in model.measurements.keys():
+        if model.measurements[key]['Simulated'].get_base_unit_name() is 'K':
+            x = 0
+            y = -273.15
+        else:
+            x = 1    
+            y = 0
+        ax[x].plot(model.display_measurements('Simulated')[key]+y, label=key)
+        ax[x].legend()
+    plt.show()
+# --------------------------------------------------------------------------
 
 # Solve
 # --------------------------------------------------------------------------
 # Solve estimation problem
 model.estimate(start_time, final_time, ['Trtu','Tref','Tfre'])
-model.validate(start_time, final_time, 'validate', plot=1)
-plt.close('all')
+model.validate(start_time, final_time, 'validate', plot=0)
 for key in ['Trtu','Tref','Tfre']:
     plt.plot(model.measurements[key]['Simulated'].get_base_data()-273.15, label=key+'_Simulated')
     plt.plot(model.measurements[key]['Measured'].get_base_data()-273.15, label=key+'_Measured')
