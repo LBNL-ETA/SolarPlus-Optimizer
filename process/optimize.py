@@ -12,35 +12,41 @@ from matplotlib import pyplot as plt
 # Setup
 # --------------------------------------------------------------------------
 # MPC operating periods
-start_time = '6/1/2017 00:00:00'
-final_time = '6/2/2017 00:00:00'
+start_time = '6/10/2017 00:00:00'
+final_time = '6/11/2017 00:00:00'
 # Weather data
-epwpath = 'models/weatherdata/DRYCOLDTMY.epw'
+epwpath = 'models/weatherdata/USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw'
 # Model definition
-mopath = 'models/MPC/package.mo'
-modelpath = 'MPC.Building.Whole_Inputs'
+mopath = 'models/SolarPlus.mo'
+modelpath = 'SolarPlus.Building.Whole_Inputs'
 # Model measurements
-meas_list = ['Tzone', 'SOC', 
-             'Ppv', 'Pheat', 'Pcool', 'Pcharge', 'Pdischarge', 'Pnet', 
-             'uCharge', 'uDischarge', 'uHeat', 'uCool']
+meas_list = ['Trtu', 'Tref', 'Tfre', 'weaTDryBul', 'SOC', 
+             'Prtu', 'Pref', 'Pfre', 'Pcharge', 'Pdischarge', 'Pnet', 'Ppv',
+             'uCharge', 'uDischarge', 'uHeat', 'uCool', 'uRef', 'uFreCool']
 sample_rate = 3600;
 # Optimization objective
 objective = 'EnergyCostMin'
 # Optimization constraints
-Tzone_max = 25.0
-Tzone_min = 20.0
+Trtu_max = 23.0
+Trtu_min = 20.0
+Tref_max = 5.0
+Tref_min = 3.0
+Tfre_max = -23.0
+Tfre_min = -25.0
 SOC_max = 1.0
 SOC_min = 0.25
-P_demand_limit = 1500
+P_demand_limit = 100000
 # Price signal
-build_price = True
+build_price = True # if False, use price_vec
 peak_start = 14
 peak_end = 17
-multiplier = 10
+multiplier = 3
 price_vec = [1,1,1.5,2,3,3.5,4,5,5.5,6,7,9,11,20,20,20,11,9,7,5.5,4,2.5,1.5,1,1] # if not build
 # Initial states (must satisfy optimization constraints)
-Tzone_0 = 22 # deg C
-SOC_0 = 0.26 # unit 1
+Trtu_0 = 22 # deg C
+Tref_0 = 4 # deg C
+Tfre_0 = -23 # deg C
+SOC_0 = 0.75 # unit 1
 
 # --------------------------------------------------------------------------
 
@@ -51,13 +57,13 @@ weather = exodata.WeatherFromEPW(epwpath);
 # Collect weather data
 weather.collect_data(start_time, final_time);
 # Create parameter df
-pars = {'Name':      ['Tzone_0', 'SOC_0'], 
-        'Free':      [False,     False],
-        'Value':     [Tzone_0,   SOC_0],
-        'Minimum':   [0,         0],
-        'Maximum':   [350,       1],
-        'Covariance':[0,         0],
-        'Unit' :     ['degC',   '1']}
+pars = {'Name':      ['Trtu_0', 'Tref_0', 'Tfre_0', 'SOC_0'], 
+        'Free':      [False,    False,    False,    False],
+        'Value':     [Trtu_0,   Tref_0,   Tfre_0,   SOC_0],
+        'Minimum':   [10,       0,        -40,      0],
+        'Maximum':   [35,       20,       0,        1],
+        'Covariance':[0,        0,        0,        0],
+        'Unit' :     ['degC',   'degC',   'degC',   '1']}
 par_df = pd.DataFrame(pars).set_index('Name')
 # Instantiate parameter object
 parameters = exodata.ParameterFromDF(par_df)
@@ -79,13 +85,17 @@ for meas in meas_list:
 time = pd.to_datetime(start_time)
 controls_df = pd.DataFrame(index=[time])
 controls_df.index.name = 'Time'
-controls_df.loc[time,'uHeat'] = 0.01
-controls_df.loc[time,'uCool'] = 0.01
+controls_df.loc[time,'uHeat'] = 0.5
+controls_df.loc[time,'uCool'] = 0.5
+controls_df.loc[time,'uRef'] = 0.5
+controls_df.loc[time,'uFreCool'] = 0.5
 controls_df.loc[time,'uCharge'] = 0.01
 controls_df.loc[time,'uDischarge'] = 0.01
 # Define variable map
 vm_controls = {'uHeat'      : ('uHeat',      units.unit1),
                'uCool'      : ('uCool',      units.unit1),
+               'uRef'       : ('uRef',       units.unit1),
+               'uFreCool'   : ('uFreCool',   units.unit1),
                'uCharge'    : ('uCharge',    units.unit1),
                'uDischarge' : ('uDischarge', units.unit1)}
 # Instantiate object                  
@@ -96,39 +106,71 @@ controls = exodata.ControlFromDF(controls_df,
 controls.collect_data(start_time, final_time)
 # --------------------------------------------------------------------------
 
+# Other Inputs
+# --------------------------------------------------------------------------
+# Build dataframe
+time = pd.to_datetime(start_time)
+other_inputs_df = pd.DataFrame(index=[time])
+other_inputs_df.index.name = 'Time'
+other_inputs_df.loc[time,'uFreDef'] = 0.0
+# Define variable map
+vm_other_input = {'uFreDef' : ('uFreDef', units.unit1)}
+# Instantiate object                  
+other_inputs = exodata.OtherInputFromDF(other_inputs_df, 
+                                        vm_other_input, 
+                                        tz_name = weather.tz_name);
+# Collect data
+other_inputs.collect_data(start_time, final_time)
+# --------------------------------------------------------------------------
+
 # Constraints
 # --------------------------------------------------------------------------
 # Build dataframe
 time = pd.to_datetime(start_time)
 constraints_df = pd.DataFrame(index=[time])
 constraints_df.index.name = 'Time'
-constraints_df.loc[time,'Tzone_max'] = Tzone_max
-constraints_df.loc[time,'Tzone_min'] = Tzone_min
+constraints_df.loc[time,'Trtu_max'] = Trtu_max
+constraints_df.loc[time,'Trtu_min'] = Trtu_min
+constraints_df.loc[time,'Tref_max'] = Tref_max
+constraints_df.loc[time,'Tref_min'] = Tref_min
+constraints_df.loc[time,'Tfre_max'] = Tfre_max
+constraints_df.loc[time,'Tfre_min'] = Tfre_min
 constraints_df.loc[time,'SOC_max'] = SOC_max
 constraints_df.loc[time,'SOC_min'] = SOC_min
 constraints_df.loc[time,'uHeat_max'] = 1.0
 constraints_df.loc[time,'uHeat_min'] = 0.0
 constraints_df.loc[time,'uCool_max'] = 1.0
 constraints_df.loc[time,'uCool_min'] = 0.0
+constraints_df.loc[time,'uRef_max'] = 1.0
+constraints_df.loc[time,'uRef_min'] = 0.0
+constraints_df.loc[time,'uFreCool_max'] = 1.0
+constraints_df.loc[time,'uFreCool_min'] = 0.0
 constraints_df.loc[time,'uCharge_max'] = 1.0
 constraints_df.loc[time,'uCharge_min'] = 0.0
 constraints_df.loc[time,'uDischarge_max'] = 1.0
 constraints_df.loc[time,'uDischarge_min'] = 0.0
 constraints_df.loc[time,'Pnet_max'] = P_demand_limit
 # Define variable map
-vm_constraints = {'Tzone_max' : ('Tzone', 'LTE', units.degC),
-                  'Tzone_min' : ('Tzone', 'GTE', units.degC),
+vm_constraints = {'Trtu_max'  : ('Trtu', 'LTE', units.degC),
+                  'Trtu_min'  : ('Trtu', 'GTE', units.degC),
+                  'Tref_max'  : ('Tref', 'LTE', units.degC),
+                  'Tref_min'  : ('Tref', 'GTE', units.degC),
+                  'Tfre_max'  : ('Tfre', 'LTE', units.degC),
+                  'Tfre_min'  : ('Tfre', 'GTE', units.degC),
                   'SOC_max'   : ('SOC',   'LTE', units.unit1),
                   'SOC_min'   : ('SOC',   'GTE', units.unit1),
                   'uHeat_max' : ('uHeat', 'LTE', units.unit1),
                   'uHeat_min' : ('uHeat', 'GTE', units.unit1),
                   'uCool_max' : ('uCool', 'LTE', units.unit1),
                   'uCool_min' : ('uCool', 'GTE', units.unit1),
+                  'uRef_max'  : ('uRef', 'LTE', units.unit1),
+                  'uRef_min'  : ('uRef', 'GTE', units.unit1),
+                  'uFreCool_max' : ('uFreCool', 'LTE', units.unit1),
+                  'uFreCool_min' : ('uFreCool', 'GTE', units.unit1),
                   'uCharge_max' : ('uCharge', 'LTE', units.unit1),
                   'uCharge_min' : ('uCharge', 'GTE', units.unit1),
                   'uDischarge_max' : ('uCharge', 'LTE', units.unit1),
-                  'uDischarge_min' : ('uCharge', 'GTE', units.unit1),
-                  'Pnet_max' : ('Pnet', 'LTE', units.W),}
+                  'uDischarge_min' : ('uCharge', 'GTE', units.unit1)}
 # Instantiate object                  
 constraints = exodata.ConstraintFromDF(constraints_df, 
                                        vm_constraints, 
@@ -173,6 +215,7 @@ model = models.Modelica(models.JModelica,
                         moinfo = moinfo,
                         weather_data = weather.data,
                         control_data = controls.data,
+                        other_inputs = other_inputs.data,
                         parameter_data = parameters.data,
                         tz_name = weather.tz_name)
 # --------------------------------------------------------------------------
@@ -218,21 +261,21 @@ opt_statistics = opt_problem.get_optimization_statistics()
 # Plot
 fig, ax = plt.subplots(5,1,sharex=True)
 meas_opt = opt_problem.display_measurements('Simulated')
-ax[0].plot(meas_opt['Tzone']-273.15, label='Tzone', color='r')
-ax[0].set_title('Zone Temperature [degC]')
-ax[0].set_ylim([18,28])
+for meas in ['Trtu', 'Tref', 'Tfre', 'weaTDryBul']:
+    ax[0].plot(meas_opt[meas]-273.15, label=meas)
+    ax[0].set_title('Temperatures [degC]')
+ax[0].legend()
 ax[1].plot(meas_opt['SOC'], label='SOC', color='g')
 ax[1].set_title('Battery SOC [1]')
 ax[1].set_ylim([0,1.25])
-for meas in ['Pnet', 'Pheat', 'Pcool', 'Ppv', 'Pcharge', 'Pdischarge']:
+for meas in ['Pnet', 'Prtu', 'Pref', 'Pfre', 'Pcharge', 'Pdischarge', 'Ppv']:
     ax[2].plot(meas_opt[meas], label=meas)
 ax[2].legend()
 ax[2].set_title('Power [W]')
-ax[2].set_ylim([-2500,2500])
 ax[3].plot(prices.display_data(),label='Energy Price')
 ax[3].set_title('Electricity Price [$/kWh]')
 ax[3].set_ylim([0,15])
-for meas in ['uCharge', 'uDischarge', 'uHeat', 'uCool']:
+for meas in ['uCharge', 'uDischarge', 'uHeat', 'uCool', 'uRef', 'uFreCool']:
     ax[4].plot(meas_opt[meas], label=meas)
 ax[4].legend()
 ax[4].set_title('Signal [-]')

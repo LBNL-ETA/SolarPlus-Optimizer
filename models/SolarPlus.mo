@@ -858,13 +858,13 @@ package SolarPlus "This package contains models for MPC control optimization."
       annotation (Placement(transformation(extent={{42,-156},{48,-150}})));
     Modelica.Blocks.Math.Product squareCool
       annotation (Placement(transformation(extent={{42,-166},{48,-160}})));
-    Modelica.Blocks.Math.Gain gainDischarge(k=10)
+    Modelica.Blocks.Math.Gain gainDischarge(k=100000)
       annotation (Placement(transformation(extent={{54,-186},{60,-180}})));
     Modelica.Blocks.Math.Product squareCharge
       annotation (Placement(transformation(extent={{42,-176},{48,-170}})));
     Modelica.Blocks.Math.Product squareDischarge
       annotation (Placement(transformation(extent={{42,-186},{48,-180}})));
-    Modelica.Blocks.Math.Gain gainCharge(k=10)
+    Modelica.Blocks.Math.Gain gainCharge(k=100000)
       annotation (Placement(transformation(extent={{54,-176},{60,-170}})));
     Modelica.Blocks.Math.Gain gainCool(k=1000)
       annotation (Placement(transformation(extent={{54,-166},{60,-160}})));
@@ -881,9 +881,8 @@ package SolarPlus "This package contains models for MPC control optimization."
     Modelica.Blocks.Interfaces.RealInput uFreCool
       "Cooling signal input for freezer"
       annotation (Placement(transformation(extent={{-140,-240},{-100,-200}})));
-    Modelica.Blocks.Math.Gain gainDischarge1(
-                                            k=10)
-      annotation (Placement(transformation(extent={{54,-196},{60,-190}})));
+    Modelica.Blocks.Math.Gain gainRef(k=10000)
+        annotation (Placement(transformation(extent={{54,-196},{60,-190}})));
     Modelica.Blocks.Math.Product squareDischarge1
       annotation (Placement(transformation(extent={{42,-196},{48,-190}})));
     Modelica.Blocks.Math.Gain gainDischarge2(
@@ -891,9 +890,8 @@ package SolarPlus "This package contains models for MPC control optimization."
       annotation (Placement(transformation(extent={{54,-206},{60,-200}})));
     Modelica.Blocks.Math.Product squareDischarge2
       annotation (Placement(transformation(extent={{42,-206},{48,-200}})));
-    Modelica.Blocks.Math.Gain gainDischarge3(
-                                            k=10)
-      annotation (Placement(transformation(extent={{54,-216},{60,-210}})));
+    Modelica.Blocks.Math.Gain gainFreCool(k=10000)
+        annotation (Placement(transformation(extent={{54,-216},{60,-210}})));
     Modelica.Blocks.Math.Product squareDischarge3
       annotation (Placement(transformation(extent={{42,-216},{48,-210}})));
     equation
@@ -954,23 +952,22 @@ package SolarPlus "This package contains models for MPC control optimization."
               -180},{-120,-180}},    color={0,0,127}));
     connect(thermal.uFreCool, uFreCool) annotation (Line(points={{-42,0},{-74,0},{-74,
               -220},{-120,-220}},    color={0,0,127}));
-    connect(squareDischarge1.y, gainDischarge1.u)
-      annotation (Line(points={{48.3,-193},{53.4,-193}},
-                                                       color={0,0,127}));
+      connect(squareDischarge1.y, gainRef.u)
+        annotation (Line(points={{48.3,-193},{53.4,-193}}, color={0,0,127}));
     connect(squareDischarge2.y, gainDischarge2.u)
       annotation (Line(points={{48.3,-203},{53.4,-203}},
                                                        color={0,0,127}));
-    connect(squareDischarge3.y, gainDischarge3.u)
-      annotation (Line(points={{48.3,-213},{53.4,-213}}, color={0,0,127}));
-    connect(gainDischarge1.y, sumJ.u[5]) annotation (Line(points={{60.3,-193},{
-            62,-193},{62,-194},{64,-194},{64,-180},{72,-180},{72,-180.525},{78,
-            -180.525}},                         color={0,0,127}));
+      connect(squareDischarge3.y, gainFreCool.u)
+        annotation (Line(points={{48.3,-213},{53.4,-213}}, color={0,0,127}));
+      connect(gainRef.y, sumJ.u[5]) annotation (Line(points={{60.3,-193},{62,-193},
+              {62,-194},{64,-194},{64,-180},{72,-180},{72,-180.525},{78,-180.525}},
+            color={0,0,127}));
     connect(gainDischarge2.y, sumJ.u[6]) annotation (Line(points={{60.3,-203},{
             62,-203},{62,-204},{66,-204},{66,-181.575},{78,-181.575}},
                                                 color={0,0,127}));
-    connect(gainDischarge3.y, sumJ.u[7]) annotation (Line(points={{60.3,-213},{
-            64,-213},{64,-214},{68,-214},{68,-182.625},{78,-182.625}},
-                                                 color={0,0,127}));
+      connect(gainFreCool.y, sumJ.u[7]) annotation (Line(points={{60.3,-213},{
+              64,-213},{64,-214},{68,-214},{68,-182.625},{78,-182.625}}, color=
+              {0,0,127}));
     connect(uRef, squareDischarge1.u1) annotation (Line(points={{-120,-140},{-90,-140},
               {-90,-140},{-90,-140},{-90,-191.2},{41.4,-191.2}},       color={0,
             0,127}));
@@ -1357,9 +1354,11 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{100,30},{120,50}})));
       Modelica.Blocks.Interfaces.RealOutput Tfre "Freezer air temperature"
         annotation (Placement(transformation(extent={{100,-150},{120,-130}})));
-      Modelica.Blocks.Math.MultiSum multiSum(                   nu=6, k={1,1,1,
-            1,1,1})
+      Modelica.Blocks.Math.MultiSum multiSum(                   nu=7, k={1,1,1,
+              1,1,1,1})
         annotation (Placement(transformation(extent={{80,-66},{92,-54}})));
+        Modelica.Blocks.Sources.Constant constantLoad(k=30000) annotation (
+            Placement(transformation(extent={{-40,-140},{-20,-120}})));
       equation
         connect(pv.Iinc, weaHGloHor) annotation (Line(points={{-42,80},{-50,80},{-50,100},
                 {-120,100}},          color={0,0,127}));
@@ -1391,22 +1390,28 @@ package SolarPlus "This package contains models for MPC control optimization."
                          color={0,0,127}));
       connect(thermal.Tfre, Tfre) annotation (Line(points={{-19,8},{6,8},{6,-140},{110,
                 -140}},                          color={0,0,127}));
-      connect(gainPVGen.y, multiSum.u[1]) annotation (Line(points={{40.6,100},{50,100},
-                {50,-56.5},{80,-56.5}},   color={0,0,127}));
       connect(Prtu, Prtu)
         annotation (Line(points={{110,80},{110,80}}, color={0,0,127}));
-      connect(multiSum.u[2], Prtu) annotation (Line(points={{80,-57.9},{52,-57.9},{52,
-                80},{110,80}},  color={0,0,127}));
-      connect(multiSum.u[3], Pref) annotation (Line(points={{80,-59.3},{54,-59.3},{54,
-                60},{110,60}},  color={0,0,127}));
-      connect(multiSum.u[4], Pfre) annotation (Line(points={{80,-60.7},{56,-60.7},{56,
-                40},{110,40}},                   color={0,0,127}));
-      connect(multiSum.u[5], Pcharge) annotation (Line(points={{80,-62.1},{80,-62},{58,
-                -62},{58,20},{110,20}},color={0,0,127}));
-      connect(multiSum.u[6], Pdischarge) annotation (Line(points={{80,-63.5},{80,-62},
-                {60,-62},{60,0},{110,0}},    color={0,0,127}));
+      connect(multiSum.u[1], Prtu) annotation (Line(points={{80,-56.4},{52,
+                -56.4},{52,80},{110,80}},
+                                color={0,0,127}));
+      connect(multiSum.u[2], Pref) annotation (Line(points={{80,-57.6},{54,
+                -57.6},{54,60},{110,60}},
+                                color={0,0,127}));
+      connect(multiSum.u[3], Pfre) annotation (Line(points={{80,-58.8},{56,
+                -58.8},{56,40},{110,40}},        color={0,0,127}));
+      connect(multiSum.u[4], Pcharge) annotation (Line(points={{80,-60},{80,-60},
+                {58,-60},{58,20},{110,20}},
+                                       color={0,0,127}));
+      connect(multiSum.u[5], Pdischarge) annotation (Line(points={{80,-61.2},{
+                80,-62},{60,-62},{60,0},{110,0}},
+                                             color={0,0,127}));
       connect(multiSum.y, Pnet)
         annotation (Line(points={{93.02,-60},{110,-60}}, color={0,0,127}));
+        connect(constantLoad.y, multiSum.u[6]) annotation (Line(points={{-19,
+                -130},{0,-130},{0,-62.4},{80,-62.4}}, color={0,0,127}));
+        connect(gainPVGen.y, multiSum.u[7]) annotation (Line(points={{40.6,100},
+                {50,100},{50,-63.6},{80,-63.6}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-220},
                   {100,100}}),                                      graphics={
                 Rectangle(
@@ -1420,9 +1425,9 @@ package SolarPlus "This package contains models for MPC control optimization."
       model Thermal
         parameter Modelica.SIunits.HeatCapacity Crtu=1e6 "Heat capacity of RTU zone" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.ThermalResistance Rrtu=0.0004 "Thermal resistance of RTU zone to outside" annotation(Dialog(group = "RTU"));
-        parameter Modelica.SIunits.Power RTUHeatingCap = 15000 "Heating capacity of RTU" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.Power RTUHeatingCap = 29300 "Heating capacity of RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Power RTUCoolingCap = 16998 "Cooling capacity of RTU" annotation(Dialog(group = "RTU"));
-        parameter Modelica.SIunits.Power RTUHeatingEff = 0.99 "Heating efficiency of RTU" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.Power RTUHeatingEff = 0.8 "Heating efficiency of RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Power RTUCoolingCOP = 3 "Cooling COP of RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Temperature Trtu_0 = 21+273.15 "Initial temperature of store" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.HeatCapacity Cref=1e6 "Heat capacity of refrigerator zone" annotation(Dialog(group = "Refrigerator"));
@@ -1508,7 +1513,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{70,30},{90,50}})));
       Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor senTfre
         annotation (Placement(transformation(extent={{70,-30},{90,-10}})));
-        Modelica.Blocks.Sources.Constant gamingHeat(k=10000)
+        Modelica.Blocks.Sources.Constant gamingHeat(k=15000)
           annotation (Placement(transformation(extent={{-78,40},{-58,60}})));
         Modelica.Blocks.Math.Add add
           annotation (Placement(transformation(extent={{-36,78},{-26,88}})));

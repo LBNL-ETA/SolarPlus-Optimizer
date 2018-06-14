@@ -20,7 +20,9 @@ An optimization process can be run by:
 
 1. ``$ make run`` to start the Docker container and enter its terminal.  Note that the Docker image must be built already (see ``Build the Docker Image`` above).
 
-2. ``$ python process/optimize.py`` to run the optimization script.
+2. ``$ python process/optimize.py`` to run the control optimization script.
+
+3. ``$ python process/estimate.py`` to run the model parameter estimation script.
 
 ## Edits, Enhancements, and New Features
 Large edits, enhancements, new features, and bug fixes should be made on separate branches from the master, and merged to the master only after completion. Do this by the following process:
