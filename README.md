@@ -22,7 +22,7 @@ An optimization process can be run by:
 
 2. ``$ python process/optimize.py`` to run the control optimization script.
 
-3. ``$ python process/estimate.py`` to run the model parameter estimation script.
+3. ``$ python process/estimate.py`` to run the model parameter estimation script.  This requires real site data to be already downloaded from the team shared drive and processed using ``process/sort_data.py`` into useable csv files.
 
 ## Edits, Enhancements, and New Features
 Large edits, enhancements, new features, and bug fixes should be made on separate branches from the master, and merged to the master only after completion. Do this by the following process:
