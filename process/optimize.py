@@ -8,12 +8,13 @@ from mpcpy import units, variables, exodata, models, optimization
 import pandas as pd
 import os
 from matplotlib import pyplot as plt
+from modules.costcalculator.tariff_solarplus import SolarPlusCombinedCostCalculator, TariffType
 
 # Setup
 # --------------------------------------------------------------------------
 # MPC operating periods
-start_time = '6/10/2017 00:00:00'
-final_time = '6/11/2017 00:00:00'
+start_time = '06/12/2017 00:00:00'
+final_time = '06/13/2017 00:00:00'
 # Weather data
 epwpath = 'models/weatherdata/USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw'
 # Model definition
@@ -37,7 +38,8 @@ SOC_max = 1.0
 SOC_min = 0.25
 P_demand_limit = 100000
 # Price signal
-build_price = True # if False, use price_vec
+read_pge_tariff = True  # if True, use PGE tariff, else the custom vector below
+build_price = True  # if False, use price_vec
 peak_start = 14
 peak_end = 17
 multiplier = 3
@@ -182,20 +184,30 @@ constraints.collect_data(start_time, final_time)
 # Prices
 # --------------------------------------------------------------------------
 # Build dataframe
-if build_price:
-    time = pd.date_range(start_time, final_time, freq='5T')
-    prices_df = pd.DataFrame(index=time)
-    for t in time:
-        if (t.hour < peak_start) or (t.hour > peak_end):
-            prices_df.loc[t,'energy_price'] = 1
-        else:
-            prices_df.loc[t,'energy_price'] = multiplier
+if read_pge_tariff:
+    solarplus_tariff_obj = SolarPlusCombinedCostCalculator()
+    prices_df = solarplus_tariff_obj.get_elec_price((start_time, final_time))  # Get the price of electricity according to the PGE tariffs
+    vm_prices = {str(TariffType.ENERGY_CUSTOM_CHARGE.value): ('pi_e', units.dol_kWh),
+                 str(TariffType.DEMAND_CUSTOM_CHARGE_SEASON.value): ('pi_d', units.dol_kW),
+                 "{0}0".format(str(TariffType.DEMAND_CUSTOM_CHARGE_TOU.value)): ('pi_d', units.dol_kW),  # mid-peak
+                 "{0}1".format(str(TariffType.DEMAND_CUSTOM_CHARGE_TOU.value)): ('pi_d', units.dol_kW)  # on-peak
+                 }  # Mapping elec price KEYS to a UNIT
 else:
-    time = pd.date_range(start_time, final_time, freq='H')
-    prices_df = pd.DataFrame(index=time, data=price_vec,columns=['energy_price'])
+    if build_price:
+        time = pd.date_range(start_time, final_time, freq='5T')
+        prices_df = pd.DataFrame(index=time)
+        for t in time:
+            if (t.hour < peak_start) or (t.hour > peak_end):
+                prices_df.loc[t,'energy_price'] = 1
+            else:
+                prices_df.loc[t,'energy_price'] = multiplier
+    else:
+        time = pd.date_range(start_time, final_time, freq='H')
+        prices_df = pd.DataFrame(index=time, data=price_vec,columns=['energy_price'])
 
-# Define variable map
-vm_prices = {'energy_price' : ('pi_e', units.dol_kWh)}
+    # Define variable map
+    vm_prices = {'energy_price' : ('pi_e', units.dol_kWh)}
+
 # Instantiate object                  
 prices = exodata.PriceFromDF(prices_df, 
                                vm_prices, 
