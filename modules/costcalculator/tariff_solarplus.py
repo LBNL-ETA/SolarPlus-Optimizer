@@ -1,8 +1,8 @@
-# RCEA tariff
 from costcalculatorlib.cost_calculator.tariff_structure import TariffElemPeriod, TariffType, TouEnergyChargeTariff
 from costcalculatorlib.cost_calculator.rate_structure import TouRateSchedule
 from costcalculatorlib.cost_calculator.cost_calculator import CostCalculator
 from costcalculatorlib.openei_tariff.openei_tariff_analyzer import *
+from datetime import datetime
 
 
 class SolarPlusCombinedCostCalculator:
@@ -77,6 +77,17 @@ class SolarPlusCombinedCostCalculator:
         """
         Get the price of electricity as a pandas dataframe, separated per type of tariff.
         """
+
+        # Parse the date, convert it to a datetime
+        date_s, date_e = range_date
+
+        if type(date_s) is not datetime:
+            date_s = datetime.strptime(date_s, "%m/%d/%Y %H:%M:%S")
+
+        if type(date_e) is not datetime:
+            date_e = datetime.strptime(date_e, "%m/%d/%Y %H:%M:%S")
+
+        range_date = (date_s, date_e)
 
         # Get the PG&E main elec components
         prices_total, map_type = self.pge_charges_costcalculator.get_electricity_price(range_date, timestep)
