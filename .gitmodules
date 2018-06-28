@@ -1,0 +1,3 @@
+[submodule "modules/costcalculator/costcalculatorlib"]
+	path = modules/costcalculator/costcalculatorlib
+	url = ../../olivancu/electricity-cost-calculator.git
