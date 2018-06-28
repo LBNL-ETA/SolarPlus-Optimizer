@@ -1,5 +1,3 @@
-from costcalculatorlib.cost_calculator.tariff_structure import TariffElemPeriod, TariffType, TouEnergyChargeTariff
-from costcalculatorlib.cost_calculator.rate_structure import TouRateSchedule
 from costcalculatorlib.cost_calculator.cost_calculator import CostCalculator
 from costcalculatorlib.openei_tariff.openei_tariff_analyzer import *
 from datetime import datetime
@@ -53,6 +51,8 @@ class SolarPlusCombinedCostCalculator:
             # RCEA generation charges linked to E19S
             self.rcea_charges_costcalculator = CostCalculator()
             tariff_struct_from_openei_data(self.openei_rcea_charges, self.rcea_charges_costcalculator)
+        else:
+            print "[Warning] SolarPlusCombinedCostCalculator not initialized properly"
 
     def compute_bill(self, df):
         """
@@ -70,7 +70,7 @@ class SolarPlusCombinedCostCalculator:
 
         pge_bill = bill_l['pge_charge'] + bill_l['pge_generation_credit']
         rcea_bill = bill_l['rcea_charges']
-        print rcea_bill
+
         return pge_bill, rcea_bill
 
     def get_elec_price(self, range_date, timestep=TariffElemPeriod.QUARTERLY):
@@ -100,6 +100,29 @@ class SolarPlusCombinedCostCalculator:
         # Add the RCEA generation charges
         prices_rcea, map_type = self.rcea_charges_costcalculator.get_electricity_price(range_date, timestep)
         prices_total = prices_total.add(prices_rcea.fillna(0))
+
+        # DEMAND_TOU -> MID_PEAK, OFF_PEAK and ON_PEAK
+        series_tou_demand = prices_total.loc[:, str(TariffType.DEMAND_CUSTOM_CHARGE_TOU.value)]
+        unique_demand_set = {v for v in set(series_tou_demand) if v > 0}
+
+        id_tou_dem = 0
+
+        def sort_sub_tou_demand(x, p):
+            if p == x:
+                return p
+            else:
+                return 0
+
+        for demand_price in unique_demand_set:  # this only works if prices are different !
+            series_sub_tou = [sort_sub_tou_demand(x, demand_price) for x in series_tou_demand]
+            label_sub_tou = "{0}{1}".format(str(TariffType.DEMAND_CUSTOM_CHARGE_TOU.value), id_tou_dem)
+            prices_total[label_sub_tou] = series_sub_tou
+
+            id_tou_dem += 1
+
+        prices_total = prices_total.drop(str(TariffType.DEMAND_CUSTOM_CHARGE_TOU.value), axis=1)  # Remove the aggregate of TOU demand
+
+        # TODO: separate periods in 'DEMAND_CUSTOM_CHARGE_TOU'
 
         return prices_total
 
