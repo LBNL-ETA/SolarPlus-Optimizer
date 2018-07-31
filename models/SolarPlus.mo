@@ -1446,7 +1446,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         Envelope.R1C1 rtuZone(Tzone_0=Trtu_0,
           C=Crtu,
           R=Rrtu)
-          annotation (Placement(transformation(extent={{-4,80},{16,100}})));
+          annotation (Placement(transformation(extent={{-10,80},{10,100}})));
       HVACR.SimpleHeaterCooler RTU1(
         heatingCap=RTUHeatingCap,
         coolingCap=RTUCoolingCap,
@@ -1479,7 +1479,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Math.Add addRef
           annotation (Placement(transformation(extent={{50,-10},{70,10}})));
         Modelica.Blocks.Sources.Constant uRefHeat(k=0)
-          annotation (Placement(transformation(extent={{-60,10},{-40,30}})));
+          annotation (Placement(transformation(extent={{-70,10},{-50,30}})));
         Modelica.Blocks.Interfaces.RealInput uRef
           "Cooling signal input for refrigerator"
           annotation (Placement(transformation(extent={{-140,-40},{-100,0}})));
@@ -1514,14 +1514,15 @@ package SolarPlus "This package contains models for MPC control optimization."
       Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor senTfre
         annotation (Placement(transformation(extent={{70,-30},{90,-10}})));
         Modelica.Blocks.Sources.Constant gamingHeat(k=15000)
-          annotation (Placement(transformation(extent={{-78,40},{-58,60}})));
+          annotation (Placement(transformation(extent={{-70,40},{-50,60}})));
         Modelica.Blocks.Math.Add add
           annotation (Placement(transformation(extent={{-36,78},{-26,88}})));
         Modelica.Blocks.Interfaces.RealOutput Grtu "RTU gas power"
         annotation (Placement(transformation(extent={{100,50},{120,70}})));
       equation
-        connect(RTU1.qCool, rtuZone.qCool) annotation (Line(points={{-49,76},{-22,76},
-                {-22,82},{-6,82}},  color={0,0,127}));
+        connect(RTU1.qCool, rtuZone.qCool) annotation (Line(points={{-49,76},{
+                -22,76},{-22,82},{-12,82}},
+                                    color={0,0,127}));
         connect(RTU1.uCool, uCool) annotation (Line(points={{-72,72},{-80,72},{-80,20},
                 {-120,20}}, color={0,0,127}));
         connect(RTU1.uHeat, uHeat) annotation (Line(points={{-72,88},{-90,88},{-90,60},
@@ -1537,8 +1538,9 @@ package SolarPlus "This package contains models for MPC control optimization."
           annotation (Line(points={{11,22},{26,22},{26,6},{48,6}}, color={0,0,127}));
         connect(refCooler.qHeat, refZone.qHeat)
           annotation (Line(points={{11,26},{38,26}}, color={0,0,127}));
-        connect(uRefHeat.y, refCooler.uHeat) annotation (Line(points={{-39,20},{-22,20},
-                {-22,28},{-12,28}}, color={0,0,127}));
+        connect(uRefHeat.y, refCooler.uHeat) annotation (Line(points={{-49,20},
+                {-22,20},{-22,28},{-12,28}},
+                                    color={0,0,127}));
         connect(refCooler.uCool, uRef) annotation (Line(points={{-12,12},{-20,12},{-20,
                 -20},{-120,-20}}, color={0,0,127}));
         connect(addFre.y, Pfre)
@@ -1560,16 +1562,18 @@ package SolarPlus "This package contains models for MPC control optimization."
           annotation (Line(points={{110,-20},{110,-20}}, color={0,0,127}));
       connect(Tout, preTout.T)
         annotation (Line(points={{-120,100},{-42,100}}, color={0,0,127}));
-      connect(preTout.port, rtuZone.port_adj) annotation (Line(points={{-20,100},{-16,
-                100},{-16,96},{-4,96}},     color={191,0,0}));
-      connect(rtuZone.port_cap, senTrtu.port) annotation (Line(points={{6.2,90},{20,90},
-                {20,100},{70,100}},       color={191,0,0}));
+      connect(preTout.port, rtuZone.port_adj) annotation (Line(points={{-20,100},
+                {-16,100},{-16,96},{-10,96}},
+                                            color={191,0,0}));
+      connect(rtuZone.port_cap, senTrtu.port) annotation (Line(points={{0.2,90},
+                {20,90},{20,100},{70,100}},
+                                          color={191,0,0}));
       connect(senTrtu.T, Trtu)
         annotation (Line(points={{90,100},{110,100}}, color={0,0,127}));
-      connect(rtuZone.port_cap, refZone.port_adj) annotation (Line(points={{6.2,90},{20,
-                90},{20,36},{40,36}},       color={191,0,0}));
-      connect(rtuZone.port_cap, freZone.port_adj) annotation (Line(points={{6.2,90},{20,
-                90},{20,-24},{40,-24}},       color={191,0,0}));
+      connect(rtuZone.port_cap, refZone.port_adj) annotation (Line(points={{0.2,90},
+                {20,90},{20,36},{40,36}},   color={191,0,0}));
+      connect(rtuZone.port_cap, freZone.port_adj) annotation (Line(points={{0.2,90},
+                {20,90},{20,-24},{40,-24}},   color={191,0,0}));
       connect(refZone.port_cap, senTref.port) annotation (Line(points={{50.2,30},
               {66,30},{66,40},{70,40}}, color={191,0,0}));
       connect(senTref.T, Tref)
@@ -1582,12 +1586,14 @@ package SolarPlus "This package contains models for MPC control optimization."
               110,40}}, color={0,0,127}));
       connect(Trtu, Trtu) annotation (Line(points={{110,100},{104,100},{104,100},
               {110,100}}, color={0,0,127}));
-        connect(gamingHeat.y, add.u2) annotation (Line(points={{-57,50},{-40,50},{-40,
-                80},{-37,80}}, color={0,0,127}));
+        connect(gamingHeat.y, add.u2) annotation (Line(points={{-49,50},{-40,50},
+                {-40,80},{-37,80}},
+                               color={0,0,127}));
         connect(RTU1.qHeat, add.u1)
           annotation (Line(points={{-49,86},{-37,86}}, color={0,0,127}));
-        connect(add.y, rtuZone.qHeat) annotation (Line(points={{-25.5,83},{-22.75,83},
-                {-22.75,86},{-6,86}}, color={0,0,127}));
+        connect(add.y, rtuZone.qHeat) annotation (Line(points={{-25.5,83},{
+                -22.75,83},{-22.75,86},{-12,86}},
+                                      color={0,0,127}));
       connect(RTU1.PCool, Prtu) annotation (Line(points={{-49,72},{80,72},{80,
               80},{110,80}}, color={0,0,127}));
       connect(RTU1.PHeat, Grtu) annotation (Line(points={{-49,82},{-44,82},{-44,
