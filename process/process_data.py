@@ -200,19 +200,26 @@ def all_operation(start_time, final_time):
     ax[0].plot(df_temp['HVAC East'].loc[start_time:final_time], label='HVAC East', alpha=0.75)
     ax[0].plot(df_temp['HVAC West'].loc[start_time:final_time], label='HVAC West', alpha=0.75)
     ax[0].plot(df_temp['Outdoor'].loc[start_time:final_time], label='Outdoor', alpha=0.75)
+    ax[0].set_ylabel('Temperature [degC]')
     ax[0].legend()
     ax[1].plot(df_power['HVAC1'].loc[start_time:final_time], label='HVAC 1')
     ax[1].plot(df_power['HVAC2'].loc[start_time:final_time], label='HVAC 2')
+    ax[1].set_ylabel('Power [W]')
     ax[1].legend()
     ax[2].plot(df_temp['Refrigerator East'].loc[start_time:final_time], label='Ref East', alpha=0.75)
     ax[2].plot(df_temp['Refrigerator West'].loc[start_time:final_time], label='Ref West', alpha=0.75)
+    ax[2].set_ylabel('Temperature [degC]')
     ax[2].legend()
     ax[3].plot(df_power['RefComp'].loc[start_time:final_time], label='Ref Comp')
     ax[3].plot(df_power['RefEvapFans'].loc[start_time:final_time], label='Ref Fans')
+    ax[3].set_ylabel('Power [W]')
     ax[3].legend()
     ax[4].plot(df_temp['Freezer'].loc[start_time:final_time], label='Fre')
+    ax[4].set_ylabel('Temperature [degC]')    
     ax[4].legend()
     ax[5].plot(df_power['FreComp'].loc[start_time:final_time], label='Fre Comp')
+    ax[5].set_ylabel('Power [W]')
+    ax[5].set_xlabel('Month-Day-Hour')
     ax[5].legend()
     plt.show()
     
@@ -295,3 +302,5 @@ def clean_temperature_data(start_time, final_time, plot=True):
     df_temp.index.name = 'Time'
     
     return df_temp
+    
+building_operation('6/1/2018', '6/5/2018')

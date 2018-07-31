@@ -41,21 +41,24 @@ def Power():
     # For each csv file
     for csv in csvs:
         print(csv)
-        # Read data into dataframe
-        filepath = os.path.join(directory,csv)
-        df_file = pd.read_csv(filepath, index_col='Time.of.Day', usecols=columns.keys()+['Time.of.Day'])
-        # Replace index
-        day = csv[:-10]
-        index = []
-        for value in df_file.index.values:
-            time = str(value)
-            datetime = pd.to_datetime('{0} {1}'.format(day, time))
-            index.append(datetime)
-        df_file.index = index
-        # Replace columns
-        df_file.rename(columns=columns, inplace=True)
-        # Append data for each csv file to dataframe
-        df = df.append(df_file)
+        if csv[-1] is '#':
+            pass
+        else:
+            # Read data into dataframe
+            filepath = os.path.join(directory,csv)
+            df_file = pd.read_csv(filepath, index_col='Time.of.Day', usecols=columns.keys()+['Time.of.Day'])
+            # Replace index
+            day = csv[:-10]
+            index = []
+            for value in df_file.index.values:
+                time = str(value)
+                datetime = pd.to_datetime('{0} {1}'.format(day, time))
+                index.append(datetime)
+            df_file.index = index
+            # Replace columns
+            df_file.rename(columns=columns, inplace=True)
+            # Append data for each csv file to dataframe
+            df = df.append(df_file)
     # Process dataframe  
     df.index.name = 'Time'
     print('Sorting index...')
@@ -84,4 +87,4 @@ def HistoricMicrogrid():
     df.sort_index(inplace=True)
     df.to_csv(os.path.join('data','HistoricMicrogrid.csv'))
 
-HistoricMicrogrid()
+Power()
