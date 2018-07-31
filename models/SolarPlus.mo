@@ -1309,7 +1309,9 @@ package SolarPlus "This package contains models for MPC control optimization."
         Thermal thermal(
           Trtu_0=Trtu_0,
           Tref_0=Tref_0,
-          Tfre_0=Tfre_0)
+          Tfre_0=Tfre_0,
+          RefCoolingCOP=1.3,
+          FreCoolingCOP=1.7)
         annotation (Placement(transformation(extent={{-40,0},{-20,20}})));
         Batteries.Simple battery(
           Ecap(displayUnit="kWh") = 21600000,
