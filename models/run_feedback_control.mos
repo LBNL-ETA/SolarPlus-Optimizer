@@ -1,0 +1,42 @@
+﻿cd("/home/dhblum/git/solarplus/SolarPlus-Optimizer/models");
+Evaluate = true;
+experimentSetupOutput(events=false,equidistant=true);
+simulateModel("SolarPlus.Building.Examples.FeedbackControl",
+              startTime=7776000,
+              stopTime=7948800, 
+              numberOfIntervals=0, 
+              outputInterval=300, 
+              method="Cvode", 
+              tolerance=1e-06, 
+              resultFile="feedback_control");
+n = readTrajectorySize("feedback_control.mat");
+var_names = {"Time", 
+             "store.Trtu",
+             "store.Tref",
+	     "store.Tfre",
+             "store.weaTDryBul",
+             "store.weaHGloHor",
+             "store.Prtu",
+             "store.Pref",
+	     "store.Pfre",
+             "store.Ppv",
+             "store.Pnet"};
+trajectories=readTrajectory("feedback_control.mat", var_names, n);
+DataFiles.writeCSVmatrix("feedback_control.csv",var_names,transpose(trajectories));
+
+// Plot commands
+removePlots(false);
+Advanced.FilenameInLegend = false;
+Advanced.SequenceInLegend = true;
+Advanced.PlotLegendTooltip = true;
+Advanced.ShowPlotTooltip = true;
+Advanced.FullPlotTooltip = true;
+Advanced.DefaultAutoErase = true;
+Advanced.Legend.Horizontal = true;
+Advanced.Legend.Frame = false;
+Advanced.Legend.Transparent = true;
+Advanced.Legend.Location = 1;
+Advanced.FilesToKeep = 2;
+createPlot(id=1, position={15, 10, 1435, 832}, y={"store.Trtu", "store.Tref", "store.Tfre", "store.weaTDryBul"}, range={7775000.0, 7950000.0, 240.0, 320.0}, grid=true, colors={{28,108,200}, {238,46,47}, {0,140,72}, {217,67,180}});
+createPlot(id=1, position={15, 10, 1435, 289}, y={"store.Prtu", "store.Pref", "store.Pfre"}, range={7775000.0, 7950000.0, -1000.0, 6000.0}, grid=true, subPlot=2, colors={{28,108,200}, {238,46,47}, {0,140,72}});
+createPlot(id=1, position={15, 10, 1435, 214}, y={"store.weaHGloHor"}, range={7775000.0, 7950000.0, -500.0, 1000.0}, grid=true, subPlot=3, colors={{28,108,200}});
