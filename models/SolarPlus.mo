@@ -849,7 +849,7 @@ package SolarPlus "This package contains models for MPC control optimization."
     Modelica.Blocks.Interfaces.RealInput uCharge "Control signal for charging"
       annotation (Placement(transformation(extent={{-140,-80},{-100,-40}})));
     Modelica.Blocks.Interfaces.RealInput uDischarge
-      "Control signal for discharging"
+        "Control signal for discharging"
       annotation (Placement(transformation(extent={{-140,-120},{-100,-80}})));
       Modelica.Blocks.Interfaces.RealOutput J
       "Objective function for optimization"
@@ -1179,16 +1179,24 @@ package SolarPlus "This package contains models for MPC control optimization."
       Buildings.BoundaryConditions.WeatherData.Bus weaBus1
                    "Weather data bus"
         annotation (Placement(transformation(extent={{-50,80},{-30,100}})));
-      Modelica.Blocks.Sources.Constant off(k=0)
-        annotation (Placement(transformation(extent={{-100,-80},{-80,-60}})));
       Modelica.Blocks.Interfaces.RealInput uCool "Cooling signal input"
         annotation (Placement(transformation(extent={{-140,20},{-100,60}})));
       Modelica.Blocks.Interfaces.RealInput uRef
         "Cooling signal input for refrigerator"
-        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+        annotation (Placement(transformation(extent={{-140,-70},{-100,-30}})));
       Modelica.Blocks.Interfaces.RealInput uFreCool
         "Cooling signal input for freezer"
-        annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
+        annotation (Placement(transformation(extent={{-140,-100},{-100,-60}})));
+        Modelica.Blocks.Interfaces.RealInput uHeat "Heating signal input"
+          annotation (Placement(transformation(extent={{-140,50},{-100,90}})));
+        Modelica.Blocks.Interfaces.RealInput uCharge
+          "Control signal for charging"
+          annotation (Placement(transformation(extent={{-140,-10},{-100,30}})));
+        Modelica.Blocks.Interfaces.RealInput uDischarge
+          "Control signal for discharging"
+          annotation (Placement(transformation(extent={{-140,-40},{-100,0}})));
+      Modelica.Blocks.Sources.Constant off(k=0)
+        annotation (Placement(transformation(extent={{-120,-120},{-100,-100}})));
       equation
       connect(weaDat.weaBus, weaBus1) annotation (Line(
           points={{-80,90},{-40,90}},
@@ -1211,20 +1219,22 @@ package SolarPlus "This package contains models for MPC control optimization."
           string="%first",
           index=-1,
           extent={{-6,3},{-6,3}}));
-      connect(off.y, store.uCharge) annotation (Line(points={{-79,-70},{-20,-70},
-              {-20,44},{-12,44}}, color={0,0,127}));
-      connect(off.y, store.uDischarge) annotation (Line(points={{-79,-70},{-20,
-              -70},{-20,40},{-12,40}}, color={0,0,127}));
-      connect(store.uFreDef, store.uCharge) annotation (Line(points={{-12,32},{
-              -20,32},{-20,44},{-12,44}}, color={0,0,127}));
-      connect(store.uHeat, store.uCharge) annotation (Line(points={{-12,52},{
-              -20,52},{-20,44},{-12,44}}, color={0,0,127}));
       connect(store.uCool, uCool) annotation (Line(points={{-12,48},{-70,48},{
               -70,40},{-120,40}}, color={0,0,127}));
       connect(store.uRef, uRef) annotation (Line(points={{-12,36},{-60,36},{-60,
-              0},{-120,0}}, color={0,0,127}));
+                -50},{-120,-50}},
+                            color={0,0,127}));
       connect(store.uFreCool, uFreCool) annotation (Line(points={{-12,28},{-40,
-              28},{-40,-40},{-120,-40}}, color={0,0,127}));
+                28},{-40,-80},{-120,-80}},
+                                         color={0,0,127}));
+        connect(store.uHeat, uHeat) annotation (Line(points={{-12,52},{-80,52},
+                {-80,70},{-120,70}}, color={0,0,127}));
+        connect(store.uCharge, uCharge) annotation (Line(points={{-12,44},{-68,
+                44},{-68,10},{-120,10}}, color={0,0,127}));
+        connect(store.uDischarge, uDischarge) annotation (Line(points={{-12,40},
+                {-64,40},{-64,-20},{-120,-20}}, color={0,0,127}));
+        connect(off.y, store.uFreDef) annotation (Line(points={{-99,-110},{-20,
+                -110},{-20,32},{-12,32}}, color={0,0,127}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
               coordinateSystem(preserveAspectRatio=false)),
         experiment(
