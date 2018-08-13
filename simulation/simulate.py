@@ -11,6 +11,7 @@ import os
 from datetime import timedelta
 import pandas as pd
 import numpy as np
+from controller import mpc
 
 # Setup
 # ==========================================================================
@@ -18,6 +19,7 @@ sim_start_time = '6/1/2018 00:00:00'
 sim_final_time = '6/2/2018 00:00:00'
 tz_name = 'America/Los_Angeles'
 sim_control_step = 1*3600
+controller = 'mpc'
 mpc_horizon = 24*3600
 
 # Initialize
@@ -61,7 +63,9 @@ with open(outdir+'/mpc_setup.txt', 'w') as f:
     f.write(weather.tz_name +'\n')
 weather.display_data().to_csv(os.path.join(outdir,'weather.csv'), index_label = 'Time')
 setpoints.display_data().to_csv(os.path.join(outdir,'setpoints.csv'), index_label = 'Time')
-
+# Instantiate controller
+if controller is 'mpc':
+    controller = mpc()
 ## Start loop
 ## ----------
 #for i in iterations[:-1]:
