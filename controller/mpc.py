@@ -10,53 +10,64 @@ sources other than csv files need to be coded explicitly as appropriate.
 
 from mpcpy import exodata, models, optimization, variables, units, systems
 import pandas as pd
-import os
 
 class mpc(object):
     '''MPC controller.
 
     Parameters
     ----------
-    weather_source : str
-        Source of weather data.
-    control_source : str
-        Source of control data.
-    other_input_source : str
-        Source of other input data.
-    constraint_source : str
-        Source of constraint data.
-    price_source : str
-        Source of price data.
-    system_source : str
-        Source of system data.
-    objective : str
-        Control optimization problem objective.
+    model_config : dict()
+        Dictionary of source information.
+    opt_config : dict()
+        Dictionary of source information..
+    system_config : dict()
+        Dictionary of source information.
+    weather_config : dict()
+        Dictionary of source information.
+    control_config : dict()
+        Dictionary of source information.
+    other_input_config : dict()
+        Dictionary of source information.
+    constraint_config : dict()
+        Dictionary of source information.
+    price_config : dict()
+        Dictionary of source information.
 
     '''
 
-    def __init__(self, weather_source,
-                       control_source,
-                       other_input_source,
-                       constraint_source,                       
-                       price_source,
-                       system_source,
-                       objective):
+    def __init__(self, model_config,
+                       opt_config, 
+                       system_config,
+                       weather_config,
+                       control_config,
+                       other_input_config=None,
+                       constraint_config=None,                       
+                       price_config=None):
         '''Constructor.
 
         '''
 
         # Initialize exodata
-        self.weather = self._initialize_weather(weather_source)
-        self.control = self._initialize_control(control_source)
-        self.other_input = self._initialize_other_input(other_input_source)
-        self.constraint = self._initialize_constraint(constraint_source)
-        self.price = self._initialize_price(price_source)
+        self.weather = self._initialize_weather(weather_config)
+        self.control = self._initialize_control(control_config)
+        if other_input_config:
+            self.other_input = self._initialize_other_input(other_input_config)
+        else:
+            self.other_input = None
+        if constraint_config:
+            self.constraint = self._initialize_constraint(constraint_config)
+        else:
+            self.constraint = None
+        if price_config:
+            self.price = self._initialize_price(price_config)
+        else:
+            self.price = None
         # Initialize model
-        self.model, self.init_vm = self._initialize_model()
+        self.model, self.init_vm = self._initialize_model(model_config)
         # Initialize building measurements
-        self.system = self._initialize_system(system_source)
+        self.system = self._initialize_system(system_config)
         # Instantiate optimization object
-        self.opt_object = self._initialize_opt_problem(objective)
+        self.opt_object = self._initialize_opt_problem(opt_config)
 
     def optimize(self, start_time, final_time):
         '''Solve the control optimization problem.
@@ -121,13 +132,13 @@ class mpc(object):
         return None
 
 
-    def _initialize_weather(self, weather_source):
+    def _initialize_weather(self, weather_config):
         '''Instantiate an MPCPy weather object with the appropriate source.
         
         Parameters
         ----------
-        weather_source : str
-            If file path to .csv file, then instantiated as csv source.
+        weather_config : dict()
+            If type is csv, then instantiated as csv source.
             Otherwise, instantiated as DataFrame source, with specific 
             source of DataFrame encoded.
             
@@ -138,30 +149,26 @@ class mpc(object):
 
         '''
 
-        # Specify geography
-        geography = ()
-        # Specify weather variable map
-        weather_vm = dict()
         # Instantiate object
-        if os.path.splitext(weather_source)[-1] is '.csv':
-            weather = exodata.WeatherFromCSV(weather_source,
-                                             weather_vm,
-                                             geography)
+        if weather_config['type'] is 'csv':
+            weather = exodata.WeatherFromCSV(weather_config['path'],
+                                             weather_config['vm'],
+                                             weather_config['geo'])
         else:
             weather_df = pd.DataFrame()
             weather = exodata.WeatherFromDF(weather_df,
-                                            weather_vm,
-                                            geography)
+                                            weather_config['vm'],
+                                            weather_config['geo'])
 
         return weather
                                                  
-    def _initialize_control(self, control_source):
+    def _initialize_control(self, control_config):
         '''Instantiate an MPCPy control object with the appropriate source.
         
         Parameters
         ----------
-        control_source : str
-            If file path to .csv file, then instantiated as csv source.
+        control_config : dict()
+            If type is csv, then instantiated as csv source.
             Otherwise, instantiated as DataFrame source, with specific 
             source of DataFrame encoded.
             
@@ -172,26 +179,24 @@ class mpc(object):
 
         '''
 
-        # Specify control variable map
-        control_vm = dict()
         # Instantiate object
-        if os.path.splitext(control_source)[-1] is '.csv':
-            control = exodata.ControlFromCSV(control_source,
-                                                  control_vm)
+        if control_config['type'] is 'csv':
+            control = exodata.ControlFromCSV(control_config['path'],
+                                             control_config['vm'])
         else:
             control_df = pd.DataFrame()
             control = exodata.ControlFromDF(control_df,
-                                            control_vm)
+                                            control_config['vm'])
 
         return control
                                                  
-    def _initialize_other_input(self, other_input_source):
+    def _initialize_other_input(self, other_input_config):
         '''Instantiate an MPCPy other input object with the appropriate source.
         
         Parameters
         ----------
-        other_input_source : str
-            If file path to .csv file, then instantiated as csv source.
+        other_input_config : dict()
+            If type is csv, then instantiated as csv source.
             Otherwise, instantiated as DataFrame source, with specific 
             source of DataFrame encoded.
 
@@ -202,26 +207,24 @@ class mpc(object):
             
         '''
 
-        # Specify other input variable map
-        other_input_vm = dict()
         # Instantiate object
-        if os.path.splitext(other_input_source)[-1] is '.csv':
-            other_input = exodata.OtherInputFromCSV(other_input_source,
-                                                         other_input_vm)
+        if other_input_config['type'] is 'csv':
+            other_input = exodata.OtherInputFromCSV(other_input_config['path'],
+                                                    other_input_config['vm'])
         else:
             other_input_df = pd.DataFrame()
             other_input = exodata.OtherInputFromDF(other_input_df,
-                                                   other_input_vm)
+                                                   other_input_config['vm'])
 
         return other_input
                                                         
-    def _initialize_price(self, price_source):
+    def _initialize_price(self, price_config):
         '''Instantiate an MPCPy price object with the appropriate source.
         
         Parameters
         ----------
-        price_source : str
-            If file path to .csv file, then instantiated as csv source.
+        price_config : dict()
+            If type is csv, then instantiated as csv source.
             Otherwise, instantiated as DataFrame source, with specific 
             source of DataFrame encoded.
             
@@ -232,26 +235,24 @@ class mpc(object):
 
         '''
 
-        # Specify price variable map
-        price_vm = dict()
         # Instantiate object
-        if os.path.splitext(price_source)[-1] is '.csv':
-            price = exodata.PriceFromCSV(price_source,
-                                         price_vm)
+        if price_config['type'] is 'csv':
+            price = exodata.PriceFromCSV(price_config['path'],
+                                         price_config['vm'])
         else:
             price_df = pd.DataFrame()
             price = exodata.PriceFromDF(price_df,
-                                        price_vm)
+                                        price_config['vm'])
 
         return price
 
-    def _initialize_constraint(self, constraint_source):
+    def _initialize_constraint(self, constraint_config):
         '''Instantiate an MPCPy constraint object with the appropriate source.
         
         Parameters
         ----------
-        constraint_source : str
-            If file path to .csv file, then instantiated as csv source.
+        constraint_config : dict()
+            If type is csv, then instantiated as csv source.
             Otherwise, instantiated as DataFrame source, with specific 
             source of DataFrame encoded.
             
@@ -262,26 +263,24 @@ class mpc(object):
 
         '''
 
-        # Specify constraint variable map
-        constraint_vm = dict()
         # Instantiate object
-        if os.path.splitext(constraint_source)[-1] is '.csv':
-            constraint = exodata.ConstraintFromCSV(constraint_source,
-                                                   constraint_vm)
+        if constraint_config['type'] is 'csv':
+            constraint = exodata.ConstraintFromCSV(constraint_config['path'],
+                                                   constraint_config['vm'])
         else:
             constraint_df = pd.DataFrame()
             constraint = exodata.ConstraintFromDF(constraint_df,
-                                                  constraint_vm)
+                                                  constraint_config['vm'])
 
         return constraint
     
-    def _initialize_system(self, system_source):
+    def _initialize_system(self, system_config):
         '''Instantiate an MPCPy systems object from the appropriate source.
         
         Parameters
         ----------
-        system_source : str
-            If file path to .csv file, then instantiated as csv source.
+        system_config : dict()
+            If type is csv, then instantiated as csv source.
             
         Returns
         -------
@@ -290,21 +289,24 @@ class mpc(object):
 
         '''
 
-        # Specify systems variable map
-        system_vm = dict()
         # Instantiate object
-        if os.path.splitext(system_source)[-1] is '.csv':
+        if system_config['type'] is 'csv':
             # Instantiate csv source
-            system = systems.RealFromCSV(system_source,
+            system = systems.RealFromCSV(system_config['path'],
                                          self.model.measurements,
-                                         system_vm)
+                                         system_config['vm'])
         else:
             raise ValueError('System data must come from csv source.')
 
         return system
 
-    def _initialize_model(self):
+    def _initialize_model(self, model_config):
         '''Instantiate an MPCPy model object.
+        
+        Parameters
+        ----------
+        model_config : dict()
+            Configruation of model.
         
         Returns
         -------
@@ -317,33 +319,22 @@ class mpc(object):
         '''
         
         # Specify definition
-        mopath = 'models/SolarPlus.mo'
-        modelpath = 'SolarPlus.Building.Whole_Inputs'
-        libraries = []
+        mopath = model_config['mopath']
+        modelpath = model_config['modelpath']
+        libraries = model_config['libraries']
         # Specify measurements
-        meas_list = ['Trtu', 'Tref', 'Tfre', 'weaTDryBul', 'SOC', 
-                     'Prtu', 'Pref', 'Pfre', 'Pcharge', 'Pdischarge', 'Pnet', 'Ppv',
-                     'uCharge', 'uDischarge', 'uHeat', 'uCool', 'uRef', 'uFreCool']
-        sample_rate = 3600;
+        meas_list = model_config['measurements']
+        sample_rate = model_config['sample_rate'];
         measurements = dict()
         for meas in meas_list:
             measurements[meas] = {'Sample' : variables.Static('{0}_sample'.format(meas), sample_rate, units.s)};
         # Specify parameters
-        pars = {'Name':      ['Trtu_0', 'Tref_0', 'Tfre_0', 'SOC_0'], 
-                'Free':      [False,    False,    False,    False],
-                'Value':     [0,        0,        0,        0],
-                'Minimum':   [10,       0,        -40,      0],
-                'Maximum':   [35,       20,       0,        1],
-                'Covariance':[0,        0,        0,        0],
-                'Unit' :     ['degC',   'degC',   'degC',   '1']}
+        pars = model_config['parameters']
         par_df = pd.DataFrame(pars).set_index('Name')
         self.parameter = exodata.ParameterFromDF(par_df)
         self.parameter.collect_data()
         # Specify initial parameter dictionary
-        init_vm =  {'Trtu_0' : 'Trtu',
-                    'Tref_0' : 'Tref',
-                    'Tfre_0' : 'Tfre',
-                    'SOC_0' : 'SOC'}
+        init_vm =  model_config['init_vm']
         # Instantiate object
         moinfo = (mopath, modelpath, libraries)
         model = models.Modelica(models.JModelica,
@@ -352,15 +343,20 @@ class mpc(object):
                                      moinfo = moinfo,
                                      weather_data = self.weather.data,
                                      control_data = self.control.data,
-                                     other_inputs = self.other_input.data,
                                      parameter_data = self.parameter.data,
                                      tz_name = self.weather.tz_name)
+        if self.other_input:
+            model.other_input_data = self.other_input.data
 
         return model, init_vm
 
-    def _initialize_opt_problem(self, objective):
+    def _initialize_opt_problem(self, opt_config):
         '''Instantiate an MPCPy optimization object.
         
+        Parameters
+        ----------
+        opt_config: dict()
+            Configuration of optimization problem
         Returns
         -------
         opt_object : mpcpy.optimization.Optimization
@@ -369,6 +365,7 @@ class mpc(object):
         '''
         
         # Specify objective
+        objective = opt_config['problem']
         if objective is 'EnergyMin':
             problem = optimization.EnergyMin
         elif objective is 'EnergyCostMin':
@@ -377,11 +374,11 @@ class mpc(object):
             raise ValueError('Objective "{0}" unknown or not available.'.format(objective))
         # Instantiate object
         opt_object = optimization.Optimization(self.model,
-                                                problem,
-                                                optimization.JModelica,
-                                                'J',
-                                                constraint_data = self.constraint.data,
-                                                tz_name = self.weather.tz_name)
+                                               problem,
+                                               optimization.JModelica,
+                                               opt_config['power_var'],
+                                               constraint_data = self.constraint.data,
+                                               tz_name = self.weather.tz_name)
         # Set default options
         opt_options = opt_object.get_optimization_options()
         opt_options['n_e'] = 24*4
