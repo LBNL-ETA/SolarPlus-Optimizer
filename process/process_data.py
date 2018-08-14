@@ -223,7 +223,11 @@ def all_operation(start_time, final_time):
     ax[5].legend()
     plt.show()
     
-def clean_power_data(start_time, final_time, plot=True):
+def clean_power_data(start_time, final_time, plot=True, save=False, pre_fix=False):
+    if pre_fix:
+        fre_comp_lim = 600
+    else:
+        fre_comp_lim = 6000
     # Detect defrost time
     # Get power from historic data
     csvpath = os.path.join('data','Power.csv')
@@ -231,15 +235,15 @@ def clean_power_data(start_time, final_time, plot=True):
     df_power.index = pd.to_datetime(df_power.index.values)
     df_power = df_power.loc[start_time:final_time]
     # Initialize new column
-    df_power['Defrost'] = np.where(df_power['FreComp']>600,True,False)
+    df_power['Defrost'] = np.where(df_power['FreComp']>fre_comp_lim,True,False)
     # Find when each defrost cycle starts
     times = []
     skip = False
     for time in df_power.index:
-        if (df_power['FreComp'].loc[time]>600) and (not skip):
+        if (df_power['FreComp'].loc[time]>fre_comp_lim) and (not skip):
             times.append(time)
             skip = True
-        elif (df_power['FreComp'].loc[time]<=600):
+        elif (df_power['FreComp'].loc[time]<=fre_comp_lim):
             skip = False        
     for time in times:
         if (time-times[-1] <= timedelta(minutes=20)):
@@ -271,13 +275,15 @@ def clean_power_data(start_time, final_time, plot=True):
         # Plot 
         if plot:
             fix,ax = plt.subplots(2,1, sharex=True)
-            ax[0].plot(df_power[key], label = 'raw')
-            ax[1].plot(df_power[key_new], label = 'rounded')
-            plt.legend()
+            ax[0].plot(df_power[key], label = key+'_raw')
+            ax[0].legend()
+            ax[1].plot(df_power[key_new], label = key+'_rounded')
+            ax[1].legend()
             plt.show()
             
     df_power.index.name = 'Time'
-    
+    if save:
+        df_power.to_csv(os.path.join('data','Control.csv'))
     return df_power
     
 def clean_temperature_data(start_time, final_time, plot=True):
@@ -303,4 +309,4 @@ def clean_temperature_data(start_time, final_time, plot=True):
     
     return df_temp
     
-building_operation('6/1/2018', '6/5/2018')
+clean_power_data('6/1/2018', '7/15/2018', save=True, plot=False)
