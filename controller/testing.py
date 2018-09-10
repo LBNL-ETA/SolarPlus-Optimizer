@@ -8,10 +8,7 @@ import unittest
 from mpc import mpc
 import os
 
-class instantiate(unittest.TestCase):
-    
-    def test_instantiate(self):
-        model_config =      {'mopath' : os.path.join('models','SolarPlus.mo'),
+model_config =      {'mopath' : os.path.join('models','SolarPlus.mo'),
                              'modelpath' : 'SolarPlus.Building.Whole_Inputs',
                              'libraries' : os.getenv('MODELICAPATH'),
                              'measurements' : ['Trtu', 'Tref', 'Tfre', 
@@ -34,33 +31,37 @@ class instantiate(unittest.TestCase):
                                           'Tfre_0' : 'Tfre',
                                           'SOC_0'  : 'SOC'}}
 
-        opt_config =        {'problem'  : 'EnergyCostMin',
-                             'power_var': 'J'} 
+opt_config =        {'problem'  : 'EnergyCostMin',
+                     'power_var': 'J'} 
 
-        weather_config =    {'type': 'csv',
-                             'path': os.path.join('data','Temperature.csv'),
-                             'vm'  : {'Outdoor':('weaTDryBul', units.degC)},
-                             'geo' : (40.88,-124.0)}
-                                       
-        control_config =    {'type': 'csv',
-                             'path': os.path.join('data','Control.csv'),
-                             'vm'  : {'HVAC1_Norm' : ('uCool', units.unit1),
-                                      'RefComp_Norm' : ('uRef', units.unit1),
-                                      'FreComp_Split_Norm' : ('uFreCool', units.unit1),
-                                      'FreHeater_Split_Norm' : ('uFreDef', units.unit1)}}
-                                       
-        constraint_config = {'type': 'csv',
-                             'path': os.path.join('data','Constraint.csv'),
-                             'vm'  : {}}
+weather_config =    {'type': 'csv',
+                     'path': os.path.join('data','Temperature.csv'),
+                     'vm'  : {'Outdoor':('weaTDryBul', units.degC)},
+                     'geo' : (40.88,-124.0)}
+                               
+control_config =    {'type': 'csv',
+                     'path': os.path.join('data','Control.csv'),
+                     'vm'  : {'HVAC1_Norm' : ('uCool', units.unit1),
+                              'RefComp_Norm' : ('uRef', units.unit1),
+                              'FreComp_Split_Norm' : ('uFreCool', units.unit1),
+                              'FreHeater_Split_Norm' : ('uFreDef', units.unit1)}}
+                               
+constraint_config = {'type': 'csv',
+                     'path': os.path.join('data','Constraint.csv'),
+                     'vm'  : {}}
+                     
+price_config =      {'type': 'csv',
+                     'path': os.path.join('data','Price.csv'),
+                     'vm'  : {'pi_e':('pi_e', units.dol_kWh)}}
+
+system_config =     {'type': 'csv',
+                     'path': os.path.join('data','System.csv'),
+                     'vm'  : {}}
                              
-        price_config =      {'type': 'csv',
-                             'path': os.path.join('data','Price.csv'),
-                             'vm'  : {'pi_e':('pi_e', units.dol_kWh)}}
+class instantiate(unittest.TestCase):
+    
+    def test_instantiate(self):
         
-        system_config =     {'type': 'csv',
-                             'path': os.path.join('data','System.csv'),
-                             'vm'  : {}}
-
         controller = mpc(model_config, opt_config, system_config,
                          weather_config = weather_config,
                          control_config = control_config,
