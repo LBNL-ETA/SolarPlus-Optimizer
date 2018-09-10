@@ -3,8 +3,8 @@
 This module contains the mpc controller class, which can be used to 
 solve the control optimization problem.
 
-Currently, specific parameters, such as models, variable maps, and data
-sources other than csv files need to be coded explicitly as appropriate.
+Currently, specific data sources other than csv files need to be coded 
+explicitly as appropriate.
 
 """
 
@@ -26,11 +26,11 @@ class mpc(object):
         Dictionary of source information.
     control_config : dict()
         Dictionary of source information.
-    other_input_config : dict()
+    other_input_config : dict(), optional
         Dictionary of source information.
-    constraint_config : dict()
+    constraint_config : dict(), optional
         Dictionary of source information.
-    price_config : dict()
+    price_config : dict(), optional
         Dictionary of source information.
 
     '''
@@ -40,9 +40,9 @@ class mpc(object):
                        system_config,
                        weather_config,
                        control_config,
-                       other_input_config=None,
-                       constraint_config=None,                       
-                       price_config=None):
+                       other_input_config = None,
+                       constraint_config = None,                       
+                       price_config = None):
         '''Constructor.
 
         '''
@@ -50,18 +50,9 @@ class mpc(object):
         # Initialize exodata
         self.weather = self._initialize_weather(weather_config)
         self.control = self._initialize_control(control_config)
-        if other_input_config:
-            self.other_input = self._initialize_other_input(other_input_config)
-        else:
-            self.other_input = None
-        if constraint_config:
-            self.constraint = self._initialize_constraint(constraint_config)
-        else:
-            self.constraint = None
-        if price_config:
-            self.price = self._initialize_price(price_config)
-        else:
-            self.price = None
+        self.other_input = self._initialize_other_input(other_input_config)
+        self.constraint = self._initialize_constraint(constraint_config)
+        self.price = self._initialize_price(price_config)
         # Initialize model
         self.model, self.init_vm = self._initialize_model(model_config)
         # Initialize building measurements
@@ -199,6 +190,7 @@ class mpc(object):
             If type is csv, then instantiated as csv source.
             Otherwise, instantiated as DataFrame source, with specific 
             source of DataFrame encoded.
+            If None, then instantiated with empty data.
 
         Returns
         -------
@@ -207,14 +199,19 @@ class mpc(object):
             
         '''
 
-        # Instantiate object
-        if other_input_config['type'] is 'csv':
-            other_input = exodata.OtherInputFromCSV(other_input_config['path'],
-                                                    other_input_config['vm'])
+        # Check if None
+        if other_input_config:
+            # Instantiate object
+            if other_input_config['type'] is 'csv':
+                other_input = exodata.OtherInputFromCSV(other_input_config['path'],
+                                                        other_input_config['vm'])
+            else:
+                other_input_df = pd.DataFrame()
+                other_input = exodata.OtherInputFromDF(other_input_df,
+                                                       other_input_config['vm'])
         else:
-            other_input_df = pd.DataFrame()
-            other_input = exodata.OtherInputFromDF(other_input_df,
-                                                   other_input_config['vm'])
+                other_input = exodata.OtherInputFromDF(pd.DataFrame(),
+                                                       {})
 
         return other_input
                                                         
@@ -227,6 +224,7 @@ class mpc(object):
             If type is csv, then instantiated as csv source.
             Otherwise, instantiated as DataFrame source, with specific 
             source of DataFrame encoded.
+            If None, then instantiated with empty data.
             
         Returns
         -------
@@ -235,14 +233,19 @@ class mpc(object):
 
         '''
 
-        # Instantiate object
-        if price_config['type'] is 'csv':
-            price = exodata.PriceFromCSV(price_config['path'],
-                                         price_config['vm'])
+        # Check if None
+        if price_config:
+            # Instantiate object
+            if price_config['type'] is 'csv':
+                price = exodata.PriceFromCSV(price_config['path'],
+                                             price_config['vm'])
+            else:
+                price_df = pd.DataFrame()
+                price = exodata.PriceFromDF(price_df,
+                                            price_config['vm'])
         else:
-            price_df = pd.DataFrame()
-            price = exodata.PriceFromDF(price_df,
-                                        price_config['vm'])
+                price = exodata.PriceFromDF(pd.DataFrame(),
+                                            {})                                            
 
         return price
 
@@ -255,6 +258,7 @@ class mpc(object):
             If type is csv, then instantiated as csv source.
             Otherwise, instantiated as DataFrame source, with specific 
             source of DataFrame encoded.
+            If None, then instantiated with empty data.
             
         Returns
         -------
@@ -263,14 +267,19 @@ class mpc(object):
 
         '''
 
-        # Instantiate object
-        if constraint_config['type'] is 'csv':
-            constraint = exodata.ConstraintFromCSV(constraint_config['path'],
-                                                   constraint_config['vm'])
+        # Check if None
+        if constraint_config:
+            # Instantiate object
+            if constraint_config['type'] is 'csv':
+                constraint = exodata.ConstraintFromCSV(constraint_config['path'],
+                                                       constraint_config['vm'])
+            else:
+                constraint_df = pd.DataFrame()
+                constraint = exodata.ConstraintFromDF(constraint_df,
+                                                      constraint_config['vm'])
         else:
-            constraint_df = pd.DataFrame()
-            constraint = exodata.ConstraintFromDF(constraint_df,
-                                                  constraint_config['vm'])
+                constraint = exodata.ConstraintFromDF(pd.DataFrame(),
+                                                      {})  
 
         return constraint
     
@@ -343,10 +352,9 @@ class mpc(object):
                                      moinfo = moinfo,
                                      weather_data = self.weather.data,
                                      control_data = self.control.data,
+                                     other_inputs = self.other_input.data,
                                      parameter_data = self.parameter.data,
                                      tz_name = self.weather.tz_name)
-        if self.other_input:
-            model.other_input_data = self.other_input.data
 
         return model, init_vm
 
