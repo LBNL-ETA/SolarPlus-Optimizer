@@ -57,10 +57,10 @@ class mpc(object):
         self.model, self.init_vm = self._initialize_model(model_config)
         # Initialize building measurements
         self.system = self._initialize_system(system_config)
-        # Instantiate optimization object
-        self.opt_object = self._initialize_opt_problem(opt_config)
+        # Save optimization configuration
+        self.opt_config = opt_config
 
-    def optimize(self, start_time, final_time):
+    def optimize(self, start_time, final_time, init = True):
         '''Solve the control optimization problem.
         
         Parameters
@@ -69,6 +69,8 @@ class mpc(object):
             Start time of optimization
         final_time : str
             Final time of optimization
+        init : bool, optional
+            True if initial optimization.  Will instantiate optimization problem.
         
         Returns
         -------
@@ -90,13 +92,53 @@ class mpc(object):
                     self.constraint, 
                     self.price]:
             self._update_exo(exo, start_time, final_time)
+        # Instantiate problem if initial
+        if init:
+            self.opt_object = self._initialize_opt_problem(self.opt_config)
         # Solve problem
-        self.opt_object.optimize(start_time, final_time, price_data=self.prices.data)
+        self.opt_object.optimize(start_time, final_time, price_data=self.price.data)
         # Get solution and statistics
-        solution = self.opt_object.display_measurements('Simulated')
+        control = self.control.display_data()
+        measurements = self.opt_object.display_measurements('Simulated')
         statistics = self.opt_object.get_optimization_statistics()
         
-        return solution, statistics
+        return control, measurements, statistics
+        
+    def simulate(self, start_time, final_time):
+        '''Simulate the model with an initial point from measurements.
+        
+        Parameters
+        ----------
+        start_time : str
+            Start time of simulation
+        final_time : str
+            Final time of simulation
+        
+        Returns
+        -------
+        solution : DataFrame
+            Measurements of simulation.
+
+        '''
+
+        # Update system measurements
+        self._update_system(start_time, final_time)
+        # Estimate state
+        self._estimate_state(start_time)
+        # Update exodata
+        for exo in [self.weather, 
+                    self.control, 
+                    self.other_input, 
+                    self.constraint, 
+                    self.price]:
+            self._update_exo(exo, start_time, final_time)
+        # Solve problem
+        self.model.simulate(start_time, final_time)
+        # Get solution and statistics
+        solution = self.model.display_measurements('Simulated')
+        
+        return solution
+        
 
     def _estimate_state(self, time):
         '''Estimate the states of the model.
@@ -115,9 +157,9 @@ class mpc(object):
         # For each initial state
         for par in self.init_vm:
             # Get the estimated value
-            value = self.model.measurements.display_data('Measured').loc[time,self.init_vm[par]]
+            value = self.model.display_measurements('Measured').loc[time,self.init_vm[par]].get_values()[0]
             # Set the value in the model
-            self.model.parameter_data[par] = dict()
+#            self.model.parameter_data[par] = dict()
             self.model.parameter_data[par]['Value'].set_data(value)
     
         return None
@@ -210,8 +252,7 @@ class mpc(object):
                 other_input = exodata.OtherInputFromDF(other_input_df,
                                                        other_input_config['vm'])
         else:
-                other_input = exodata.OtherInputFromDF(pd.DataFrame(),
-                                                       {})
+                other_input = None
 
         return other_input
                                                         
@@ -244,8 +285,7 @@ class mpc(object):
                 price = exodata.PriceFromDF(price_df,
                                             price_config['vm'])
         else:
-                price = exodata.PriceFromDF(pd.DataFrame(),
-                                            {})                                            
+                price = None                                          
 
         return price
 
@@ -278,8 +318,7 @@ class mpc(object):
                 constraint = exodata.ConstraintFromDF(constraint_df,
                                                       constraint_config['vm'])
         else:
-                constraint = exodata.ConstraintFromDF(pd.DataFrame(),
-                                                      {})  
+                constraint = None
 
         return constraint
     
@@ -304,6 +343,11 @@ class mpc(object):
             system = systems.RealFromCSV(system_config['path'],
                                          self.model.measurements,
                                          system_config['vm'])
+        elif system_config['type'] is 'fmu':
+            # Instantiate fmu source
+            system = systems.EmulationFromFMU(system_config['path'],
+                                              self.model.measurements,
+                                              system_config['vm'])        
         else:
             raise ValueError('System data must come from csv source.')
 
@@ -352,9 +396,11 @@ class mpc(object):
                                      moinfo = moinfo,
                                      weather_data = self.weather.data,
                                      control_data = self.control.data,
-                                     other_inputs = self.other_input.data,
                                      parameter_data = self.parameter.data,
                                      tz_name = self.weather.tz_name)
+        # Check if other inputs presetn
+        if self.other_input:
+            model.other_inputs = self.other_input.data,
 
         return model, init_vm
 
@@ -418,11 +464,13 @@ class mpc(object):
         '''            
          
         # Update exodata
-        if 'from_csv' in exo_object.name:
-            exo_object.collect_data(start_time, final_time)
-        else:
-            exo_object._df = pd.DataFrame()
-            exo_object.collect_data(start_time, final_time)
+        if exo_object:
+            # If not None
+            if 'from_csv' in exo_object.name:
+                exo_object.collect_data(start_time, final_time)
+            else:
+                exo_object._df = pd.DataFrame()
+                exo_object.collect_data(start_time, final_time)
             
         return None
         
@@ -443,7 +491,7 @@ class mpc(object):
         None
 
         '''            
-         
+        
         # Update exodata
         self.system.collect_measurements(start_time, final_time)
             
