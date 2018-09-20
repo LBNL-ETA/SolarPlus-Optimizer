@@ -1586,9 +1586,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{100,-150},{120,-130}})));
       Modelica.Blocks.Math.MultiSum multiSum(                   nu=7, k={1,1,1,
               1,1,1,1})
-        annotation (Placement(transformation(extent={{80,-66},{92,-54}})));
-        Modelica.Blocks.Sources.Constant constantLoad(k=30000) annotation (
-            Placement(transformation(extent={{-40,-140},{-20,-120}})));
+        annotation (Placement(transformation(extent={{82,-66},{94,-54}})));
       equation
         connect(pv.Iinc, weaHGloHor) annotation (Line(points={{-42,80},{-50,80},{-50,100},
                 {-120,100}},          color={0,0,127}));
@@ -1622,26 +1620,26 @@ package SolarPlus "This package contains models for MPC control optimization."
                 -140}},                          color={0,0,127}));
       connect(Prtu, Prtu)
         annotation (Line(points={{110,80},{110,80}}, color={0,0,127}));
-      connect(multiSum.u[1], Prtu) annotation (Line(points={{80,-56.4},{52,
+      connect(multiSum.u[1], Prtu) annotation (Line(points={{82,-56.4},{52,
                 -56.4},{52,80},{110,80}},
                                 color={0,0,127}));
-      connect(multiSum.u[2], Pref) annotation (Line(points={{80,-57.6},{54,
+      connect(multiSum.u[2], Pref) annotation (Line(points={{82,-57.6},{54,
                 -57.6},{54,60},{110,60}},
                                 color={0,0,127}));
-      connect(multiSum.u[3], Pfre) annotation (Line(points={{80,-58.8},{56,
+      connect(multiSum.u[3], Pfre) annotation (Line(points={{82,-58.8},{56,
                 -58.8},{56,40},{110,40}},        color={0,0,127}));
-      connect(multiSum.u[4], Pcharge) annotation (Line(points={{80,-60},{80,-60},
+      connect(multiSum.u[4], Pcharge) annotation (Line(points={{82,-60},{82,-60},
                 {58,-60},{58,20},{110,20}},
                                        color={0,0,127}));
-      connect(multiSum.u[5], Pdischarge) annotation (Line(points={{80,-61.2},{
-                80,-62},{60,-62},{60,0},{110,0}},
+      connect(multiSum.u[5], Pdischarge) annotation (Line(points={{82,-61.2},{
+                82,-62},{60,-62},{60,0},{110,0}},
                                              color={0,0,127}));
       connect(multiSum.y, Pnet)
-        annotation (Line(points={{93.02,-60},{110,-60}}, color={0,0,127}));
-        connect(constantLoad.y, multiSum.u[6]) annotation (Line(points={{-19,
-                -130},{0,-130},{0,-62.4},{80,-62.4}}, color={0,0,127}));
-        connect(gainPVGen.y, multiSum.u[7]) annotation (Line(points={{40.6,100},
-                {50,100},{50,-63.6},{80,-63.6}}, color={0,0,127}));
+        annotation (Line(points={{95.02,-60},{110,-60}}, color={0,0,127}));
+        connect(gainPVGen.y, multiSum.u[6]) annotation (Line(points={{40.6,100},
+                {50,100},{50,-62.4},{82,-62.4}}, color={0,0,127}));
+        connect(thermal.Pload, multiSum.u[7]) annotation (Line(points={{-19,2},
+                {0,2},{0,-63.6},{82,-63.6}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-220},
                   {100,100}}),                                      graphics={
                 Rectangle(
@@ -1743,12 +1741,16 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{70,30},{90,50}})));
       Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor senTfre
         annotation (Placement(transformation(extent={{70,-30},{90,-10}})));
-        Modelica.Blocks.Sources.Constant gamingHeat(k=20000)
+        Modelica.Blocks.Sources.Constant gamingHeat(k=15000)
           annotation (Placement(transformation(extent={{-70,40},{-50,60}})));
         Modelica.Blocks.Math.Add add
           annotation (Placement(transformation(extent={{-36,78},{-26,88}})));
         Modelica.Blocks.Interfaces.RealOutput Grtu "RTU gas power"
         annotation (Placement(transformation(extent={{100,50},{120,70}})));
+        Modelica.Blocks.Interfaces.RealOutput Pload(
+                                                   unit="W")
+          "Power consumption of internal loads"
+          annotation (Placement(transformation(extent={{100,-90},{120,-70}})));
       equation
         connect(RTU1.qCool, rtuZone.qCool) annotation (Line(points={{-49,76},{
                 -22,76},{-22,82},{-12,82}},
@@ -1778,8 +1780,9 @@ package SolarPlus "This package contains models for MPC control optimization."
                                                         color={0,0,127}));
         connect(uFreDef, freCooler.uHeat) annotation (Line(points={{-120,-60},{-60,-60},
                 {-60,-32},{-12,-32}}, color={0,0,127}));
-        connect(freCooler.uCool, uFreCool) annotation (Line(points={{-12,-48},{-40,-48},
-                {-40,-100},{-120,-100}}, color={0,0,127}));
+        connect(freCooler.uCool, uFreCool) annotation (Line(points={{-12,-48},{
+                -50,-48},{-50,-100},{-120,-100}},
+                                         color={0,0,127}));
         connect(freCooler.qHeat, freZone.qHeat)
           annotation (Line(points={{11,-34},{38,-34}}, color={0,0,127}));
         connect(freCooler.qCool, freZone.qCool) annotation (Line(points={{11,-44},{32,
@@ -1816,8 +1819,8 @@ package SolarPlus "This package contains models for MPC control optimization."
               110,40}}, color={0,0,127}));
       connect(Trtu, Trtu) annotation (Line(points={{110,100},{104,100},{104,100},
               {110,100}}, color={0,0,127}));
-        connect(gamingHeat.y, add.u2) annotation (Line(points={{-49,50},{-40,50},
-                {-40,80},{-37,80}},
+        connect(gamingHeat.y, add.u2) annotation (Line(points={{-49,50},{-38,50},
+                {-38,80},{-37,80}},
                                color={0,0,127}));
         connect(RTU1.qHeat, add.u1)
           annotation (Line(points={{-49,86},{-37,86}}, color={0,0,127}));
@@ -1828,6 +1831,8 @@ package SolarPlus "This package contains models for MPC control optimization."
               80},{110,80}}, color={0,0,127}));
       connect(RTU1.PHeat, Grtu) annotation (Line(points={{-49,82},{-44,82},{-44,
               60},{110,60}}, color={0,0,127}));
+        connect(gamingHeat.y, Pload) annotation (Line(points={{-49,50},{-38,50},
+                {-38,-80},{110,-80}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
               extent={{-100,100},{100,-100}},

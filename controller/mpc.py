@@ -100,9 +100,12 @@ class mpc(object):
         # Get solution and statistics
         control = self.control.display_data()
         measurements = self.opt_object.display_measurements('Simulated')
+        other_outputs = pd.DataFrame(index=measurements.index)
+        for key in self.other_outputs:
+            other_outputs[key] = self.opt_object._package_type.res_opt['mpc_model.{0}'.format(key)]
         statistics = self.opt_object.get_optimization_statistics()
         
-        return control, measurements, statistics
+        return control, measurements, other_outputs, statistics
         
     def simulate(self, start_time, final_time):
         '''Simulate the model with an initial point from measurements.
@@ -116,9 +119,11 @@ class mpc(object):
         
         Returns
         -------
-        solution : DataFrame
+        measurements : DataFrame
             Measurements of simulation.
-
+        other_outputs : DataFrame
+            Other outputs of the simulation
+            
         '''
 
         # Update system measurements
@@ -134,10 +139,13 @@ class mpc(object):
             self._update_exo(exo, start_time, final_time)
         # Solve problem
         self.model.simulate(start_time, final_time)
-        # Get solution and statistics
-        solution = self.model.display_measurements('Simulated')
-        
-        return solution
+        # Get solution
+        measurements = self.model.display_measurements('Simulated')
+        other_outputs = pd.DataFrame(index=measurements.index)
+        for key in self.other_outputs:
+            other_outputs[key] = self.model._res[key]
+            
+        return measurements, other_outputs
         
 
     def _estimate_state(self, time):
@@ -398,9 +406,11 @@ class mpc(object):
                                      control_data = self.control.data,
                                      parameter_data = self.parameter.data,
                                      tz_name = self.weather.tz_name)
-        # Check if other inputs presetn
+        # Check if other inputs present
         if self.other_input:
-            model.other_inputs = self.other_input.data,
+            model.other_inputs = self.other_input.data
+        # Store other outputs
+        self.other_outputs = model_config['other_outputs']
 
         return model, init_vm
 

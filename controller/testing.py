@@ -13,10 +13,11 @@ model_config =      {'mopath' : os.path.join('models','SolarPlus.mo'),
                      'modelpath' : 'SolarPlus.Building.Optimization.Store',
                      'libraries' : os.getenv('MODELICAPATH'),
                      'measurements' : ['Trtu', 'Tref', 'Tfre'],
+                     'other_outputs' : ['Pnet', 'Prtu', 'Pref', 'Pfre','Pcharge', 'Pdischarge', 'SOC'],
                      'sample_rate' : 3600,
                      'parameters' : {'Name':      ['Trtu_0', 'Tref_0', 'Tfre_0', 'SOC_0'], 
                                      'Free':      [False,    False,    False,    False],
-                                     'Value':     [0,        0,        0,        0.5],
+                                     'Value':     [0,        0,        0,        0.25],
                                      'Minimum':   [10,       0,        -40,      0],
                                      'Maximum':   [35,       20,       0,        1],
                                      'Covariance':[0,        0,        0,        0],
@@ -25,7 +26,7 @@ model_config =      {'mopath' : os.path.join('models','SolarPlus.mo'),
                                    'Tref_0' : 'Tref',
                                    'Tfre_0' : 'Tfre'}}
 
-opt_config =        {'problem'  : 'EnergyMin',
+opt_config =        {'problem'  : 'EnergyCostMin',
                      'power_var': 'J'} 
 
 weather_config =    {'type': 'csv',
@@ -64,7 +65,8 @@ constraint_config = {'type': 'csv',
                               'uRef_min':('uRef', 'GTE', units.unit1),
                               'uRef_max':('uRef', 'LTE', units.unit1),
                               'uFreCool_min':('uFreCool', 'GTE', units.unit1),
-                              'uFreCool_max':('uFreCool', 'LTE', units.unit1)}}
+                              'uFreCool_max':('uFreCool', 'LTE', units.unit1), 
+                              'demand':('Pnet', 'LTE', units.kW)}}
                               
 price_config =      {'type': 'csv',
                      'path': os.path.join('data','Price.csv'),
@@ -117,11 +119,11 @@ class functional(unittest.TestCase):
                               constraint_config = constraint_config,
                               price_config = price_config)
         # Simulate
-        solution = self.controller.simulate('6/1/2018', '6/6/2018')
+        measurements, other_outputs = self.controller.simulate('6/1/2018', '6/6/2018')
         # Plot
         plt.figure(1)
-        for key in solution.columns:
-            plt.plot(solution.index, solution[key].get_values()-273.15, label = '{0}_simulated'.format(key), alpha=0.5)
+        for key in measurements.columns:
+            plt.plot(measurements.index, measurements[key].get_values()-273.15, label = '{0}_simulated'.format(key), alpha=0.5)
             plt.plot(self.controller.system.display_measurements('Measured').index, self.controller.system.display_measurements('Measured')[key].get_values(), label = '{0}_measured'.format(key), alpha=0.5) 
         plt.legend()
         plt.figure(2)
@@ -136,14 +138,21 @@ class functional(unittest.TestCase):
                               constraint_config = constraint_config,
                               price_config = price_config)
         # Optimize
-        control, measurements, statistics = self.controller.optimize('6/1/2018', '6/2/2018', init=True)
+        control, measurements, other_outputs, statistics = self.controller.optimize('6/1/2018', '6/2/2018', init=True)
         # Plot
-        plt.figure(1)
-        measurements.plot()
+        measurements.plot()           
         plt.legend()
-        plt.figure(2)
         control.plot()
         plt.legend()
+        for key in other_outputs.columns:
+            if key is 'SOC':
+                plt.figure(100)
+            else:
+                plt.figure(99)
+            time = other_outputs.index
+            data = other_outputs[key].get_values()
+            plt.plot(time, data, label=key)
+            plt.legend()
         plt.show()
         
             
