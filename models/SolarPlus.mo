@@ -203,24 +203,43 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealInput Tmeas "Temperature measured"
           annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
         Modelica.Blocks.Logical.OnOffController onOffController(bandwidth=deadband)
-          annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+          annotation (Placement(transformation(extent={{-20,-10},{0,10}})));
         Modelica.Blocks.Math.BooleanToReal booleanToReal
-          annotation (Placement(transformation(extent={{42,-10},{62,10}})));
+          annotation (Placement(transformation(extent={{30,-10},{50,10}})));
         Modelica.Blocks.Interfaces.RealOutput y "Controller output"
           annotation (Placement(transformation(extent={{100,-10},{120,10}})));
         Modelica.Blocks.MathBoolean.Not not1
-          annotation (Placement(transformation(extent={{22,-4},{30,4}})));
+          annotation (Placement(transformation(extent={{10,-4},{18,4}})));
+        Modelica.Blocks.Logical.LessThreshold greaterThreshold(threshold=0.5)
+          annotation (Placement(transformation(extent={{-10,-42},{10,-22}})));
+        Modelica.Blocks.Logical.Switch switch1
+          annotation (Placement(transformation(extent={{74,-10},{94,10}})));
+        Modelica.Blocks.Interfaces.RealInput uFreDef
+          "Connector of Boolean input signal" annotation (Placement(
+              transformation(extent={{-140,-100},{-100,-60}})));
+        Modelica.Blocks.Sources.Constant const(k=0)
+          annotation (Placement(transformation(extent={{28,-66},{48,-46}})));
       equation
-        connect(Tmeas, onOffController.u) annotation (Line(points={{-120,-40},{-60,-40},
-                {-60,-6},{-12,-6}}, color={0,0,127}));
-        connect(Tset, onOffController.reference) annotation (Line(points={{-120,60},{-60,
-                60},{-60,6},{-12,6}}, color={0,0,127}));
-        connect(booleanToReal.y, y)
-          annotation (Line(points={{63,0},{110,0}}, color={0,0,127}));
+        connect(Tmeas, onOffController.u) annotation (Line(points={{-120,-40},{
+                -60,-40},{-60,-6},{-22,-6}},
+                                    color={0,0,127}));
+        connect(Tset, onOffController.reference) annotation (Line(points={{-120,60},
+                {-60,60},{-60,6},{-22,6}},
+                                      color={0,0,127}));
         connect(booleanToReal.u, not1.y)
-          annotation (Line(points={{40,0},{30.8,0}}, color={255,0,255}));
+          annotation (Line(points={{28,0},{18.8,0}}, color={255,0,255}));
         connect(not1.u, onOffController.y)
-          annotation (Line(points={{20.4,0},{11,0}}, color={255,0,255}));
+          annotation (Line(points={{8.4,0},{1,0}},   color={255,0,255}));
+        connect(greaterThreshold.u, uFreDef) annotation (Line(points={{-12,-32},
+                {-20,-32},{-20,-80},{-120,-80}}, color={0,0,127}));
+        connect(booleanToReal.y, switch1.u1) annotation (Line(points={{51,0},{
+                60,0},{60,8},{72,8}}, color={0,0,127}));
+        connect(greaterThreshold.y, switch1.u2) annotation (Line(points={{11,
+                -32},{64,-32},{64,0},{72,0}}, color={255,0,255}));
+        connect(const.y, switch1.u3) annotation (Line(points={{49,-56},{68,-56},
+                {68,-8},{72,-8}}, color={0,0,127}));
+        connect(switch1.y, y)
+          annotation (Line(points={{95,0},{110,0}}, color={0,0,127}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
                 extent={{-100,100},{100,-100}},
@@ -1055,7 +1074,7 @@ package SolarPlus "This package contains models for MPC control optimization."
             computeWetBulbTemperature=false, filNam=
             "/home/dhb-lx/git/solarplus/SolarPlus-Optimizer/models/weatherdata/USA_CA_San.Francisco.Intl.AP.724940_TMY3.mos")
           annotation (Placement(transformation(extent={{-100,120},{-80,140}})));
-      Modelica.Blocks.Sources.Constant rtu_heat_set(k=273.15 + 20)
+      Modelica.Blocks.Sources.Constant rtu_heat_set(k=273.15 + 21)
         annotation (Placement(transformation(extent={{-100,60},{-80,80}})));
       Buildings.BoundaryConditions.WeatherData.Bus weaBus1
                    "Weather data bus"
@@ -1067,7 +1086,12 @@ package SolarPlus "This package contains models for MPC control optimization."
       Modelica.Blocks.Sources.Constant fre_set(k=273.15 - 25)
         annotation (Placement(transformation(extent={{-100,-30},{-80,-10}})));
       Modelica.Blocks.Sources.Constant off(k=0)
-        annotation (Placement(transformation(extent={{-100,-80},{-80,-60}})));
+        annotation (Placement(transformation(extent={{-100,-100},{-80,-80}})));
+      Modelica.Blocks.Sources.Pulse fre_def(
+          startTime=3*3600,
+          width=5,
+          period=6*3600)
+          annotation (Placement(transformation(extent={{-100,-70},{-80,-50}})));
       equation
         connect(weaDat.weaBus, weaBus1) annotation (Line(
             points={{-80,130},{-40,130}},
@@ -1082,8 +1106,6 @@ package SolarPlus "This package contains models for MPC control optimization."
           annotation (Line(points={{-79,40},{-62,40}}, color={0,0,127}));
         connect(ref_set.y, ref_control.Tset)
           annotation (Line(points={{-79,10},{-62,10}}, color={0,0,127}));
-        connect(fre_set.y, fre_control.Tset)
-          annotation (Line(points={{-79,-20},{-62,-20}}, color={0,0,127}));
         connect(weaBus1.HGloHor, store.weaHGloHor) annotation (Line(
             points={{-40,130},{-22,130},{-22,60},{-12,60}},
             color={255,204,51},
@@ -1098,12 +1120,20 @@ package SolarPlus "This package contains models for MPC control optimization."
             string="%first",
             index=-1,
             extent={{-6,3},{-6,3}}));
-        connect(store.uCharge, off.y) annotation (Line(points={{-12,44},{-22,44},{-22,
-                -70},{-79,-70}}, color={0,0,127}));
-        connect(store.uDischarge, off.y) annotation (Line(points={{-12,40},{-20,40},{-20,
-                -70},{-79,-70}}, color={0,0,127}));
-        connect(store.uFreDef, off.y) annotation (Line(points={{-12,32},{-18,32},{-18,
-                -70},{-79,-70}}, color={0,0,127}));
+        connect(store.uCharge, off.y) annotation (Line(points={{-12,44},{-22,44},
+                {-22,-90},{-79,-90}},
+                                 color={0,0,127}));
+        connect(store.uDischarge, off.y) annotation (Line(points={{-12,40},{-20,
+                40},{-20,-90},{-79,-90}},
+                                 color={0,0,127}));
+        connect(fre_def.y, store.uFreDef) annotation (Line(points={{-79,-60},{
+                -18,-60},{-18,32},{-12,32}}, color={0,0,127}));
+        connect(fre_set.y, fre_control.Tset)
+          annotation (Line(points={{-79,-20},{-62,-20}}, color={0,0,127}));
+        connect(fre_def.y, fre_control.uFreDef) annotation (Line(points={{-79,
+                -60},{-72,-60},{-72,-34},{-62,-34}}, color={0,0,127}));
+        connect(off.y, ref_control.uFreDef) annotation (Line(points={{-79,-90},
+                {-76,-90},{-76,-4},{-62,-4}}, color={0,0,127}));
       end FeedbackControl;
 
       package BaseClasses
@@ -1663,10 +1693,10 @@ package SolarPlus "This package contains models for MPC control optimization."
         parameter Modelica.SIunits.Power RefCoolingCap = 5861 "Cooling capacity of refrigerator" annotation(Dialog(group = "Refrigerator"));
         parameter Modelica.SIunits.Power RefCoolingCOP = 3 "Cooling COP of refrigerator" annotation(Dialog(group = "Refrigerator"));
         parameter Modelica.SIunits.Temperature Tref_0 = 3.5+273.15 "Initial temperature of refrigerator" annotation(Dialog(group = "Refrigerator"));
-        parameter Modelica.SIunits.HeatCapacity Cfre=3e6 "Heat capacity of freezer zone" annotation(Dialog(group = "Freezer"));
-        parameter Modelica.SIunits.ThermalResistance Rfre=0.008 "Thermal resistance of freezer zone to RTU zone" annotation(Dialog(group = "Freezer"));
+        parameter Modelica.SIunits.HeatCapacity Cfre=1e6 "Heat capacity of freezer zone" annotation(Dialog(group = "Freezer"));
+        parameter Modelica.SIunits.ThermalResistance Rfre=0.005 "Thermal resistance of freezer zone to RTU zone" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreCoolingCap = 6096 "Cooling capacity of freezer" annotation(Dialog(group = "Freezer"));
-        parameter Modelica.SIunits.Power FreHeatingCap = 2000 "Defrost heating capacity of freezer" annotation(Dialog(group = "Freezer"));
+        parameter Modelica.SIunits.Power FreHeatingCap = 3500 "Defrost heating capacity of freezer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreHeatingEff = 0.99 "Heating efficiency of freezer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreCoolingCOP = 3 "Cooling COP of frezzer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Temperature Tfre_0 = -25+273.15 "Initial temperature of freezer" annotation(Dialog(group = "Freezer"));
