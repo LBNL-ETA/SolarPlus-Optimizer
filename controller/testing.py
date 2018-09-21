@@ -8,6 +8,7 @@ import unittest
 from mpc import mpc
 import os
 from matplotlib import pyplot as plt
+import numpy as np
 
 model_config =      {'mopath' : os.path.join('models','SolarPlus.mo'),
                      'modelpath' : 'SolarPlus.Building.Optimization.Store',
@@ -65,8 +66,8 @@ constraint_config = {'type': 'csv',
                               'uRef_min':('uRef', 'GTE', units.unit1),
                               'uRef_max':('uRef', 'LTE', units.unit1),
                               'uFreCool_min':('uFreCool', 'GTE', units.unit1),
-                              'uFreCool_max':('uFreCool', 'LTE', units.unit1), 
-                              'demand':('Pnet', 'LTE', units.kW)}}
+                              'uFreCool_max':('uFreCool', 'LTE', units.unit1)}}
+#                              'demand':('Pnet', 'LTE', units.kW)}}
                               
 price_config =      {'type': 'csv',
                      'path': os.path.join('data','Price.csv'),
@@ -139,20 +140,61 @@ class functional(unittest.TestCase):
                               price_config = price_config)
         # Optimize
         control, measurements, other_outputs, statistics = self.controller.optimize('6/1/2018', '6/2/2018', init=True)
+        
         # Plot
-        measurements.plot()           
-        plt.legend()
-        control.plot()
-        plt.legend()
-        for key in other_outputs.columns:
-            if key is 'SOC':
-                plt.figure(100)
-            else:
-                plt.figure(99)
-            time = other_outputs.index
-            data = other_outputs[key].get_values()
+        for key in measurements.columns:
+            plt.figure(1)
+            time_diff = (measurements.index.values-measurements.index.values[0])
+            time = time_diff/(time_diff[-1])*24
+            data = measurements[key].get_values()-273.15
             plt.plot(time, data, label=key)
             plt.legend()
+            plt.xlim([0,24])
+            plt.xticks(np.linspace(0, 24, num=13))
+        plt.savefig('measurements.png')
+        for key in control.columns:
+            plt.figure(2)
+            time_diff = (control.index.values-control.index.values[0])
+            time = time_diff/(time_diff[-1])*24
+            data = control[key].get_values()
+            plt.plot(time, data, label=key)
+            plt.legend()
+            plt.xlim([0,24])
+            plt.xticks(np.linspace(0, 24, num=13))
+        plt.savefig('control.png')            
+        for key in other_outputs.columns:
+            if key is 'SOC':
+                plt.figure(4)
+                time_diff = (other_outputs.index.values-other_outputs.index.values[0])
+                time = time_diff/(time_diff[-1])*24
+                data = other_outputs[key].get_values()
+                plt.plot(time, data, label=key)
+                plt.legend()
+                plt.xlim([0,24])
+                plt.ylim([0,0.5])                   
+                plt.xticks(np.linspace(0, 24, num=13))
+                plt.savefig('SOC.png')
+            else:
+                plt.figure(3)
+                time_diff = (other_outputs.index.values-other_outputs.index.values[0])
+                time = time_diff/(time_diff[-1])*24
+                data = other_outputs[key].get_values()
+                plt.plot(time, data, label=key)
+                plt.legend()
+                plt.xlim([0,24])
+                plt.ylim([-15000,25000])                
+                plt.xticks(np.linspace(0, 24, num=13))
+                plt.savefig('Power.png')
+        for key in self.controller.price.display_data().columns:
+            plt.figure(5)
+            time_diff = (self.controller.price.display_data().index.values-self.controller.price.display_data().index.values[0])
+            time = time_diff/(time_diff[-1])*24
+            data = self.controller.price.display_data()[key].get_values()
+            plt.plot(time, data, label=key)
+            plt.legend()
+            plt.xlim([0,24])
+            plt.xticks(np.linspace(0, 24, num=13))
+            plt.savefig('price.png')            
         plt.show()
         
             
