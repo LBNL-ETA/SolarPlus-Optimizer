@@ -66,8 +66,8 @@ constraint_config = {'type': 'csv',
                               'uRef_min':('uRef', 'GTE', units.unit1),
                               'uRef_max':('uRef', 'LTE', units.unit1),
                               'uFreCool_min':('uFreCool', 'GTE', units.unit1),
-                              'uFreCool_max':('uFreCool', 'LTE', units.unit1)}}
-#                              'demand':('Pnet', 'LTE', units.kW)}}
+                              'uFreCool_max':('uFreCool', 'LTE', units.unit1),
+                              'demand':('Pnet', 'LTE', units.kW)}}
                               
 price_config =      {'type': 'csv',
                      'path': os.path.join('data','Price.csv'),
