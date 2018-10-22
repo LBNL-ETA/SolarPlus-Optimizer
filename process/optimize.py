@@ -169,8 +169,8 @@ vm_constraints = {'Trtu_max'  : ('Trtu', 'LTE', units.degC),
                   'uFreCool_min' : ('uFreCool', 'GTE', units.unit1),
                   'uCharge_max' : ('uCharge', 'LTE', units.unit1),
                   'uCharge_min' : ('uCharge', 'GTE', units.unit1),
-                  'uDischarge_max' : ('uCharge', 'LTE', units.unit1),
-                  'uDischarge_min' : ('uCharge', 'GTE', units.unit1)}
+                  'uDischarge_max' : ('uDischarge', 'LTE', units.unit1),
+                  'uDischarge_min' : ('uDischarge', 'GTE', units.unit1)}
 # Instantiate object                  
 constraints = exodata.ConstraintFromDF(constraints_df, 
                                        vm_constraints, 
