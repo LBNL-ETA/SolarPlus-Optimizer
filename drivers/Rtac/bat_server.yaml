@@ -1,0 +1,108 @@
+
+server:
+    ########################## Modbus server settings #########################
+
+    port: 5020
+    UNIT_ID: 0x1
+    update_time: 5
+
+    ######################### Register settings ###############################
+                            ### User defined block ###
+    # If this is set to True the block sizes can be specified in the config file
+    # If this is set to False the block sizes are automatically calculated from
+    # the amount of registers defined in the config file for each register type.
+    use_block_size: True
+
+                            ### Block size and offset ###
+    # For each register size a maximum amount of addressable registers may be
+    # specified. Additionally, an offset may also be applied for each register.
+    # If the block size is 1000 and the offset is 1000, the range for that
+    # register type would be 1000-1999. This is useful if you would like to
+    # match exact register addresses with a target device.
+
+    coil_block_size: 1000
+    coil_block_offset: 0x1000
+
+
+    discrete_block_size: 1000
+    discrete_block_offset: 0
+
+    holding_block_size: 1000
+    holding_block_offset: 0x4000
+
+    input_block_size: 1000
+    input_block_offset: 0
+
+                            ### Random Range ###
+    # Sets the range of random values for the float32,int32,int16 holding and
+    # input registers
+    random_range: [1,1000]
+
+                            ### Ramp Slope ###
+    # Sets the slope for the ramp function for the float32,int32,int16 holding and
+    # input registers
+    ramp_slope: 1.0
+
+                        ### Coil/discrete registers ###
+
+    # For each coil/discrete register type you can specify a name which is the
+    # key in the dictionary. The value of the dictionary is a list which specifies:
+    # [address, initial value, turn cycle on or off]
+
+    # The third value in the list is a boolean value which determines whether
+    # the server will switch the value of the coil/discrete register. This can
+    # be useful for testing code that will be interacting with a modbus device.
+
+    # When dealing with coil registers, initliazing 100 registers will lead to
+    # an effective address range of 0-98
+
+
+
+
+    coil_registers: {
+        island_state: [0x1000,1,'True'],
+        island_type: [0x1001,1,'True'],
+        bess_availability: [0x1002,1,'True'],
+        pge_state: [0x1003,1,'True'],
+        pcc_breaker_state: [0x1004,1,'True'],
+        bess_pv_breaker_state: [0x1005,1,'True']
+    }
+    discrete_registers: {}
+
+                        ### Holding/Input registers ###
+
+    # For each register type you can specify a name which is the key in the dictionary
+    # the value of the dictionary is a list which specifies:
+    # [address, initial value, function to apply]
+    int16_holding: {
+        heartbeat: [0x4000,1,'ramp'],
+        fault_condition: [0x4001,1,'ramp']
+    }
+
+    int32_holding: {
+        real_power_setpoint: [0x4002,1,'ramp'],
+        reactive_power_setpoint: [0x4004,2,'ramp'],
+        target_real_power: [0x4006,3,'ramp'],
+        target_reactive_power: [0x4008,4,'ramp'],
+        battery_total_capacity: [0x400A,5,'ramp'],
+        battery_current_stored_energy: [0x400C,6,'ramp'],
+        total_actual_real_power: [0x400E,7,'ramp'],
+        total_actual_reactive_power: [0x4010,8,'ramp'],
+        total_actual_apparent_power: [0x4012,9,'ramp'],
+        active_power_output_limit: [0x4014,10,'ramp'],
+        current_power_production: [0x4016,11,'ramp'],
+        ac_current_phase_a: [0x4018,12,'ramp'],
+        ac_current_phase_b: [0x401A,13,'ramp'],
+        ac_current_phase_c: [0x401C,14,'ramp'],
+        ac_voltage_a_b: [0x401E,15,'ramp'],
+        ac_voltage_b_c: [0x4020,16,'ramp'],
+        ac_voltage_c_a: [0x4022,17,'ramp'],
+        ac_frequency: [0x4024,18,'ramp'],
+        pge_voltage: [0x4026,19,'ramp'],
+        pge_frequency: [0x4028,20,'ramp']
+    }
+    float_holding: {}
+
+    int16_input: {}
+    int32_input: {}
+    float_input: {}

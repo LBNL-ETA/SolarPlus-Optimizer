@@ -1,0 +1,90 @@
+modbus:
+    ########################### Modbus Settings ####################################
+    UNIT_ID: 0x1
+    byte_order: big
+    word_order: little
+    #                          ### Modbus type ###
+    # This can be set to 'tcp' or 'serial' and determines the modbus method that
+    # the driver will use.  The appropriate settings will be used below and the
+    # irrelevant ones will be ignored
+    modbus_type: tcp
+    #modbus_type: serial
+
+    #                          ### Serial Settings ###
+    method: rtu
+    stopbits: 1
+    bytesize: 8
+    parity: E
+    baudrate: 19200
+    #                          ### Modbus TCP Settings ###
+    ip: 127.0.0.1
+    port: 5020
+    ########################## Regitser Settings ###################################
+    #                          ### OFFSET Regitsers
+    # This controls how much will be subtracted from all of the register addresses
+    # Some device specs will list the register address as 1, but when being accessed
+    # It will actually need to be sent addressed as 0.
+    OFFSET_REGISTERS: 0
+    #                          ### Target registers ###
+    # These registers will be accessed when the get_data() function is called
+    # the function will return a dictionary with the data for each register
+    # Register names must be unique or data will be overwritten
+
+    #                          ### Coil/Discrete registers ###
+    # These registers only need a name and the first value is the
+    # register address.
+    coil_registers: {
+        island_state: [0x1000],
+        island_type: [0x1001],
+        bess_availability: [0x1002],
+        pge_state: [0x1003],
+        pcc_breaker_state: [0x1004],
+        bess_pv_breaker_state: [0x1005]
+    }
+    discrete_registers: {}
+    #                          ### Input/Holding registers ###
+    # These registers need a unique name (key of dictionary) that is not
+    # used in any other type of register. The value of the dictionary is
+    # a list. The first value of the list is the register address and the
+    # second value is the type. The types that can be specified are listed
+    # below.
+    # |   Type          | Length (registers) |
+    # | ------------- |:------------------:|
+    # |        ignore |                  1 |
+    # |          8int |                  1 |
+    # |         8uint |                  1 |
+    # |         16int |                  1 |
+    # |        16uint |                  1 |
+    # |         32int |                  2 |
+    # |        32uint |                  2 |
+    # |       32float |                  2 |
+    # |         64int |                  4 |
+    # |        64uint |                  4 |
+    # |       64float |                  4 |
+
+    holding_registers: {
+        heartbeat: [0x4000,16int],
+        real_power_setpoint: [0x4002,32int],
+        reactive_power_setpoint: [0x4004,32int],
+        target_real_power: [0x4006,32int],
+        target_reactive_power: [0x4008,32int],
+        battery_total_capacity: [0x400A,32int],
+        battery_current_stored_energy: [0x400C,32int],
+        total_actual_real_power: [0x400E,32int],
+        total_actual_reactive_power: [0x4010,32int],
+        total_actual_apparent_power: [0x4012,32int],
+
+        active_power_output_limit: [0x4014,32int],
+        current_power_production: [0x4016,32int],
+        ac_current_phase_a: [0x4018,32int],
+        ac_current_phase_b: [0x401A,32int],
+        ac_current_phase_c: [0x401C,32int],
+        ac_voltage_ab: [0x401E,32int],
+        ac_voltage_bc: [0x4020,32int],
+        ac_voltage_ca: [0x4022,32int],
+        ac_frequency: [0x4024,32int],
+        fault_condition: [0x4001,16int],
+        pge_voltage: [0x4026,32int],
+        pge_frequency: [0x4028,32int],
+    }
+    input_registers: {}

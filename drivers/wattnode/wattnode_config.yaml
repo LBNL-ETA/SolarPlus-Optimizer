@@ -1,0 +1,247 @@
+modbus:
+    ########################### Modbus Settings ####################################
+    UNIT_ID: 0x1
+    byte_order: big
+    word_order: little
+    enable_logging: False
+    #                          ### Modbus type ###
+    # This can be set to 'tcp' or 'serial' and determines the modbus method that
+    # the driver will use.  The appropriate settings will be used below and the
+    # irrelevant ones will be ignored
+    modbus_type: serial
+    #modbus_type: serial
+
+    #                          ### Serial Settings ###
+    method: rtu
+    stopbits: 1
+    bytesize: 8
+    # Parity can be N|E|O|M|S] where N: None, E: even, O: odd
+    parity: N
+    serial_port: /dev/ttyUSB0
+    baudrate: 9600
+    #                          ### Modbus TCP Settings ###
+    ip: 127.0.0.1
+    tcp_port: 5020
+    ########################## Regitser Settings ###################################
+    #                          ### OFFSET Regitsers
+    # This controls how much will be subtracted from all of the register addresses
+    # Some device specs will list the register address as 1, but when being accessed
+    # It will actually need to be sent addressed as 0.
+    OFFSET_REGISTERS: 0
+    #                          ### Target registers ###
+    # These registers will be accessed when the get_data() function is called
+    # the function will return a dictionary with the data for each register
+    # Register names must be unique or data will be overwritten
+
+    #                          ### Coil/Discrete registers ###
+    # These registers only need a name and the first value is the
+    # register address.
+    coil_registers: {status: [0],other_status: [47]}
+    discrete_registers: {status_discrete: [0],other_status_discrete: [47]}
+    #                          ### Input/Holding registers ###
+    # These registers need a unique name (key of dictionary) that is not
+    # used in any other type of register. The value of the dictionary is
+    # a list. The first value of the list is the register address and the
+    # second value is the type. The types that can be specified are listed
+    # below.
+    # |   Type          | Length (registers) |
+    # | ------------- |:------------------:|
+    # |        ignore |                  1 |
+    # |          8int |                  1 |
+    # |         8uint |                  1 |
+    # |         16int |                  1 |
+    # |        16uint |                  1 |
+    # |         32int |                  2 |
+    # |        32uint |                  2 |
+    # |       32float |                  2 |
+    # |         64int |                  4 |
+    # |        64uint |                  4 |
+    # |       64float |                  4 |
+
+    coil_registers: {}
+    discrete_registers: {}
+    input_registers: {}
+    holding_registers: {
+    # Each dictionary entry:
+    # register_name: [register_type, register_address]
+                        # Floating Energy Registers
+                        EnergySum: [1000,32float],
+                        EnergyPosSUm: [1002,32float],
+                        EnergySumNR: [1004,32float],
+                        EnergyPosSumNr: [1006,32float],
+                        # Floating Power Registers
+                        PowerSum: [1008,32float],
+                        PowerA: [1010,32float],
+                        PowerB: [1012,32float],
+                        PowerC: [1014,32float],
+                        # Floating Voltage Registers
+                        VoltAvgLN: [1016,32float],
+                        VoltA: [1018,32float],
+                        VoltB: [1020,32float],
+                        VoltC: [1022,32float],
+                        VoltAvgLL: [1024,32float],
+                        VoltAB: [1026,32float],
+                        VoltBC: [1028,32float],
+                        VoltAC: [1030,32float],
+                        # Floating Frequency Register
+                        Freq: [1032,32float],
+                        # Integer Energy Registers
+                        EnergySum_int: [1200,32int],
+                        EnergyPosSUm_int: [1202,32int],
+                        EnergySumNR_int: [1204,32int],
+                        EnergyPosSumNr_int: [1206,32int],
+                        # Integer Power Registers
+                        PowerSum_int: [1208,16int],
+                        PowerA_int: [1209,16int],
+                        PowerB_int: [1210,16int],
+                        PowerC_int: [1211,16int],
+                        # Integer Voltage Registers
+                        VoltAvgLN_int: [1212,16int],
+                        VoltA_int: [1213,16int],
+                        VoltB_int: [1214,16int],
+                        VoltC_int: [1215,16int],
+                        VoltAvgLL_int: [1216,16int],
+                        VoltAB_int: [1217,16int],
+                        VoltBC_int: [1218,16int],
+                        VoltAC_int: [1219,16int],
+                        # Integer Frequency Register
+                        Freq_int: [1220,16int],
+                        # Advanced Registers - Floating Point
+                        EnergyA: [1100,32float],
+                        EnergyB: [1102,32float],
+                        EnergyC: [1104,32float],
+                        EnergyPosA: [1106,32float],
+                        EnergyPosB: [1108,32float],
+                        EnergyPosC: [1110,32float],
+                        EnergyNegSum: [1112,32float],
+                        EnergyNegSumNR: [1114,32float],
+                        EnergyNegA: [1116,32float],
+                        EnergyNegB: [1118,32float],
+                        EnergyNegC: [1120,32float],
+                        EnergyReacSum: [1122,32float],
+                        EnergyReacA: [1124,32float],
+                        EnergyReacB: [1126,32float],
+                        EnergyReacC: [1128,32float],
+                        EnergyAppSum: [1130,32float],
+                        EnergyAppA: [1132,32float],
+                        EnergyAppB: [1134,32float],
+                        EnergyAppC: [1136,32float],
+                        PowerFactorAvg: [1138,32float],
+                        PowerFactorA: [1140,32float],
+                        PowerFactorB: [1142,32float],
+                        PowerFactorC: [1144,32float],
+                        PowerReacSum: [1146,32float],
+                        PowerReacA: [1148,32float],
+                        PowerReacB: [1150,32float],
+                        PowerReacC: [1152,32float],
+                        PowerAppSum: [1154,32float],
+                        PowerAppA: [1156,32float],
+                        PowerAppB: [1158,32float],
+                        PowerAppC: [1160,32float],
+                        CurrentA: [1162,32float],
+                        CurrentB: [1164,32float],
+                        CurrentC: [1166,32float],
+                        Demand: [1168,32float],
+                        DemandMin: [1170,32float],
+                        DemandMax: [1172,32float],
+                        DemandApp: [1174,32float],
+                        DemandA: [1176,32float],
+                        DemandB: [1178,32float],
+                        DemandC: [1180,32float],
+                        # Advanced Registers - Integer
+                        EnergyA_int: [1300,32int],
+                        EnergyB_int: [1302,32int],
+                        EnergyC_int: [1304,32int],
+                        EnergyPosA_int: [1306,32int],
+                        EnergyPosB_int: [1308,32int],
+                        EnergyPosC_int: [1310,32int],
+                        EnergyNegSum_int: [1312,32int],
+                        EnergyNegSumNR_int: [1314,32int],
+                        EnergyNegA_int: [1316,32int],
+                        EnergyNegB_int: [1318,32int],
+                        EnergyNegC_int: [1320,32int],
+                        EnergyReacSum_int: [1322,32int],
+                        EnergyReacA_int: [1324,32int],
+                        EnergyReacB_int: [1326,32int],
+                        EnergyReacC_int: [1328,32int],
+                        EnergyAppSum_int: [1330,32int],
+                        EnergyAppA_int: [1332,32int],
+                        EnergyAppB_int: [1334,32int],
+                        EnergyAppC_int: [1336,32int],
+                        PowerFactorAvg_int: [1338,16int],
+                        PowerFactorA_int: [1339,16int],
+                        PowerFactorB_int: [1340,16int],
+                        PowerFactorC_int: [1341,16int],
+                        PowerReacSum_int: [1342,16int],
+                        PowerReacA_int: [1343,16int],
+                        PowerReacB_int: [1344,16int],
+                        PowerReacC_int: [1345,16int],
+                        PowerAppSum_int: [1346,16int],
+                        PowerAppA_int: [1347,16int],
+                        PowerAppB_int: [1348,16int],
+                        PowerAppC_int: [1349,16int],
+                        CurrentA_int: [1350,16int],
+                        CurrentB_int: [1351,16int],
+                        CurrentC_int: [1352,16int],
+                        Demand_int: [1353,16int],
+                        DemandMin_int: [1354,16int],
+                        DemandMax_int: [1355,16int],
+                        DemandApp_int: [1356,16int],
+                        DemandA_int: [1357,16int],
+                        DemandB_int: [1358,16int],
+                        DemandC_int: [1359,16int],
+                        IoPinState_int: [1360,16int],
+                        PulseCount_int: [1361,32int],
+                        # Configuration Registers
+                        ConfigPasscode: [1600,32int],
+                        CtAmps: [1602,16int],
+                        CtAmpsA: [1603,16int],
+                        CtAmpsB: [1604,16int],
+                        CtAmpsC: [1605,16int],
+                        CtDirections: [1606,16int],
+                        Averaging: [1607,16int],
+                        PowerIntScale: [1608,16int],
+                        DemPerMins: [1609,16int],
+                        DemSubints: [1610,16int],
+                        GainAdjustA: [1611,16int],
+                        GainAdjustB: [1612,16int],
+                        GainAdjustC: [1613,16int],
+                        PhaseAdjustA: [1614,16int],
+                        PhaseAdjustB: [1615,16int],
+                        PhaseAdjustC: [1616,16int],
+                        CreepLimit: [1617,16int],
+                        PhaseOffset: [1618,16int],
+                        ZeroEnergy: [1619,16int],
+                        ZeroDemand: [1620,16int],
+                        CurrentIntScale: [1621,16int],
+                        IoPinMode: [1622,16int],
+                        # Communication Registers
+                        ApplyComConfig: [1650,16int],
+                        Address: [1651,16int],
+                        BaudRate: [1652,16int],
+                        ParityMode: [1653,16int],
+                        ModbusMode: [1654,16int],
+                        ReplyDelay: [1655,16int],
+                        # Customer Diagnostic Registers
+                        DummyReg: [0000,32int],
+                        SerialNumber: [1700,32int],
+                        UptimeSecs: [1702,32int],
+                        TotalSecs: [1704,32int],
+                        Model: [1706,16int],
+                        Version: [1707,16int],
+                        Options: [1708,16int],
+                        ErrorStatus: [1709,16int],
+                        PowerFailCount: [1710,16int],
+                        CrcErrorCount: [1712,16int],
+                        FrameErrorCount: [1713,16int],
+                        PacketErrorCount: [1713,16int],
+                        OverrunCount: [1714,16int],
+                        ErrorStatus1: [1715,16int],
+                        ErrorStatus2: [1716,16int],
+                        ErrorStatus3: [1717,16int],
+                        ErrorStatus4: [1718,16int],
+                        ErrorStatus5: [1719,16int],
+                        ErrorStatus6: [1720,16int],
+                        ErrorStatus7: [1721,16int],
+                        ErrorStatus8: [1722,16int]
+}
