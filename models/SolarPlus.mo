@@ -1192,6 +1192,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{100,-130},{120,-110}})));
       Modelica.Blocks.Interfaces.RealOutput Tfre "Freezer air temperature"
         annotation (Placement(transformation(extent={{100,-150},{120,-130}})));
+        Modelica.Blocks.Sources.Constant uRefDef(k=0) annotation (Placement(
+              transformation(extent={{-120,-160},{-100,-140}})));
       equation
         connect(store.weaHGloHor, weaHGloHor) annotation (Line(points={{-12,60},
                 {-20,60},{-20,140},{-120,140}}, color={0,0,127}));
@@ -1233,6 +1235,10 @@ package SolarPlus "This package contains models for MPC control optimization."
                 {20,38},{11,38}}, color={0,0,127}));
         connect(Tfre, store.Tfre) annotation (Line(points={{110,-140},{16,-140},
                 {16,36},{11,36}}, color={0,0,127}));
+        connect(uFreDef, fre_control.uFreDef) annotation (Line(points={{-120,
+                -50},{-90,-50},{-90,-34},{-62,-34}}, color={0,0,127}));
+        connect(uRefDef.y, ref_control.uFreDef) annotation (Line(points={{-99,
+                -150},{-80,-150},{-80,-4},{-62,-4}}, color={0,0,127}));
         annotation (Diagram(coordinateSystem(extent={{-100,-160},{100,140}})),
             Icon(coordinateSystem(extent={{-100,-160},{100,140}})));
       end Store;

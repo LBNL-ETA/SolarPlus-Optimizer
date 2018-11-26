@@ -8,14 +8,15 @@ from mpc import mpc
 from matplotlib import pyplot as plt
 import numpy as np
 import mpc_config
+import pandas as pd
 
 config = mpc_config.get_config()
                              
 class unit(unittest.TestCase):
     
     def setUp(self):
-        self.start_time = '6/1/2018'
-        self.final_time = '6/6/2018'
+        self.start_time = pd.to_datetime('6/1/2018')
+        self.final_time = pd.to_datetime('6/6/2018')
         self.controller = mpc(config['model_config'],
                               config['opt_config'], 
                               config['system_config'],
@@ -46,6 +47,8 @@ class unit(unittest.TestCase):
 class functional(unittest.TestCase):
     
     def test_simulate(self):
+        start_time = pd.to_datetime('6/1/2018')
+        final_time = pd.to_datetime('6/6/2018')
         # Instantiate
         config['model_config']['modelpath'] = 'SolarPlus.Building.Optimization.StoreSim'
         self.controller = mpc(config['model_config'],
@@ -56,7 +59,7 @@ class functional(unittest.TestCase):
                               constraint_config = config['constraint_config'],
                               price_config = config['price_config'])
         # Simulate
-        measurements, other_outputs = self.controller.simulate('6/1/2018', '6/6/2018')
+        measurements, other_outputs = self.controller.simulate(start_time, final_time)
         # Plot
         plt.figure(1)
         for key in measurements.columns:
@@ -68,6 +71,8 @@ class functional(unittest.TestCase):
         plt.show()
         
     def test_optimize(self):
+        start_time = pd.to_datetime('6/1/2018')
+        final_time = pd.to_datetime('6/2/2018')
         # Instantiate
         self.controller = mpc(config['model_config'],
                               config['opt_config'], 
@@ -77,7 +82,7 @@ class functional(unittest.TestCase):
                               constraint_config = config['constraint_config'],
                               price_config = config['price_config'])
         # Optimize
-        control, measurements, other_outputs, statistics = self.controller.optimize('6/1/2018', '6/2/2018', init=True)
+        control, measurements, other_outputs, statistics = self.controller.optimize(start_time, final_time, init=True)
         
         # Plot
         for key in measurements.columns:
