@@ -1,6 +1,5 @@
 import json
 import itertools
-import pandas as pd
 import requests as req
 import yaml
 import random
