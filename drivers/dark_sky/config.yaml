@@ -5,7 +5,7 @@ dark_sky:
 
 local_database_config:
     host: localhost
-    database: local_wattnode_test
+    database: dark_sky
     protocol: json
     port: 8086
     use_ssl: False
@@ -13,15 +13,15 @@ local_database_config:
     measurement_name: btu_meters
     username: admin
     password: password
-    tags: sensor_id,ip
-    sensor_id: meter1
-    tag_dict: {sensor_id: meter1,ip: 127.0.0.1}
-    fields: [signal_strength, flow_rate, net_total, positive_totalizer, negative_totalizer]
+    tags:
+    sensor_id:
+    tag_dict: {}
+    fields: []
 
-
+# Not sure if this will be used for weather
 remote_database_config:
     host: localhost
-    database: remote_wattnode_test
+    database: remote_dark_sky_test
     protocol: json
     port: 8086
     use_ssl: False
@@ -29,7 +29,7 @@ remote_database_config:
     measurement_name: btu_meters
     username: admin
     password: password
-    tags: sensor_id,ip
-    sensor_id: meter1
-    tag_dict: {sensor_id: meter1,ip: 127.0.0.1}
-    fields: [signal_strength, flow_rate, net_total, positive_totalizer, negative_totalizer]
+    tags:
+    sensor_id:
+    tag_dict: {}
+    fields: []

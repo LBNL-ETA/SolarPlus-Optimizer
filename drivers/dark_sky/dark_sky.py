@@ -1,11 +1,7 @@
 import json
-import itertools
 import requests as req
 import yaml
-import random
 import argparse
-from struct import *
-from influxdb import InfluxDBClient
 from Influx_Dataframe_Client import Influx_Dataframe_Client
 
 class API_Collection_Layer:
@@ -35,6 +31,10 @@ class API_Collection_Layer:
     def push_current(self,database,measurement,current_timestamp,data):
         # Remove time from data field since this is field name is not allowed
         del(data['time'])
+        for key in data:
+            if isinstance(data[key],int):
+                data[key] = float(data[key])
+
         send_json =   {
             'fields': data,
             'time': forecast_timestamp,
@@ -57,14 +57,10 @@ class API_Collection_Layer:
             # Remove time field from fields as this field name is not allowed
             del(data[x]['time'])
             # Make all data types conistent
-            data[x]['cloudCover'] = float(data[x]['cloudCover'])
-            data[x]['precipIntensity'] = float(data[x]['precipIntensity'])
-            data[x]['precipProbability'] = float(data[x]['precipProbability'])
-            data[x]['windSpeed'] = float(data[x]['windSpeed'])
-            data[x]['pressure'] = float(data[x]['pressure'])
-            data[x]['visibility'] = float(data[x]['visibility'])
-            data[x]['dewPoint'] = float(data[x]['dewPoint'])
-            data[x]['windGust'] = float(data[x]['windGust'])
+            for key in data[x]:
+                if isinstance(data[x][key],int):
+                    data[x][key] = float(data[x][key])
+
             #data[x][''] = float(data[x][''])
 
             json_prediction =   {
@@ -124,5 +120,5 @@ if __name__ == "__main__":
     obj = API_Collection_Layer(config_file=config_file)
     api_data = obj.get_data_dark_sky()
     forecast_timestamp = api_data['currently']['time'] * 1000000000
-    obj.push_forecast('dark_sky','forecast_48_hour',forecast_timestamp,api_data['hourly']['data'])
-    obj.push_current('dark_sky','current_weather',forecast_timestamp,api_data['currently'])
+    obj.push_forecast('dark_sky','forecast_48_hour_2',forecast_timestamp,api_data['hourly']['data'])
+    obj.push_current('dark_sky','current_weather_3',forecast_timestamp,api_data['currently'])
