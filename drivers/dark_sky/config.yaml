@@ -1,0 +1,35 @@
+dark_sky:
+    api: 763827c188fa2c8c4cca914f16caf2d0
+    url: https://api.darksky.net/forecast/
+    coordinates: 40.5301,-124.0000 # Should be near BLR
+
+local_database_config:
+    host: localhost
+    database: local_wattnode_test
+    protocol: json
+    port: 8086
+    use_ssl: False
+    verify_ssl_is_on: False
+    measurement_name: btu_meters
+    username: admin
+    password: password
+    tags: sensor_id,ip
+    sensor_id: meter1
+    tag_dict: {sensor_id: meter1,ip: 127.0.0.1}
+    fields: [signal_strength, flow_rate, net_total, positive_totalizer, negative_totalizer]
+
+
+remote_database_config:
+    host: localhost
+    database: remote_wattnode_test
+    protocol: json
+    port: 8086
+    use_ssl: False
+    verify_ssl_is_on: False
+    measurement_name: btu_meters
+    username: admin
+    password: password
+    tags: sensor_id,ip
+    sensor_id: meter1
+    tag_dict: {sensor_id: meter1,ip: 127.0.0.1}
+    fields: [signal_strength, flow_rate, net_total, positive_totalizer, negative_totalizer]
