@@ -3,6 +3,9 @@ import requests as req
 import yaml
 import argparse
 from Influx_Dataframe_Client import Influx_Dataframe_Client
+# DarkSky API documentation https://darksky.net/dev/docs#forecast-request
+
+
 
 class API_Collection_Layer:
 
@@ -61,7 +64,6 @@ class API_Collection_Layer:
                 if isinstance(data[x][key],int):
                     data[x][key] = float(data[x][key])
 
-            #data[x][''] = float(data[x][''])
 
             json_prediction =   {
                 'fields': data[x],
@@ -94,7 +96,7 @@ class API_Collection_Layer:
         json_data = json.loads(response.text)
         print(url)
         if (response.status_code != 200):
-            print("Error in retrieving data from Wunderground!")
+            print("Error in retrieving data from DarkSky!")
             return None
         else:
             return json_data
@@ -122,3 +124,4 @@ if __name__ == "__main__":
     forecast_timestamp = api_data['currently']['time'] * 1000000000
     obj.push_forecast('dark_sky','forecast_48_hour_2',forecast_timestamp,api_data['hourly']['data'])
     obj.push_current('dark_sky','current_weather_3',forecast_timestamp,api_data['currently'])
+    print(api_data['hourly']['data'][0])
