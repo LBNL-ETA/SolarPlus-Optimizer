@@ -1,3 +1,0 @@
-#!/home/werd/lbnl_summer/lbnl-data-drivers/python/modbus/modbus/bin/python3.6
-from reindent import main
-main()
