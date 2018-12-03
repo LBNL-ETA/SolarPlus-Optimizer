@@ -36,12 +36,10 @@ obj.write_data(0x490, 1) # clear_HACCP_new_alarm_flag
 set_check(obj,'r0',0)
 
 # minimum working setpoint
-#obj.write_register('r1', 0)
 set_check(obj,'r1',0)
 
 # maximum working setpoint
 set_check(obj,'r2',0)
-#obj.write_register('r2', 0)
 
 # Measured input for low temperature alarm
 # Set 0 for cabinet probe, and 1 for evaporation probe, 2 for auxillary probe
