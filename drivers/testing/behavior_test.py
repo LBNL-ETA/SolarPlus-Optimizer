@@ -28,7 +28,6 @@ print(obj.read_register('HAACP_0_2'))
 # These registers are write only so they cannot be in the register dictionary
 obj.write_data(0x465, 1) # clear_HACCP_historian
 obj.write_data(0x490, 1) # clear_HACCP_new_alarm_flag
-#obj.write_register('clear_HACCP_historian', 1)
 
 
 # 4. Set parameters related to refrigerator control
@@ -47,7 +46,6 @@ set_check(obj,'r2',0)
 # Measured input for low temperature alarm
 # Set 0 for cabinet probe, and 1 for evaporation probe, 2 for auxillary probe
 set_check(obj,'A0',1)
-#obj.write_register('A0', 1)
 
 # Measured input for high temperature alarm
 # Set 0 for cabinet probe and 1 for auxillary probe
