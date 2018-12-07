@@ -1,7 +1,13 @@
-from modbus_driver import Modbus_Driver
+
+import os,sys
 import time
 from struct import *
-
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+modbus_folder='modbus_driver'
+print(os.path.join(parent_dir, modbus_folder))
+sys.path.append(os.path.join(parent_dir, modbus_folder))
+print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from modbus_driver import Modbus_Driver
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 
@@ -117,3 +123,13 @@ output = obj.get_data()
 print(output)
 
 obj.kill_modbus()
+'''
+                        # HAACP Alarms command
+                        #clear_HACCP_historian: [0x465, 16int, 0, 1],
+                        #clear_HACCP_new_alarm_flag: [0x490, 16int, 0, 1],
+                        # HAACP record
+                        HAACP_0_0: [0x501,16uint],
+                        HAACP_0_1: [0x502,16uint],
+                        HAACP_0_2: [0x503,16uint],
+                        #HAACP_0_temp: [0x504,16int],
+'''
