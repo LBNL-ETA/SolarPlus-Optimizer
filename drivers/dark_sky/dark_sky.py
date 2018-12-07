@@ -1,7 +1,12 @@
+import os,sys
 import json
 import requests as req
 import yaml
 import argparse
+# Add influx driver to path
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+influx_folder='influx_dataframe_client'
+sys.path.append(os.path.join(parent_dir, influx_folder))
 from Influx_Dataframe_Client import Influx_Dataframe_Client
 # DarkSky API documentation https://darksky.net/dev/docs#forecast-request
 
