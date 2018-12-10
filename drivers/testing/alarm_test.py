@@ -195,7 +195,7 @@ def main(config,output_file):
         outfile.write('[')
         while(1):
             print("Recording data")
-            output = objs.get_data()
+            output = obj.get_data()
             output['time'] = int(time.time())
             output['decoded_alarm'] = decode_alarm(output['alarm_status'])
             if (output['num_alarms_in_history'] > 0):
