@@ -74,11 +74,11 @@ def set_params(obj):
 
     # Measured input for low temperature alarm
     # Set 0 for cabinet probe, and 1 for evaporation probe, 2 for auxillary probe
-    set_check(obj,'A0',1)
+    set_check(obj,'A0',0)
 
     # Measured input for high temperature alarm
     # Set 0 for cabinet probe and 1 for auxillary probe
-    set_check(obj,'A3',1)
+    set_check(obj,'A3',0)
 
     # Temperature for low temperature alarm to activate values from -99 to 99 C/F
     set_check(obj,'A1',-10) # Default is -10
