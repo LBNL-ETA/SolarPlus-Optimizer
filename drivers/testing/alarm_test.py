@@ -23,16 +23,16 @@ def read_HACCP(obj,num_alarms):
         HACCP_name = "HACCP_" + str(alarm_num)
 
         HACCP_reg = HACCP_name + str(reg_num)
-        HACCP_dict[HACCP_reg] = decode_register(base_address,"16uint")
+        HACCP_dict[HACCP_reg] = obj.decode_register(base_address,"16uint")
 
         HACCP_reg = HACCP_name + str(reg_num+1)
-        HACCP_dict[HACCP_reg] = decode_register(base_address+1,"16uint")
+        HACCP_dict[HACCP_reg] = obj.decode_register(base_address+1,"16uint")
 
         HACCP_reg = HACCP_name + str(reg_num+2)
-        HACCP_dict[HACCP_reg] = decode_register(base_address+2,"16uint")
+        HACCP_dict[HACCP_reg] = obj.decode_register(base_address+2,"16uint")
 
         HACCP_reg = HACCP_name + str(reg_num+3)
-        HACCP_dict[HACCP_reg] = decode_register(base_address+3,"16uint")
+        HACCP_dict[HACCP_reg] = obj.decode_register(base_address+3,"16uint")
 
         base_address += 4
         num_alarms -= 1
