@@ -157,11 +157,9 @@ def cleanup(filename):
 
 #signal.signal(signal.SIGINT, signal_handler)
 def main(config,output_file):
-    '''
-    obj = Modbus_Driver("fridge_config_new.yaml")
+    obj = Modbus_Driver(config)
     obj.initialize_modbus()
     set_params(obj)
-    '''
     output = {}
     count = 0
     filename = output_file
@@ -169,9 +167,9 @@ def main(config,output_file):
         outfile.write('[')
         while(1):
             print("Recording data")
-            #output = obj.get_data()
+            output = obj.get_data()
             output['time'] = int(time.time())
-            #output['decoded_alarm'] = decode_alarm(output['alarm_status'])
+            output['decoded_alarm'] = decode_alarm(output['alarm_status'])
             output['increment'] = count
             json.dump(output, outfile)
             print("Going to sleep")
