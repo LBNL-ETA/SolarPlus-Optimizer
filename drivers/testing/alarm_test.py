@@ -1,3 +1,4 @@
+# python3 alarm_test.py fridge_config.yaml alarm_output.json
 
 import os,sys
 import time
@@ -117,7 +118,7 @@ def set_params(obj):
 
     # High temperature alarm delay after the end of the defrost
     # (only if A3 = 0 or if P4 = 1 and A3 = 1)
-    set_check(obj,'A8',15) # Default is 15
+    set_check(obj,'A8',2) # Default is 15
 
     # High temperature alarm delay after the deactivation of the microport input
     # (only if A3 = 0 or if P4 = 1 and A3 = 1)
@@ -125,7 +126,7 @@ def set_params(obj):
 
     # Delay recording of power failure alarm
     # This one is not related to temperature: AA: delay recording of power failure alarm
-    set_check(obj,'AA',15) # Default is 1
+    set_check(obj,'AA',5) # Default is 1
 
 
 
@@ -157,14 +158,21 @@ def set_params(obj):
     # defrost duration if P3 = 0 or 2;
     # maximum defrost duration if P3 = 1
     # 0 = the defrost will never be activated
-    set_check(obj,'d3',0) # Default is 30 (minutes)
+    set_check(obj,'d3',30) # Default is 30 (minutes)
 
      # drip delay
-    set_check(obj,'d7',30) # Default is 2 (minutes)
+    set_check(obj,'d7',2) # Default is 2 (minutes)
 
 
     # Setpoint
     set_check(obj,'SP',0) #  r1 <= SP <= r2, default is zero
+
+    set_check(obj,'p4',0) # Default is 1
+    set_check(obj,'p3',0) # Default is:
+    set_check(obj,'F0',2) # Default is:
+    set_check(obj,'F2',2) # Default is:
+    set_check(obj,'i0',0) # Default is:
+    set_check(obj,'i5',0) # Default is:
 
 def cleanup(filename):
     outfile = open(filename, "a")
@@ -187,7 +195,7 @@ def main(config,output_file):
         outfile.write('[')
         while(1):
             print("Recording data")
-            output = obj.get_data()
+            output = objs.get_data()
             output['time'] = int(time.time())
             output['decoded_alarm'] = decode_alarm(output['alarm_status'])
             if (output['num_alarms_in_history'] > 0):

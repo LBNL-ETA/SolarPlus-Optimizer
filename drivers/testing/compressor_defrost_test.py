@@ -1,3 +1,5 @@
+# python3 compressor_defrost_test.py fridge_config.yaml defrost_output.json
+
 import os,sys
 import time
 from struct import *
@@ -183,7 +185,7 @@ def cleanup(filename):
 
 #signal.signal(signal.SIGINT, signal_handler)
 def main(config,output_file):
-    obj = Modbus_Driver("fridge_config_new.yaml")
+    obj = Modbus_Driver(config)
     obj.initialize_modbus()
     set_params(obj)
     output = {}
