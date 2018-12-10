@@ -19,6 +19,30 @@ def and_true(alarm_status,mask):
         return True
     else:
         return False
+def read_HACCP(obj,num_alarms):
+    HACCP_dict = {}
+    base_address = 501
+    alarm_num = 0
+    while (num_alarms > 0):
+        reg_num = 0
+        HACCP_name = "HACCP_" + str(alarm_num)
+
+        HACCP_reg = HACCP_name + str(reg_num)
+        HACCP_dict[HACCP_reg] = decode_register(base_address,"16uint")
+
+        HACCP_reg = HACCP_name + str(reg_num+1)
+        HACCP_dict[HACCP_reg] = decode_register(base_address+1,"16uint")
+
+        HACCP_reg = HACCP_name + str(reg_num+2)
+        HACCP_dict[HACCP_reg] = decode_register(base_address+2,"16uint")
+
+        HACCP_reg = HACCP_name + str(reg_num+3)
+        HACCP_dict[HACCP_reg] = decode_register(base_address+3,"16uint")
+
+        base_address += 4
+        num_alarms -= 1
+
+    return HACCP_dict
 
 
 def decode_alarm(alarm_status):
@@ -173,6 +197,8 @@ def main(config,output_file):
             output['time'] = int(time.time())
             output['decoded_alarm'] = decode_alarm(output['alarm_status'])
             output['increment'] = count
+            if (output['num_alarms_in_history'] > 0):
+                output['HACCP'] = read_HACCP(obj,output['num_alarms_in_history'])
             json.dump(output, outfile)
             print("Going to sleep")
             print("If you want to stop test press ctrl+c now...")
