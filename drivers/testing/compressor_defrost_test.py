@@ -73,11 +73,11 @@ def set_params(obj):
 
     # Measured input for low temperature alarm
     # Set 0 for cabinet probe, and 1 for evaporation probe, 2 for auxillary probe
-    set_check(obj,'A0',1)
+    set_check(obj,'A0',0)
 
     # Measured input for high temperature alarm
     # Set 0 for cabinet probe and 1 for auxillary probe
-    set_check(obj,'A3',1)
+    set_check(obj,'A3',0)
 
     # Temperature for low temperature alarm to activate values from -99 to 99 C/F
     set_check(obj,'A1',-10) # Default is -10
@@ -143,10 +143,10 @@ def set_params(obj):
     # defrost duration if P3 = 0 or 2;
     # maximum defrost duration if P3 = 1
     # 0 = the defrost will never be activated
-    set_check(obj,'d3',0) # Default is 30 (minutes)
+    set_check(obj,'d3',30) # Default is 30 (minutes)
 
      # drip delay
-    set_check(obj,'d7',30) # Default is 2 (minutes)
+    set_check(obj,'d7',2) # Default is 2 (minutes)
 
 
     # Setpoint
