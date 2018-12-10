@@ -13,10 +13,6 @@ from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 
 
-def signal_handler(sig, frame):
-        print('Exiting!')
-        sys.exit(0)
-
 def and_true(alarm_status,mask):
     # Mask alarm status and check if it is the same as mask to return True/False
     if ((alarm_status & mask) == mask):
