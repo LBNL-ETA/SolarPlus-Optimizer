@@ -2,11 +2,12 @@
 import os,sys
 import time
 from struct import *
+# Add ../modbus_folder to path for Modbus_Driver
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 modbus_folder='modbus_driver'
-print(os.path.join(parent_dir, modbus_folder))
 sys.path.append(os.path.join(parent_dir, modbus_folder))
-print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#print(os.path.join(parent_dir, modbus_folder))
+#print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from modbus_driver import Modbus_Driver
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
@@ -16,7 +17,7 @@ def set_check(modbus_object,register,set_value):
     assert(modbus_object.read_register(register)==set_value)
     print(register + " was set correctly")
 
-obj = Modbus_Driver("fridge_config.yaml")
+obj = Modbus_Driver("fridge_config_new.yaml")
 obj.initialize_modbus()
 
 # 1. Set the time on the device
@@ -32,20 +33,20 @@ print(obj.read_register('HAACP_0_2'))
 
 # 3. Clear the HAACP alarms, I was having problems with this on my device
 # These registers are write only so they cannot be in the register dictionary
-obj.write_data(0x465, 1) # clear_HACCP_historian
-obj.write_data(0x490, 1) # clear_HACCP_new_alarm_flag
+#obj.write_data(0x465, 1) # clear_HACCP_historian
+#obj.write_data(0x490, 1) # clear_HACCP_new_alarm_flag
 
 
 # 4. Set parameters related to refrigerator control
 
 # working setpoint differential
-set_check(obj,'r0',0)
+set_check(obj,'r0',5)
 
 # minimum working setpoint
-set_check(obj,'r1',0)
+set_check(obj,'r1',-50)
 
 # maximum working setpoint
-set_check(obj,'r2',0)
+set_check(obj,'r2',50)
 
 # Measured input for low temperature alarm
 # Set 0 for cabinet probe, and 1 for evaporation probe, 2 for auxillary probe
