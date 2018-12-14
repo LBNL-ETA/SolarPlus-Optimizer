@@ -17,7 +17,8 @@ def main(config,output_file):
 			output['increment'] = count
 			output['runtime'] = obj.query_runtimes()
 			json.dump(output, outfile)
-			print(output['spacetemp'], output['heattemp'], output['cooltemp'])
+			if 'spacetemp' in output.keys() and 'heattemp' in output.keys() and 'cooltemp' in output.keys():
+				print(output['spacetemp'], output['heattemp'], output['cooltemp'])
 			time.sleep(1)
 			outfile.write(',\n')
 			count += 1
