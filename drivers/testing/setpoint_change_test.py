@@ -84,9 +84,6 @@ def set_params(obj):
 
     # 4. Set parameters related to refrigerator control
 
-    # working setpoint differential
-    set_check(obj,'r0',5)
-
     # minimum working setpoint
     set_check(obj,'r1',-50)
 
@@ -173,6 +170,8 @@ def set_params(obj):
 
     # Setpoint
     set_check(obj,'SP',0) #  r1 <= SP <= r2, default is zero
+    # working setpoint differential
+    set_check(obj,'r0',5)
 
 def cleanup(filename):
     outfile = open(filename, "a")
@@ -191,22 +190,78 @@ def main(config,output_file):
     output = {}
     count = 0
     filename = output_file
+
     with open(filename, 'w') as outfile:
         outfile.write('[')
-        while(1):
+        
+        print("changing SP=7 r0=5")
+        set_check(obj, 'SP', 7)
+        set_check(obj, 'r0', 5)
+        start_time = time.time()
+        
+        while (time.time() - start_time) < 5 * 60:
             print("Recording data")
             output = obj.get_data()
             output['time'] = int(time.time())
             output['decoded_alarm'] = decode_alarm(output['alarm_status'])
             output['increment'] = count
-            # if (output['num_alarms_in_history'] > 0):
-            #     output['HACCP'] = read_HACCP(obj,output['num_alarms_in_history'])
             json.dump(output, outfile)
-            print("Going to sleep")
             print("If you want to stop test press ctrl+c now...")
-            time.sleep(15)
-            outfile.write(',')
+            time.sleep(1)
+            outfile.write(',\n')
             count += 1
+
+        print("changing SP=0 r0=3")
+        set_check(obj, 'SP', 0)
+        set_check(obj, 'r0', 3)
+        start_time = time.time()
+
+        while (time.time() - start_time) < 5 * 60:
+            print("Recording data")
+            output = obj.get_data()
+            output['time'] = int(time.time())
+            output['decoded_alarm'] = decode_alarm(output['alarm_status'])
+            output['increment'] = count
+            json.dump(output, outfile)
+            print("If you want to stop test press ctrl+c now...")
+            time.sleep(1)
+            outfile.write(',\n')
+            count += 1
+
+        print("changing SP=8 r0=2")
+        set_check(obj, 'SP', 8)
+        set_check(obj, 'r0', 2)
+        start_time = time.time()
+
+        while (time.time() - start_time) < 5 * 60:
+            print("Recording data")
+            output = obj.get_data()
+            output['time'] = int(time.time())
+            output['decoded_alarm'] = decode_alarm(output['alarm_status'])
+            output['increment'] = count
+            json.dump(output, outfile)
+            print("If you want to stop test press ctrl+c now...")
+            time.sleep(1)
+            outfile.write(',\n')
+            count += 1
+
+        print("changing SP=0 r0=5")
+        set_check(obj, 'SP', 0)
+        set_check(obj, 'r0', 5)
+        start_time = time.time()
+
+        while (time.time() - start_time) < 5 * 60:
+            print("Recording data")
+            output = obj.get_data()
+            output['time'] = int(time.time())
+            output['decoded_alarm'] = decode_alarm(output['alarm_status'])
+            output['increment'] = count
+            json.dump(output, outfile)
+            print("If you want to stop test press ctrl+c now...")
+            time.sleep(1)
+            outfile.write(',\n')
+            count += 1
+
     obj.kill_modbus()
 
 

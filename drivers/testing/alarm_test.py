@@ -198,8 +198,8 @@ def main(config,output_file):
             output = obj.get_data()
             output['time'] = int(time.time())
             output['decoded_alarm'] = decode_alarm(output['alarm_status'])
-            if (output['num_alarms_in_history'] > 0):
-                output['HACCP'] = read_HACCP(obj,output['num_alarms_in_history'])
+            # if (output['num_alarms_in_history'] > 0):
+            #     output['HACCP'] = read_HACCP(obj,output['num_alarms_in_history'])
             json.dump(output, outfile)
             print("Going to sleep")
             print("If you want to stop test press ctrl+c now...")
