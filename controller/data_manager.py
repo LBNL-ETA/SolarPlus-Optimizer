@@ -7,6 +7,13 @@ import datetime
 class Data_Manager():
 
     def __init__(self, data_path="data"):
+        '''Constructor
+
+            Parameters
+            ----------
+            data_path: str
+                folder name in the root directory of the repository where the data files are located
+        '''
         # TODO: handle timezones
         self.config = mpc_config.get_config()
         self.files = self.config["csv_files"]
@@ -15,35 +22,63 @@ class Data_Manager():
 
         self.get_all_csv_data()
 
-    '''
-        for all the csv files in the config["csv_files"], get dataframes
-        self.data_from_csvs: dictionary of {filename: DataFrame, ..}
-    '''
     def get_all_csv_data(self):
+        '''For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
+
+            Parameters
+            ----------
+            None
+
+            Returns
+            -------
+            None
+
+        '''
         for file in self.files:
             self.data_from_csvs[file] = pd.read_csv(self.data_path + file, index_col=0, parse_dates=True)
 
     '''
-        find which file the variable belongs to: check column names of each dataframe in self.data_from_csvs
+        
         returns: filename, if found; else None 
     '''
     def find_file_from_variable(self, variable):
+        '''Find which file the variable belongs to, by checking column names of each csv file
+
+        Parameters
+        ----------
+        variable: str
+            variable name
+
+        Returns
+        -------
+        file: str
+            filename of the csv file in which the variable is present or None, if variable not found in any file
+        '''
         for file in self.files:
             if variable in self.data_from_csvs[file].columns:
                 return file
         return None
 
-    '''
-        inputs:
-        config: individual sections from the config file;
-        st: start time in datetime
-        et: end time in datetimpe
-        
-        returns df: each column is the timeseries of the variable in config['vm'] 
-    '''
-    def get_timeseries_from_config(self, config, st=None, et=None):
+    def get_timeseries_from_config(self, config, start_time=None, end_time=None):
+        '''From the configuration dictionary, get a DataFrame of all the variables in the variable mapFor all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
+
+            Parameters
+            ----------
+            config: dict()
+                individual configuration sections for weather, price, control etc.
+            start_time : datetime
+                Start time of timeseries
+            end_time : datetime
+                End time of timeseries
+
+            Returns
+            -------
+            df: DataFrame
+                DataFrame, whose each column is the timeseries of the variables in config['vm']
+
+        '''
         # TODO: handle st, et for influx and XBOS versions
-        # if st!=None and et!=None:
+        # if start_time!=None and end_time!=None:
         #     # get data for that time period
         df_list = []
         for variable in config["vm"]:
@@ -56,15 +91,24 @@ class Data_Manager():
         # df.index = pd.to_datetime(df.index, utc=True)
         return df
 
-    '''
-    inputs: 
-    variable_list: list of variable names
-    st: start time in datetime
-    et: end time in datetime
-    
-    returns df: each column is the timeseries of the variable in the variable_list
-    '''
-    def get_data(self, variable_list, st=None, et=None):
+    def get_data(self, variable_list, start_time=None, end_time=None):
+        '''Return a DataFrame of all the variables in the variable_list
+
+            Parameters
+            ----------
+            variable_list: list
+                list of variable names
+            start_time : datetime
+                Start time of timeseries
+            end_time : datetime
+                End time of timeseries
+
+            Returns
+            -------
+            df: DataFrame
+                DataFrame, whose each column is the timeseries of the variables in variable_list
+
+        '''
         # TODO: handle st, et for influx and XBOS versions
         # if st!=None and et!=None:
         #     # get data for that time period
@@ -85,17 +129,24 @@ class Data_Manager():
         return pd.concat(df_list, axis=1)
 
 
-    '''
-        This function takes in the dataframe from control_config and processes it to add more columns relevant to MPCPy
-        input:
-        df: columns=['FreComp', 'RefComp', 'HVAC1']
-        
-        output:
-        df: columns=['FreComp', 'RefComp', 'HVAC1', 'Defrost', 'FreComp_Split',
+    def modify_control_df(self, df_power, pre_fix=False):
+        '''This function takes the dataframe of power values and processes it to add more columns relevant to MPCPy
+
+            Parameters
+            ----------
+            df_power: DataFrame
+                DataFrame of power consumption values, columns=['FreComp', 'RefComp', 'HVAC1']
+            pre_fix : bool
+                determines the power limit on freezer compressor
+
+            Returns
+            -------
+            df: DataFrame
+                A processed DataFrame, columns=['FreComp', 'RefComp', 'HVAC1', 'Defrost', 'FreComp_Split',
                     'FreHeater_Split', 'FreComp_Split_Norm', 'FreHeater_Split_Norm',
                     'RefComp_Norm', 'HVAC1_Norm', 'uHeat', 'uCharge', 'uDischarge']
-    '''
-    def modify_control_df(self, df_power, pre_fix=False):
+
+        '''
         if pre_fix:
             fre_comp_lim = 600
         else:
@@ -136,17 +187,25 @@ class Data_Manager():
         df_power.index.name = 'Time'
         return df_power
 
-    '''
-    inputs:
-    config: individual config section (required keys are path, vm and type)
-    st: start time in datetime
-    et: end time in datetime
-    
-    outputs:
-    df: each column is the timeseries of the variable in config['vm']
-    '''
-    def get_data_from_config(self, config, st=None, et=None):
-        df = self.get_timeseries_from_config(config=config, st=st, et=et)
+    def get_data_from_config(self, config, start_time=None, end_time=None):
+        '''
+
+            Parameters
+            ----------
+            config: dict()
+                individual configuration sections for weather, price, control etc. (required keys: path, vm and type)
+            start_time : datetime
+                Start time of timeseries
+            end_time : datetime
+                End time of timeseries
+
+            Returns
+            -------
+            df: DataFrame
+                DataFrame, whose each column is the timeseries of the variables in config['vm']
+
+        '''
+        df = self.get_timeseries_from_config(config=config, start_time=start_time, end_time=end_time)
         if config['path'] == 'data/Control2.csv':
             return self.modify_control_df(df_power=df)
         return df
