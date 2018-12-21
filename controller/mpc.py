@@ -10,6 +10,7 @@ explicitly as appropriate.
 
 from mpcpy import exodata, models, optimization, variables, units, systems
 import pandas as pd
+from data_manager import Data_Manager
 
 class mpc(object):
     '''MPC controller.
@@ -54,6 +55,8 @@ class mpc(object):
         # Get timezone
         self.tz_name = tz_name
         # Initialize exodata
+
+        self.data_manager = Data_Manager()
         self.weather = self._initialize_weather(weather_config)
         self.control = self._initialize_control(control_config)
         self.other_input = self._initialize_other_input(other_input_config)
@@ -201,16 +204,21 @@ class mpc(object):
         '''
 
         # Instantiate object
-        if weather_config['type'] is 'csv':
-            weather = exodata.WeatherFromCSV(weather_config['path'],
-                                             weather_config['vm'],
-                                             weather_config['geo'],
-                                             tz_name = self.tz_name)
-        else:
-            weather_df = pd.DataFrame()
-            weather = exodata.WeatherFromDF(weather_df,
-                                            weather_config['vm'],
-                                            weather_config['geo'])
+        # if weather_config['type'] is 'csv':
+        #     weather = exodata.WeatherFromCSV(weather_config['path'],
+        #                                      weather_config['vm'],
+        #                                      weather_config['geo'],
+        #                                      tz_name = self.tz_name)
+        # else:
+        #     weather_df = pd.DataFrame()
+        #     weather = exodata.WeatherFromDF(weather_df,
+        #                                     weather_config['vm'],
+        #                                     weather_config['geo'])
+        weather_df = self.data_manager.get_data_from_config(weather_config)
+
+        weather = exodata.WeatherFromDF(weather_df,
+                                        weather_config['vm'],
+                                        weather_config['geo'])
 
         return weather
                                                  
@@ -231,16 +239,19 @@ class mpc(object):
 
         '''
 
-        # Instantiate object
-        if control_config['type'] is 'csv':
-            control = exodata.ControlFromCSV(control_config['path'],
-                                             control_config['vm'],
-                                             tz_name = self.tz_name)
-        else:
-            control_df = pd.DataFrame()
-            control = exodata.ControlFromDF(control_df,
-                                            control_config['vm'])
+        # # Instantiate object
+        # if control_config['type'] is 'csv':
+        #     control = exodata.ControlFromCSV(control_config['path'],
+        #                                      control_config['vm'],
+        #                                      tz_name = self.tz_name)
+        # else:
+        #     control_df = pd.DataFrame()
+        #     control = exodata.ControlFromDF(control_df,
+        #                                     control_config['vm'])
 
+        control_df = self.data_manager.get_data_from_config(control_config)
+        control = exodata.ControlFromDF(control_df,
+                                        control_config['vm'])
         return control
                                                  
     def _initialize_other_input(self, other_input_config):
@@ -263,15 +274,18 @@ class mpc(object):
 
         # Check if None
         if other_input_config:
-            # Instantiate object
-            if other_input_config['type'] is 'csv':
-                other_input = exodata.OtherInputFromCSV(other_input_config['path'],
-                                                        other_input_config['vm'],
-                                                        tz_name = self.tz_name)
-            else:
-                other_input_df = pd.DataFrame()
-                other_input = exodata.OtherInputFromDF(other_input_df,
-                                                       other_input_config['vm'])
+            # # Instantiate object
+            # if other_input_config['type'] is 'csv':
+            #     other_input = exodata.OtherInputFromCSV(other_input_config['path'],
+            #                                             other_input_config['vm'],
+            #                                             tz_name = self.tz_name)
+            # else:
+            #     other_input_df = pd.DataFrame()
+            #     other_input = exodata.OtherInputFromDF(other_input_df,
+            #                                            other_input_config['vm'])
+            other_input_df = self.data_manager.get_data_from_config(other_input_config)
+            other_input = exodata.OtherInputFromDF(other_input_df,
+                                                    other_input_config['vm'])
         else:
                 other_input = None
 
@@ -297,15 +311,18 @@ class mpc(object):
 
         # Check if None
         if price_config:
-            # Instantiate object
-            if price_config['type'] is 'csv':
-                price = exodata.PriceFromCSV(price_config['path'],
-                                             price_config['vm'],
-                                             tz_name = self.tz_name)
-            else:
-                price_df = pd.DataFrame()
-                price = exodata.PriceFromDF(price_df,
-                                            price_config['vm'])
+            # # Instantiate object
+            # if price_config['type'] is 'csv':
+            #     price = exodata.PriceFromCSV(price_config['path'],
+            #                                  price_config['vm'],
+            #                                  tz_name = self.tz_name)
+            # else:
+            #     price_df = pd.DataFrame()
+            #     price = exodata.PriceFromDF(price_df,
+            #                                 price_config['vm'])
+            price_df = self.data_manager.get_data_from_config(price_config)
+            price = exodata.PriceFromDF(price_df,
+                                        price_config['vm'])
         else:
                 price = None                                          
 
@@ -331,15 +348,18 @@ class mpc(object):
 
         # Check if None
         if constraint_config:
-            # Instantiate object
-            if constraint_config['type'] is 'csv':
-                constraint = exodata.ConstraintFromCSV(constraint_config['path'],
-                                                       constraint_config['vm'],
-                                                       tz_name = self.tz_name)
-            else:
-                constraint_df = pd.DataFrame()
-                constraint = exodata.ConstraintFromDF(constraint_df,
-                                                      constraint_config['vm'])
+            # # Instantiate object
+            # if constraint_config['type'] is 'csv':
+            #     constraint = exodata.ConstraintFromCSV(constraint_config['path'],
+            #                                            constraint_config['vm'],
+            #                                            tz_name = self.tz_name)
+            # else:
+            #     constraint_df = pd.DataFrame()
+            #     constraint = exodata.ConstraintFromDF(constraint_df,
+            #                                           constraint_config['vm'])
+            constraint_df = self.data_manager.get_data_from_config(constraint_config)
+            constraint = exodata.ConstraintFromDF(constraint_df,
+                                                  constraint_config['vm'])
         else:
                 constraint = None
 
@@ -360,15 +380,19 @@ class mpc(object):
 
         '''
 
-        # Instantiate object
-        if system_config['type'] is 'csv':
-            # Instantiate csv source
-            system = systems.RealFromCSV(system_config['path'],
-                                         self.model.measurements,
-                                         system_config['vm'],
-                                         tz_name = self.tz_name)    
-        else:
-            raise ValueError('System data must come from csv source.')
+        # # Instantiate object
+        # if system_config['type'] is 'csv':
+        #     # Instantiate csv source
+        #     system = systems.RealFromCSV(system_config['path'],
+        #                                  self.model.measurements,
+        #                                  system_config['vm'],
+        #                                  tz_name = self.tz_name)
+        # else:
+        #     raise ValueError('System data must come from csv source.')
+        system_df = self.data_manager.get_data_from_config(system_config)
+        system = systems.RealFromDF(system_df,
+                                    self.model.measurements,
+                                    system_config['vm'])
 
         return system
 
@@ -487,11 +511,12 @@ class mpc(object):
         # Update exodata
         if exo_object:
             # If not None
-            if 'from_csv' in exo_object.name:
-                exo_object.collect_data(start_time, final_time)
-            else:
-                exo_object._df = pd.DataFrame()
-                exo_object.collect_data(start_time, final_time)
+            # if 'from_csv' in exo_object.name:
+            #     exo_object.collect_data(start_time, final_time)
+            # else:
+            #     exo_object._df = pd.DataFrame()
+            #     exo_object.collect_data(start_time, final_time)
+            exo_object.collect_data(start_time, final_time)
             
         return None
         

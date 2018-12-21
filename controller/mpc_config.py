@@ -36,7 +36,13 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                                
 "control_config" :    {'type': 'csv',
                      'path': os.path.join('data','Control2.csv'),
-                     'vm'  : {'HVAC1_Norm' : ('uCool', units.unit1),
+                     'vm'  : {
+                              # new columns from csv required for the following values
+                              'FreComp': ('FreComp', units.kW),
+                              'RefComp': ('FreComp', units.kW),
+                              'HVAC1': ('FreComp', units.kW),
+
+                              'HVAC1_Norm' : ('uCool', units.unit1),
                               'RefComp_Norm' : ('uRef', units.unit1),
                               'FreComp_Split_Norm' : ('uFreCool', units.unit1),
                               'uHeat' : ('uHeat', units.unit1),
@@ -75,7 +81,13 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                      'path': os.path.join('data','Temperature.csv'),
                      'vm'  : {'Refrigerator East':('Tref', units.degC),
                               'HVAC East':('Trtu', units.degC),
-                              'Freezer':('Tfre', units.degC)}}
+                              'Freezer':('Tfre', units.degC)}},
+"csv_files": [
+    "Temperature.csv",
+    "Price.csv",
+    "Control2.csv",
+    "Constraint.csv"
+    ]
 }
 
 def get_config():
