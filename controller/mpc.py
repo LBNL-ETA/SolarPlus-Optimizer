@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-This module contains the mpc controller class, which can be used to 
+This module contains the mpc controller class, which can be used to
 solve the control optimization problem.
 
-Currently, specific data sources other than csv files need to be coded 
+Currently, specific data sources other than csv files need to be coded
 explicitly as appropriate.
 
 """
@@ -40,38 +40,45 @@ class mpc(object):
     '''
 
     def __init__(self, model_config,
-                       opt_config, 
+                       opt_config,
                        system_config,
                        weather_config,
                        control_config,
                        other_input_config = None,
-                       constraint_config = None,                       
-                       price_config = None, 
+                       constraint_config = None,
+                       price_config = None,
                        tz_name = 'UTC'):
         '''Constructor.
 
         '''
-
+        # Save configuration
+        self.model_config = model_config
+        self.opt_config = opt_config
+        self.system_config = system_config
+        self.weather_config = weather_config
+        self.control_config = control_config
+        self.other_input_config = other_input_config
+        self.constraint_config = constraint_config
+        self.price_config = price_config
         # Get timezone
         self.tz_name = tz_name
         # Initialize exodata
-
         self.data_manager = Data_Manager()
-        self.weather = self._initialize_weather(weather_config)
-        self.control = self._initialize_control(control_config)
-        self.other_input = self._initialize_other_input(other_input_config)
-        self.constraint = self._initialize_constraint(constraint_config)
-        self.price = self._initialize_price(price_config)
+        self.weather = self._initialize_weather(self.weather_config)
+        self.control = self._initialize_control(self.control_config)
+        self.other_input = self._initialize_other_input(self.other_input_config)
+        self.constraint = self._initialize_constraint(self.constraint_config)
+        self.price = self._initialize_price(self.price_config)
         # Initialize model
-        self.model, self.init_vm = self._initialize_model(model_config)
+        self.model, self.init_vm = self._initialize_model(self.model_config)
         # Initialize building measurements
-        self.system = self._initialize_system(system_config)
+        self.system = self._initialize_system(self.system_config)
         # Save optimization configuration
         self.opt_config = opt_config
 
     def optimize(self, start_time, final_time, init = True):
         '''Solve the control optimization problem.
-        
+
         Parameters
         ----------
         start_time : pandas datetime
@@ -80,7 +87,7 @@ class mpc(object):
             Final time of optimization
         init : bool, optional
             True if initial optimization.  Will instantiate optimization problem.
-        
+
         Returns
         -------
         solution : DataFrame
@@ -96,8 +103,8 @@ class mpc(object):
         self._estimate_state(start_time)
         # Update exodata
         for exo in [self.weather,
-                    self.other_input, 
-                    self.constraint, 
+                    self.other_input,
+                    self.constraint,
                     self.price]:
             self._update_exo(exo, start_time, final_time)
         # Instantiate problem and load initial control if initial
@@ -113,12 +120,12 @@ class mpc(object):
         for key in self.other_outputs:
             other_outputs[key] = self.opt_object._package_type.res_opt['mpc_model.{0}'.format(key)]
         statistics = self.opt_object.get_optimization_statistics()
-        
+
         return control, measurements, other_outputs, statistics
-        
+
     def simulate(self, start_time, final_time, optimal=False):
         '''Simulate the model with an initial point from measurements.
-        
+
         Parameters
         ----------
         start_time : pandas datetime
@@ -129,14 +136,14 @@ class mpc(object):
             True if use exodata and control from already-solved optimizaton
             False to update exodata and control from sources
             Default is False
-        
+
         Returns
         -------
         measurements : DataFrame
             Measurements of simulation.
         other_outputs : DataFrame
             Other outputs of the simulation
-            
+
         '''
 
         # Update system measurements
@@ -145,10 +152,10 @@ class mpc(object):
         self._estimate_state(start_time)
         # Update exodata
         if not optimal:
-            for exo in [self.weather, 
-                        self.control, 
-                        self.other_input, 
-                        self.constraint, 
+            for exo in [self.weather,
+                        self.control,
+                        self.other_input,
+                        self.constraint,
                         self.price]:
                 self._update_exo(exo, start_time, final_time)
         # Solve problem
@@ -158,13 +165,13 @@ class mpc(object):
         other_outputs = pd.DataFrame(index=measurements.index)
         for key in self.other_outputs:
             other_outputs[key] = self.model._res[key]
-            
+
         return measurements, other_outputs
-        
+
 
     def _estimate_state(self, time):
         '''Estimate the states of the model.
-        
+
         Parameters
         ----------
         time : pandas datetime
@@ -179,23 +186,25 @@ class mpc(object):
         # For each initial state
         for par in self.init_vm:
             # Get the estimated value
+            # print(self.model.display_measurements('Measured'))
+            # print(time)
             value = self.model.display_measurements('Measured').loc[time,self.init_vm[par]]
             # Set the value in the model
             self.model.parameter_data[par]['Value'].set_data(value)
-    
+
         return None
 
 
     def _initialize_weather(self, weather_config):
         '''Instantiate an MPCPy weather object with the appropriate source.
-        
+
         Parameters
         ----------
         weather_config : dict()
             If type is csv, then instantiated as csv source.
-            Otherwise, instantiated as DataFrame source, with specific 
+            Otherwise, instantiated as DataFrame source, with specific
             source of DataFrame encoded.
-            
+
         Returns
         -------
         weather : mpcpy.exodata.WeatherFrom[CSV][DF]
@@ -221,17 +230,17 @@ class mpc(object):
                                         weather_config['geo'])
 
         return weather
-                                                 
+
     def _initialize_control(self, control_config):
         '''Instantiate an MPCPy control object with the appropriate source.
-        
+
         Parameters
         ----------
         control_config : dict()
             If type is csv, then instantiated as csv source.
-            Otherwise, instantiated as DataFrame source, with specific 
+            Otherwise, instantiated as DataFrame source, with specific
             source of DataFrame encoded.
-            
+
         Returns
         -------
         control : mpcpy.exodata.ControlFrom[CSV][DF]
@@ -253,15 +262,15 @@ class mpc(object):
         control = exodata.ControlFromDF(control_df,
                                         control_config['vm'])
         return control
-                                                 
+
     def _initialize_other_input(self, other_input_config):
         '''Instantiate an MPCPy other input object with the appropriate source.
-        
+
         Parameters
         ----------
         other_input_config : dict()
             If type is csv, then instantiated as csv source.
-            Otherwise, instantiated as DataFrame source, with specific 
+            Otherwise, instantiated as DataFrame source, with specific
             source of DataFrame encoded.
             If None, then instantiated with empty data.
 
@@ -269,7 +278,7 @@ class mpc(object):
         -------
         control : mpcpy.exodata.OtherInputFrom[CSV][DF]
             Object to obtain and format other input data.
-            
+
         '''
 
         # Check if None
@@ -290,18 +299,18 @@ class mpc(object):
                 other_input = None
 
         return other_input
-                                                        
+
     def _initialize_price(self, price_config):
         '''Instantiate an MPCPy price object with the appropriate source.
-        
+
         Parameters
         ----------
         price_config : dict()
             If type is csv, then instantiated as csv source.
-            Otherwise, instantiated as DataFrame source, with specific 
+            Otherwise, instantiated as DataFrame source, with specific
             source of DataFrame encoded.
             If None, then instantiated with empty data.
-            
+
         Returns
         -------
         price : mpcpy.exodata.PriceFrom[CSV][DF]
@@ -324,21 +333,21 @@ class mpc(object):
             price = exodata.PriceFromDF(price_df,
                                         price_config['vm'])
         else:
-                price = None                                          
+                price = None
 
         return price
 
     def _initialize_constraint(self, constraint_config):
         '''Instantiate an MPCPy constraint object with the appropriate source.
-        
+
         Parameters
         ----------
         constraint_config : dict()
             If type is csv, then instantiated as csv source.
-            Otherwise, instantiated as DataFrame source, with specific 
+            Otherwise, instantiated as DataFrame source, with specific
             source of DataFrame encoded.
             If None, then instantiated with empty data.
-            
+
         Returns
         -------
         price : mpcpy.exodata.ConstraintFrom[CSV][DF]
@@ -364,15 +373,15 @@ class mpc(object):
                 constraint = None
 
         return constraint
-    
+
     def _initialize_system(self, system_config):
         '''Instantiate an MPCPy systems object from the appropriate source.
-        
+
         Parameters
         ----------
         system_config : dict()
             If type is csv, then instantiated as csv source.
-            
+
         Returns
         -------
         system : mpcpy.systems.RealFromCSV
@@ -398,12 +407,12 @@ class mpc(object):
 
     def _initialize_model(self, model_config):
         '''Instantiate an MPCPy model object.
-        
+
         Parameters
         ----------
         model_config : dict()
             Configruation of model.
-        
+
         Returns
         -------
         model : mpcpy.models.Modelica
@@ -413,7 +422,7 @@ class mpc(object):
             and their associated measurement variable.
 
         '''
-        
+
         # Specify definition
         mopath = model_config['mopath']
         modelpath = model_config['modelpath']
@@ -451,7 +460,7 @@ class mpc(object):
 
     def _initialize_opt_problem(self, opt_config):
         '''Instantiate an MPCPy optimization object.
-        
+
         Parameters
         ----------
         opt_config: dict()
@@ -462,7 +471,7 @@ class mpc(object):
             Object to represent the control optimization.
 
         '''
-        
+
         # Specify objective
         objective = opt_config['problem']
         if objective is 'EnergyMin':
@@ -485,14 +494,14 @@ class mpc(object):
         opt_object.set_optimization_options(opt_options)
 
         return opt_object
-                                                 
+
     def _update_exo(self, exo_object, start_time, final_time):
         '''Update the exodata object with data during the time period.
-        
+
         If the object source is a .csv file, the .csv file will be used.
-        Otherwise, the object source is a DataFrame, and the update of the 
+        Otherwise, the object source is a DataFrame, and the update of the
         DataFrame will occur as encoded.
-        
+
         Parameters
         ----------
         exo_object : mpcpy.exodata.[object]
@@ -501,45 +510,62 @@ class mpc(object):
             The start time of the update period.
         final_time : pandas datetime
             The final time of the update period.
-            
+
         Returns
         -------
         None
 
-        '''            
-         
+        '''
+
         # Update exodata
         if exo_object:
-            # If not None
-            # if 'from_csv' in exo_object.name:
-            #     exo_object.collect_data(start_time, final_time)
-            # else:
-            #     exo_object._df = pd.DataFrame()
-            #     exo_object.collect_data(start_time, final_time)
+
+                        # If not None
+                        # if 'from_csv' in exo_object.name:
+                        #     exo_object.collect_data(start_time, final_time)
+                        # else:
+                        #     exo_object._df = pd.DataFrame()
+                        #     exo_object.collect_data(start_time, final_time)
+            if exo_object is self.weather:
+                config = self.weather_config
+            elif exo_object is self.control:
+                config = self.control_config
+            elif exo_object is self.other_input:
+                config = self.other_input_config
+            elif exo_object is self.constraint:
+                config = self.constraint_config
+            elif exo_object is self.price:
+                config = self.price_config
+            else:
+                raise ValueError('Exodata object {0} unknown.'.format(exo_object))
+        # Update data
+            df = self.data_manager.get_data_from_config(config, start_time, final_time)
+            exo_object._df = df
             exo_object.collect_data(start_time, final_time)
-            
+
         return None
-        
+
     def _update_system(self, start_time, final_time):
         '''Update the system object with data during the time period.
-        
+
         If the object source is a .csv file, the .csv file will be used.
-        
+
         Parameters
         ----------
         start_time : pandas datetime
             The start time of the update period.
         final_time : pandas datetime
             The final time of the update period.
-            
+
         Returns
         -------
         None
 
-        '''            
-        
+        '''
+
         # Update exodata
+        df = self.data_manager.get_data_from_config(self.system_config, start_time, final_time)
+        self.system._df = df
         self.system.collect_measurements(start_time, final_time)
-            
+
         return None
-        

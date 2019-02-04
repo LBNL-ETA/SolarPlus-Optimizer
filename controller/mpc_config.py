@@ -14,7 +14,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                          'measurements' : ['Trtu', 'Tref', 'Tfre'],
                          'other_outputs' : ['Pnet', 'Prtu', 'Pref', 'Pfre','Pcharge', 'Pdischarge', 'SOC'],
                          'sample_rate' : 3600,
-                         'parameters' : {'Name':      ['Trtu_0', 'Tref_0', 'Tfre_0', 'SOC_0'], 
+                         'parameters' : {'Name':      ['Trtu_0', 'Tref_0', 'Tfre_0', 'SOC_0'],
                                          'Free':      [False,    False,    False,    False],
                                          'Value':     [0,        0,        0,        0.25],
                                          'Minimum':   [10,       0,        -40,      0],
@@ -33,14 +33,14 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                      'vm'  : {'Outdoor':('weaTDryBul', units.degC),
                               'Solar Radiation':('weaHGloHor', units.W_m2)},
                      'geo' : (40.88,-124.0)},
-                               
+
 "control_config" :    {'type': 'csv',
                      'path': os.path.join('data','Control2.csv'),
                      'vm'  : {
                               # new columns from csv required for the following values
                               'FreComp': ('FreComp', units.kW),
-                              'RefComp': ('FreComp', units.kW),
-                              'HVAC1': ('FreComp', units.kW),
+                              'RefComp': ('RefComp', units.kW),
+                              'HVAC1': ('HVAC1', units.kW),
 
                               'HVAC1_Norm' : ('uCool', units.unit1),
                               'RefComp_Norm' : ('uRef', units.unit1),
@@ -48,7 +48,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'uHeat' : ('uHeat', units.unit1),
                               'uCharge' : ('uCharge', units.unit1),
                               'uDischarge' : ('uDischarge', units.unit1)}},
-                               
+
 "constraint_config" : {'type': 'csv',
                      'path': os.path.join('data','Constraint.csv'),
                      'vm'  : {'Trtu_min':('Trtu', 'GTE', units.degC),
@@ -72,24 +72,26 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'uFreCool_min':('uFreCool', 'GTE', units.unit1),
                               'uFreCool_max':('uFreCool', 'LTE', units.unit1),
                               'demand':('Pnet', 'LTE', units.kW)}},
-                              
+
 "price_config" :      {'type': 'csv',
                      'path': os.path.join('data','Price.csv'),
                      'vm'  : {'pi_e':('pi_e', units.dol_kWh)}},
 
 "system_config" :     {'type': 'csv',
                      'path': os.path.join('data','Temperature.csv'),
-                     'vm'  : {'Refrigerator East':('Tref', units.degC),
-                              'HVAC East':('Trtu', units.degC),
-                              'Freezer':('Tfre', units.degC)}},
+                     'vm'  : {'Tref':('Tref', units.K),
+                              'Trtu':('Trtu', units.K),
+                              'Tfre':('Tfre', units.K),
+                              'SOC':('SOC',units.unit1)}},
 "csv_files": [
     "Temperature.csv",
     "Price.csv",
     "Control2.csv",
-    "Constraint.csv"
+    "Constraint.csv",
+    "emulation_states.csv"
     ]
 }
 
 def get_config():
-    
+
     return config

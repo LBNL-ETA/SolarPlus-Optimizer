@@ -20,7 +20,7 @@ class Data_Manager():
         self.data_from_csvs = {}
         self.data_path = data_path + "/"
 
-        self.get_all_csv_data()
+
 
     def get_all_csv_data(self):
         '''For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
@@ -38,8 +38,8 @@ class Data_Manager():
             self.data_from_csvs[file] = pd.read_csv(self.data_path + file, index_col=0, parse_dates=True)
 
     '''
-        
-        returns: filename, if found; else None 
+
+        returns: filename, if found; else None
     '''
     def find_file_from_variable(self, variable):
         '''Find which file the variable belongs to, by checking column names of each csv file
@@ -112,7 +112,7 @@ class Data_Manager():
         # TODO: handle st, et for influx and XBOS versions
         # if st!=None and et!=None:
         #     # get data for that time period
-
+        self.get_all_csv_data()
         df_list = []
 
         if type(variable_list) == str:
@@ -205,6 +205,7 @@ class Data_Manager():
                 DataFrame, whose each column is the timeseries of the variables in config['vm']
 
         '''
+        self.get_all_csv_data()
         df = self.get_timeseries_from_config(config=config, start_time=start_time, end_time=end_time)
         if config['path'] == 'data/Control2.csv':
             return self.modify_control_df(df_power=df)
