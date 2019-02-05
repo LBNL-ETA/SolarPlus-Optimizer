@@ -33,6 +33,8 @@ class mpc(object):
         Dictionary of source information.
     price_config : dict(), optional
         Dictionary of source information.
+    data_manager_config : dict(), optional
+        Dictionary of source information.
     tz_name ; str, optional
         Name of the time zone to use with the controller
         Default is 'UTC'.
@@ -46,6 +48,7 @@ class mpc(object):
                        control_config,
                        other_input_config = None,
                        constraint_config = None,
+                       data_manager_config = None,
                        price_config = None,
                        tz_name = 'UTC'):
         '''Constructor.
@@ -63,7 +66,7 @@ class mpc(object):
         # Get timezone
         self.tz_name = tz_name
         # Initialize exodata
-        self.data_manager = Data_Manager()
+        self.data_manager = Data_Manager(data_manager_config=data_manager_config)
         self.weather = self._initialize_weather(self.weather_config)
         self.control = self._initialize_control(self.control_config)
         self.other_input = self._initialize_other_input(self.other_input_config)
