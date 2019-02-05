@@ -226,7 +226,7 @@ class mpc(object):
         #     weather = exodata.WeatherFromDF(weather_df,
         #                                     weather_config['vm'],
         #                                     weather_config['geo'])
-        weather_df = self.data_manager.get_data_from_config(weather_config)
+        weather_df = self.data_manager.get_data_from_config("weather")
 
         weather = exodata.WeatherFromDF(weather_df,
                                         weather_config['vm'],
@@ -261,7 +261,7 @@ class mpc(object):
         #     control = exodata.ControlFromDF(control_df,
         #                                     control_config['vm'])
 
-        control_df = self.data_manager.get_data_from_config(control_config)
+        control_df = self.data_manager.get_data_from_config("control")
         control = exodata.ControlFromDF(control_df,
                                         control_config['vm'])
         return control
@@ -332,7 +332,7 @@ class mpc(object):
             #     price_df = pd.DataFrame()
             #     price = exodata.PriceFromDF(price_df,
             #                                 price_config['vm'])
-            price_df = self.data_manager.get_data_from_config(price_config)
+            price_df = self.data_manager.get_data_from_config("price")
             price = exodata.PriceFromDF(price_df,
                                         price_config['vm'])
         else:
@@ -369,7 +369,7 @@ class mpc(object):
             #     constraint_df = pd.DataFrame()
             #     constraint = exodata.ConstraintFromDF(constraint_df,
             #                                           constraint_config['vm'])
-            constraint_df = self.data_manager.get_data_from_config(constraint_config)
+            constraint_df = self.data_manager.get_data_from_config("constraint")
             constraint = exodata.ConstraintFromDF(constraint_df,
                                                   constraint_config['vm'])
         else:
@@ -401,7 +401,7 @@ class mpc(object):
         #                                  tz_name = self.tz_name)
         # else:
         #     raise ValueError('System data must come from csv source.')
-        system_df = self.data_manager.get_data_from_config(system_config)
+        system_df = self.data_manager.get_data_from_config("system")
         system = systems.RealFromDF(system_df,
                                     self.model.measurements,
                                     system_config['vm'])
@@ -530,19 +530,19 @@ class mpc(object):
                         #     exo_object._df = pd.DataFrame()
                         #     exo_object.collect_data(start_time, final_time)
             if exo_object is self.weather:
-                config = self.weather_config
+                config_section = "weather"
             elif exo_object is self.control:
-                config = self.control_config
+                config_section = "control"
             elif exo_object is self.other_input:
-                config = self.other_input_config
+                config_section = "other_input"
             elif exo_object is self.constraint:
-                config = self.constraint_config
+                config_section = "constraint"
             elif exo_object is self.price:
-                config = self.price_config
+                config_section = "price"
             else:
                 raise ValueError('Exodata object {0} unknown.'.format(exo_object))
         # Update data
-            df = self.data_manager.get_data_from_config(config, start_time, final_time)
+            df = self.data_manager.get_data_from_config(config_section, start_time, final_time)
             exo_object._df = df
             exo_object.collect_data(start_time, final_time)
 
@@ -567,7 +567,7 @@ class mpc(object):
         '''
 
         # Update exodata
-        df = self.data_manager.get_data_from_config(self.system_config, start_time, final_time)
+        df = self.data_manager.get_data_from_config("system", start_time, final_time)
         self.system._df = df
         self.system.collect_measurements(start_time, final_time)
 

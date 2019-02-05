@@ -23,7 +23,8 @@ class unit(unittest.TestCase):
                               weather_config = config['weather_config'],
                               control_config = config['control_config'],
                               constraint_config = config['constraint_config'],
-                              price_config = config['price_config'])
+                              price_config = config['price_config'],
+                              data_manager_config=config['data_manager_config'])
     
     def test_update_exo(self):
         for exo in [self.controller.weather, 
@@ -45,37 +46,38 @@ class unit(unittest.TestCase):
         print(self.controller.parameter.display_data())
         
 class functional(unittest.TestCase):
-    
+
     def test_simulate(self):
         start_time = pd.to_datetime('6/1/2018')
         final_time = pd.to_datetime('6/6/2018')
         # Instantiate
         config['model_config']['modelpath'] = 'SolarPlus.Building.Optimization.StoreSim'
         self.controller = mpc(config['model_config'],
-                              config['opt_config'], 
+                              config['opt_config'],
                               config['system_config'],
                               weather_config = config['weather_config'],
                               control_config = config['control_config'],
                               constraint_config = config['constraint_config'],
-                              price_config = config['price_config'])
+                              price_config = config['price_config'],
+                              data_manager_config=config['data_manager_config'])
         # Simulate
         measurements, other_outputs = self.controller.simulate(start_time, final_time)
         # Plot
         plt.figure(1)
         for key in measurements.columns:
             plt.plot(measurements.index, measurements[key].get_values()-273.15, label = '{0}_simulated'.format(key), alpha=0.5)
-            plt.plot(self.controller.system.display_measurements('Measured').index, self.controller.system.display_measurements('Measured')[key].get_values(), label = '{0}_measured'.format(key), alpha=0.5) 
+            plt.plot(self.controller.system.display_measurements('Measured').index, self.controller.system.display_measurements('Measured')[key].get_values(), label = '{0}_measured'.format(key), alpha=0.5)
         plt.legend()
         plt.figure(2)
         self.controller.control.display_data().plot()
         plt.show()
-        
+
     def test_optimize(self):
         start_time = pd.to_datetime('6/1/2018')
         final_time = pd.to_datetime('6/2/2018')
         # Instantiate
         self.controller = mpc(config['model_config'],
-                              config['opt_config'], 
+                              config['opt_config'],
                               config['system_config'],
                               weather_config = config['weather_config'],
                               control_config = config['control_config'],
@@ -83,7 +85,7 @@ class functional(unittest.TestCase):
                               price_config = config['price_config'])
         # Optimize
         control, measurements, other_outputs, statistics = self.controller.optimize(start_time, final_time, init=True)
-        
+
         # Plot
         for key in measurements.columns:
             plt.figure(1)
@@ -104,7 +106,7 @@ class functional(unittest.TestCase):
             plt.legend()
             plt.xlim([0,24])
             plt.xticks(np.linspace(0, 24, num=13))
-        plt.savefig('control.png')            
+        plt.savefig('control.png')
         for key in other_outputs.columns:
             if key is 'SOC':
                 plt.figure(4)
@@ -114,7 +116,7 @@ class functional(unittest.TestCase):
                 plt.plot(time, data, label=key)
                 plt.legend()
                 plt.xlim([0,24])
-                plt.ylim([0,0.5])                   
+                plt.ylim([0,0.5])
                 plt.xticks(np.linspace(0, 24, num=13))
                 plt.savefig('SOC.png')
             else:
@@ -125,7 +127,7 @@ class functional(unittest.TestCase):
                 plt.plot(time, data, label=key)
                 plt.legend()
                 plt.xlim([0,24])
-                plt.ylim([-15000,25000])                
+                plt.ylim([-15000,25000])
                 plt.xticks(np.linspace(0, 24, num=13))
                 plt.savefig('Power.png')
         for key in self.controller.price.display_data().columns:
@@ -137,7 +139,7 @@ class functional(unittest.TestCase):
             plt.legend()
             plt.xlim([0,24])
             plt.xticks(np.linspace(0, 24, num=13))
-            plt.savefig('price.png')            
+            plt.savefig('price.png')
         plt.show()
         
             

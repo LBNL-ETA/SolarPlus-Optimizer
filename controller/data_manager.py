@@ -18,11 +18,11 @@ class Data_Manager():
                 configuration dict for data_manager
         '''
         # TODO: handle timezones
-        self.config = data_manager_config
-        self.files = self.config["source"]["csv_files"]
+        self.data_manager_config = data_manager_config
+        self.files = self.data_manager_config["source"]["csv_files"]
         self.data_from_csvs = {}
         self.data_path = data_path + "/"
-        self.data_sink = self.config["data_sink"]
+        self.data_sink = self.data_manager_config["data_sink"]
 
     def get_all_csv_data(self):
         '''For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
@@ -66,8 +66,8 @@ class Data_Manager():
 
             Parameters
             ----------
-            config: dict()
-                individual configuration sections for weather, price, control etc.
+            config: section name in config file ("weather"/"price"/"control"/"constraint"/"system")
+                pointer to individual configuration sections for weather, price, control etc.
             start_time : datetime
                 Start time of timeseries
             end_time : datetime
@@ -76,21 +76,31 @@ class Data_Manager():
             Returns
             -------
             df: DataFrame
-                DataFrame, whose each column is the timeseries of the variables in config['vm']
+                DataFrame, whose each column is the timeseries of the variables in data_manager_config[config]["variables"]
 
         '''
         # TODO: handle st, et for influx and XBOS versions
         # if start_time!=None and end_time!=None:
         #     # get data for that time period
         df_list = []
-        for variable in config["vm"]:
-            source = config["type"]
+        column_names = []
+        section_config = self.data_manager_config[config]
+        variables = section_config["variables"].keys()
+        source = section_config["type"]
+
+        for variable in variables:
             if source == "csv":
                 file = self.find_file_from_variable(variable)
-                df_list.append(self.data_from_csvs[file][[variable]])
+                if file == None:
+                    print('variable %s'%variable)
+                else:
+                    column_names.append(section_config["variables"][variable])
+                    df_list.append(self.data_from_csvs[file][[variable]])
 
         df = pd.concat(df_list, axis=1)
+        df.columns = column_names
         # df.index = pd.to_datetime(df.index, utc=True)
+        # return df.loc[start_time: end_time]
         return df
 
     def get_data(self, variable_list, start_time=None, end_time=None):
@@ -194,8 +204,8 @@ class Data_Manager():
 
             Parameters
             ----------
-            config: dict()
-                individual configuration sections for weather, price, control etc. (required keys: path, vm and type)
+            config: section name in config file ("weather"/"price"/"control"/"constraint"/"system")
+                pointer to individual configuration sections for weather, price, control etc.
             start_time : datetime
                 Start time of timeseries
             end_time : datetime
@@ -209,7 +219,7 @@ class Data_Manager():
         '''
         self.get_all_csv_data()
         df = self.get_timeseries_from_config(config=config, start_time=start_time, end_time=end_time)
-        if config['path'] == 'data/Control2.csv':
+        if config == 'control':
             return self.modify_control_df(df_power=df)
         return df
 

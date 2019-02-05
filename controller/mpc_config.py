@@ -84,7 +84,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'Tfre':('Tfre', units.K),
                               'SOC':('SOC',units.unit1)}},
 
-"date_manager_config": {
+"data_manager_config": {
     "source": {
         "csv_files": [
             "Temperature.csv",
@@ -100,7 +100,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Solar Radiation": "Solar Radiation"
         }
     },
-    "price": {
+    "control": {
         "type": "csv",
         "variables": {
             "FreComp": "FreComp",
@@ -108,7 +108,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "HVAC1": "HVAC1"
         }
     },
-    "control": {
+    "constraint": {
         "type": "csv",
         "variables": {
             "Trtu_min": "Trtu_min",
@@ -134,7 +134,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "demand": "demand"
         }
     },
-    "constraint": {
+    "price": {
         "type": "csv",
         "variables": {
             "pi_e": "pi_e"
@@ -147,6 +147,9 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Trtu": "Trtu",
             "Tfre": "Tfre",
             "SOC": "SOC"
+            # "Refrigerator East": "Tref",
+            # "HVAC East": "Trtu",
+            # "Freezer": "Tfre",
         }
     },
     "data_sink": {
