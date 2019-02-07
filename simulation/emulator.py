@@ -7,10 +7,11 @@ Created on Mon Oct 29 14:40:51 2018
 
 import os
 from mpcpy import systems, exodata, units, variables
+import pandas as pd
 
 
 class emulator(object):
-    
+
     def __init__(self, outdir):
         self.outdir = outdir
         # Weather
@@ -20,7 +21,7 @@ class emulator(object):
         self.weather = exodata.WeatherFromCSV(csvpath_weather, weather_vm, geography)
         # Setpoints
         csvpath_setpoints = os.path.join('data','setpoints.csv')
-        setpoints_vm = {'Trtu_heat': ('setHeat', units.K), 
+        setpoints_vm = {'Trtu_heat': ('setHeat', units.K),
                         'Trtu_cool': ('setCool', units.K),
                         'Tref': ('setRef', units.K),
                         'Tfre': ('setFre', units.K),
@@ -39,21 +40,21 @@ class emulator(object):
         self.measurements = dict()
         for meas in meas_list:
             self.measurements[meas] = {'Sample' : variables.Static('{0}_sample'.format(meas), sample_rate, units.s)};
-                                                 
+
     def simulate(self, start_time, final_time):
         # Update exodata
         self.weather.collect_data(start_time, final_time)
         self.setpoints.collect_data(start_time, final_time)
         # Instantiate emulator if initial
         if start_time is not 'continue':
-            self.building = systems.EmulationFromFMU(self.measurements, 
+            self.building = systems.EmulationFromFMU(self.measurements,
                                                      moinfo=self.moinfo,
                                                      weather_data = self.weather.data,
                                                      other_inputs = self.setpoints.data)
-    
+
         # Simulate fmu
         self.building.collect_measurements(start_time, final_time)
         # Save outputs
         emu_measurements = self.building.display_measurements('Measured')
-        
+
         return emu_measurements

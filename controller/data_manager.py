@@ -223,7 +223,7 @@ class Data_Manager():
             return self.modify_control_df(df_power=df)
         return df
 
-    def write_df_to_csv(self, df, filename):
+    def write_df_to_csv(self, df, filename, overwrite=True):
         '''Write df to csv: if file exists, append; else create new file
 
             Parameters
@@ -238,10 +238,13 @@ class Data_Manager():
             None
 
         '''
-        if os.path.exists(filename):
-            existing_df = pd.read_csv(filename, index_col=0, parse_dates=True)
-            new_df = pd.concat([existing_df, df], axis=0)
-            new_df.to_csv(filename)
+        if not overwrite:
+            if os.path.exists(filename):
+                existing_df = pd.read_csv(filename, index_col=0, parse_dates=True)
+                new_df = pd.concat([existing_df, df], axis=0)
+                new_df.to_csv(filename)
+            else:
+                df.to_csv(filename)
         else:
             df.to_csv(filename)
 
@@ -289,4 +292,3 @@ class Data_Manager():
             part_df = df[[cols]]
             name = self.data_path + file
             self.write_df_to_csv(df=part_df, filename=name)
-

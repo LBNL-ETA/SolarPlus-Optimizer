@@ -27,6 +27,8 @@ class mpc(object):
         Dictionary of source information.
     control_config : dict()
         Dictionary of source information.
+    setpoints_config: dict()
+        Dictionary of source information.
     other_input_config : dict(), optional
         Dictionary of source information.
     constraint_config : dict(), optional
@@ -38,7 +40,6 @@ class mpc(object):
     tz_name ; str, optional
         Name of the time zone to use with the controller
         Default is 'UTC'.
-
     '''
 
     def __init__(self, model_config,
@@ -46,6 +47,7 @@ class mpc(object):
                        system_config,
                        weather_config,
                        control_config,
+                       setpoints_config,
                        other_input_config = None,
                        constraint_config = None,
                        data_manager_config = None,
@@ -60,6 +62,7 @@ class mpc(object):
         self.system_config = system_config
         self.weather_config = weather_config
         self.control_config = control_config
+        self.setpoints_config = setpoints_config
         self.other_input_config = other_input_config
         self.constraint_config = constraint_config
         self.price_config = price_config
@@ -125,6 +128,40 @@ class mpc(object):
         statistics = self.opt_object.get_optimization_statistics()
 
         return control, measurements, other_outputs, statistics
+
+    def set_setpoints(self, control, measurements):
+        '''Push the optimal setpoints to a DataFrame
+
+        Parameters
+        -----------
+        control : DataFrame
+            Solution of optimization problem
+        measurements : DataFrame
+            Solution of optimization problem for model measurements
+
+        Returns
+        -------
+        setpoints : DataFrame
+            Optimal setpoints obtained after the completion of simulation
+
+        '''
+        vm = self.setpoints_config['vm']
+        setpoints_list = []
+        for key in vm:
+            if key in control.columns:
+                setpoints_list.append(control[key])
+            elif key in measurements.columns:
+                setpoints_list.append(measurements[key])
+            else:
+                raise ValueError("{0} is not in control or measurements".format(key))
+        setpoints = pd.concat(setpoints_list,axis=1)
+        if 'Trtu' in setpoints.columns:
+            setpoints['Trtu_cool'] = setpoints['Trtu']
+            setpoints['Trtu_heat'] = setpoints['Trtu']
+        print(setpoints)
+        self.data_manager.set_setpoints(setpoints)
+
+        return setpoints
 
     def simulate(self, start_time, final_time, optimal=False):
         '''Simulate the model with an initial point from measurements.

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 This script runs a simulation of the MPC controller for the convenience
-store.  A version of the MPC model with feedback control is used to 
+store.  A version of the MPC model with feedback control is used to
 represent the real building.
 
 """
@@ -23,6 +23,7 @@ tz_name = 'America/Los_Angeles'
 sim_control_step = 1*3600
 controller = 'mpc'
 mpc_horizon = 24*3600
+emulation_states_csv = "data/emulation_states.csv"
 
 # Initialize
 # ==========================================================================
@@ -32,7 +33,7 @@ outdir = os.path.join('simulation', 'output')
 # Define simulation steps
 sim_steps = pd.date_range(sim_start_time,
                           sim_final_time,
-                          freq = '{0}s'.format(sim_control_step))                        
+                          freq = '{0}s'.format(sim_control_step))
 iterations = range(len(sim_steps))
 # Save setup
 with open(outdir+'/mpc_setup.txt', 'w') as f:
@@ -44,18 +45,20 @@ with open(outdir+'/mpc_setup.txt', 'w') as f:
 if controller is 'mpc':
     config = mpc_config.get_config()
     controller = mpc(config['model_config'],
-                     config['opt_config'], 
+                     config['opt_config'],
                      config['system_config'],
                      weather_config = config['weather_config'],
                      control_config = config['control_config'],
+                     setpoints_config = config['setpoints_config'],
                      constraint_config = config['constraint_config'],
+                     data_manager_config = config['data_manager_config'],
                      price_config = config['price_config'])
 # Instantiate emulator
 emu = emulator(outdir)
 # Initialize emulator states for controller
 # Remove previous simulation if exists
-if os.path.exists(config['system_config']['path']):
-    os.remove(config['system_config']['path'])
+if os.path.exists(emulation_states_csv):
+    os.remove(emulation_states_csv)
 # Get states and names from configuration
 initial_states = []
 initial_names = []
@@ -65,7 +68,7 @@ for state in config['model_config']['init_vm']:
     value = controller.parameter.display_data().loc[state,'Value']
     df_initial_states[config['model_config']['init_vm'][state]] = value
 # Save per configuration
-df_initial_states.to_csv(config['system_config']['path'])
+df_initial_states.to_csv(emulation_states_csv)
 
 
 # Simulation Loop
@@ -94,14 +97,7 @@ for i in iterations[:-1]:
     with open(outdir+'/optimal_statistics_{0}.txt'.format(i), open_as) as f:
         f.write(str(sim_steps[i]) + ': ' +  str(statistics) + '\n')
     # Push setpoints
-    setpoints = pd.concat([control['uCharge'], 
-                           control['uDischarge'],
-                           measurements['Trtu'],
-                           measurements['Tref'],
-                           measurements['Tfre']],axis=1)
-    setpoints['Trtu_cool'] = measurements['Trtu']
-    setpoints['Trtu_heat'] = measurements['Trtu']
-    setpoints.to_csv('data/setpoints.csv')
+    setpoints = controller.set_setpoints(control, measurements)
 #    # Simulate optimal control to check
 #    sim_measurements, sim_other_outputs = controller.simulate(opt_start_time, opt_final_time, optimal=True)
 #    # Save optimization simulation data
@@ -118,4 +114,3 @@ for i in iterations[:-1]:
     emu_measurements.to_csv(outdir+'/emu_measurements_{0}.csv'.format(i))
     # Output emulation states
     emu_measurements.to_csv('data/emulation_states.csv')
-    
