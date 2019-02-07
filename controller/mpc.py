@@ -159,7 +159,6 @@ class mpc(object):
         if 'Trtu' in setpoints.columns:
             setpoints['Trtu_cool'] = setpoints['Trtu']
             setpoints['Trtu_heat'] = setpoints['Trtu']
-        print(setpoints)
         self.data_manager.set_setpoints(setpoints)
 
         return setpoints

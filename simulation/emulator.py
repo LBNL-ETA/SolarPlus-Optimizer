@@ -7,7 +7,6 @@ Created on Mon Oct 29 14:40:51 2018
 
 import os
 from mpcpy import systems, exodata, units, variables
-import pandas as pd
 
 
 class emulator(object):
