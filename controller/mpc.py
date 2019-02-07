@@ -11,6 +11,7 @@ explicitly as appropriate.
 from mpcpy import exodata, models, optimization, variables, units, systems
 import pandas as pd
 from data_manager import Data_Manager
+import process_data
 
 class mpc(object):
     '''MPC controller.
@@ -262,6 +263,7 @@ class mpc(object):
         #                                     control_config['vm'])
 
         control_df = self.data_manager.get_data_from_config("control")
+        control_df = process_data.process_control_df(df=control_df)
         control = exodata.ControlFromDF(control_df,
                                         control_config['vm'])
         return control
@@ -541,8 +543,12 @@ class mpc(object):
                 config_section = "price"
             else:
                 raise ValueError('Exodata object {0} unknown.'.format(exo_object))
-        # Update data
+            # Update data
             df = self.data_manager.get_data_from_config(config_section, start_time, final_time)
+
+            if config_section == "control":
+                df = process_data.process_control_df(df=df)
+
             exo_object._df = df
             exo_object.collect_data(start_time, final_time)
 

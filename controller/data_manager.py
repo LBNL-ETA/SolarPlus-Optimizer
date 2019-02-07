@@ -1,8 +1,6 @@
 import pandas as pd
-import numpy as np
 import datetime
 import os
-
 
 class Data_Manager():
 
@@ -37,7 +35,9 @@ class Data_Manager():
 
         '''
         for file in self.files:
-            self.data_from_csvs[file] = pd.read_csv(self.data_path + file, index_col=0, parse_dates=True)
+            filename = self.data_path + file
+            if os.path.exists(filename):
+                self.data_from_csvs[file] = pd.read_csv(filename, index_col=0, parse_dates=True)
 
     '''
 
@@ -57,6 +57,7 @@ class Data_Manager():
             filename of the csv file in which the variable is present or None, if variable not found in any file
         '''
         for file in self.files:
+
             if variable in self.data_from_csvs[file].columns:
                 return file
         return None
@@ -140,65 +141,6 @@ class Data_Manager():
 
         return pd.concat(df_list, axis=1)
 
-
-    def modify_control_df(self, df_power, pre_fix=False):
-        '''This function takes the dataframe of power values and processes it to add more columns relevant to MPCPy
-
-            Parameters
-            ----------
-            df_power: DataFrame
-                DataFrame of power consumption values, columns=['FreComp', 'RefComp', 'HVAC1']
-            pre_fix : bool
-                determines the power limit on freezer compressor
-
-            Returns
-            -------
-            df: DataFrame
-                A processed DataFrame, columns=['FreComp', 'RefComp', 'HVAC1', 'Defrost', 'FreComp_Split',
-                    'FreHeater_Split', 'FreComp_Split_Norm', 'FreHeater_Split_Norm',
-                    'RefComp_Norm', 'HVAC1_Norm', 'uHeat', 'uCharge', 'uDischarge']
-
-        '''
-        if pre_fix:
-            fre_comp_lim = 600
-        else:
-            fre_comp_lim = 6000
-
-        df_power.index = pd.to_datetime(df_power.index.values)
-        # Initialize new column
-        df_power['Defrost'] = np.where(df_power['FreComp'] > fre_comp_lim, True, False)
-        # Find when each defrost cycle starts
-        times = []
-        skip = False
-        for time in df_power.index:
-            if (df_power['FreComp'].loc[time] > fre_comp_lim) and (not skip):
-                times.append(time)
-                skip = True
-            elif (df_power['FreComp'].loc[time] <= fre_comp_lim):
-                skip = False
-        for time in times:
-            if (time - times[-1] <= datetime.timedelta(minutes=20)):
-                df_power['Defrost'].loc[time:time + datetime.timedelta(minutes=20)] = True
-
-        df_power['FreComp_Split'] = np.where(df_power['Defrost'] == True, 0, df_power['FreComp'])
-        df_power['FreHeater_Split'] = np.where(df_power['Defrost'] == True, df_power['FreComp'], 0)
-
-        # Normalize to [0,1]
-        for key in ['FreComp_Split', 'FreHeater_Split', 'RefComp', 'HVAC1']:
-            key_new = key + '_Norm'
-            df_power[key_new] = df_power[key] / df_power[key].max()
-            if 'HVAC' in key:
-                df_power[key_new] = np.round(df_power[key_new] * 2) / 2
-            else:
-                df_power[key_new] = np.round(df_power[key_new])
-
-        df_power['uHeat'] = 0
-        df_power['uCharge'] = 0
-        df_power['uDischarge'] = 0
-
-        df_power.index.name = 'Time'
-        return df_power
-
     def get_data_from_config(self, config, start_time=None, end_time=None):
         '''Get config file from mpc and retrieve required variables
 
@@ -219,8 +161,6 @@ class Data_Manager():
         '''
         self.get_all_csv_data()
         df = self.get_timeseries_from_config(config=config, start_time=start_time, end_time=end_time)
-        if config == 'control':
-            return self.modify_control_df(df_power=df)
         return df
 
     def write_df_to_csv(self, df, filename):

@@ -37,11 +37,6 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 "control_config" :    {'type': 'csv',
                      'path': os.path.join('data','Control2.csv'),
                      'vm'  : {
-                              # new columns from csv required for the following values
-                              'FreComp': ('FreComp', units.kW),
-                              'RefComp': ('FreComp', units.kW),
-                              'HVAC1': ('FreComp', units.kW),
-
                               'HVAC1_Norm' : ('uCool', units.unit1),
                               'RefComp_Norm' : ('uRef', units.unit1),
                               'FreComp_Split_Norm' : ('uFreCool', units.unit1),
@@ -81,15 +76,112 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                      'path': os.path.join('data','Temperature.csv'),
                      'vm'  : {'Refrigerator East':('Tref', units.degC),
                               'HVAC East':('Trtu', units.degC),
-                              'Freezer':('Tfre', units.degC)}
-                              'SOC':('SOC',units.unit1)}},
-"csv_files": [
-    "Temperature.csv",
-    "Price.csv",
-    "Control2.csv",
-    "Constraint.csv",
-    "emulation_states.csv"
-    ]
+                              'Freezer':('Tfre', units.degC),
+                              # 'SOC':('SOC',units.unit1)
+                              }
+                       },
+"data_manager_config": {
+    "source": {
+        "csv_files": [
+            "Temperature.csv",
+            "Price.csv",
+            "Control2.csv",
+            "Constraint.csv",
+        ],
+    },
+    "weather": {
+        "type": "csv",
+        "variables": {
+            "Outdoor": "Outdoor",
+            "Solar Radiation": "Solar Radiation"
+        }
+    },
+    "control": {
+        "type": "csv",
+        "variables": {
+            "FreComp": "FreComp",
+            "RefComp": "RefComp",
+            "HVAC1": "HVAC1"
+        }
+    },
+    "constraint": {
+        "type": "csv",
+        "variables": {
+            "Trtu_min": "Trtu_min",
+            "Trtu_max": "Trtu_max",
+            "Tref_min": "Tref_min",
+            "Tref_max": "Tref_max",
+            "Tfre_min": "Tfre_min",
+            "Tfre_max": "Tfre_max",
+            "SOC_min": "SOC_min",
+            "SOC_max": "SOC_max",
+            "uCool_min": "uCool_min",
+            "uCool_max": "uCool_max",
+            "uHeat_min": "uHeat_min",
+            "uHeat_max": "uHeat_max",
+            "uCharge_min": "uCharge_min",
+            "uCharge_max": "uCharge_max",
+            "uDischarge_min": "uDischarge_min",
+            "uDischarge_max": "uDischarge_max",
+            "uRef_min": "uRef_min",
+            "uRef_max": "uRef_max",
+            "uFreCool_min": "uFreCool_min",
+            "uFreCool_max": "uFreCool_max",
+            "demand": "demand"
+        }
+    },
+    "price": {
+        "type": "csv",
+        "variables": {
+            "pi_e": "pi_e"
+        }
+    },
+    "system": {
+        "type": "csv",
+        "variables": {
+            "Refrigerator East": "Refrigerator East",
+            "HVAC East": "HVAC East",
+            "Freezer": "Freezer",
+        }
+    },
+    "data_sink": {
+        "setpoints": {
+            "type": "csv",
+            "filename": "setpoints.csv"
+        },
+        "variables": {
+            "uCharge": {
+                "type": "csv",
+                "filename": "setpoints.csv"
+            },
+            "uDischarge": {
+                "type": "csv",
+                "filename": "setpoints.csv"
+            },
+            "Trtu": {
+                "type": "csv",
+                "filename": "setpoints.csv"
+            },
+            "Tref": {
+                "type": "csv",
+                "filename": "setpoints.csv"
+            },
+            "Tfre": {
+                "type": "csv",
+                "filename": "setpoints.csv"
+            },
+            "Trtu_cool": {
+                "type": "csv",
+                "filename": "setpoints.csv"
+            },
+            "Trtu_heat": {
+                "type": "csv",
+                "filename": "setpoints.csv"
+            }
+        }
+
+    }
+}
 }
 
 def get_config():

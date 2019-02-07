@@ -37,11 +37,6 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 "control_config" :    {'type': 'csv',
                      'path': os.path.join('data','Control2.csv'),
                      'vm'  : {
-                              # new columns from csv required for the following values
-                              'FreComp': ('FreComp', units.kW),
-                              'RefComp': ('RefComp', units.kW),
-                              'HVAC1': ('HVAC1', units.kW),
-
                               'HVAC1_Norm' : ('uCool', units.unit1),
                               'RefComp_Norm' : ('uRef', units.unit1),
                               'FreComp_Split_Norm' : ('uFreCool', units.unit1),

@@ -7,10 +7,10 @@ import unittest
 from mpc import mpc
 from matplotlib import pyplot as plt
 import numpy as np
-import mpc_config
+import mpc_config_testing
 import pandas as pd
 
-config = mpc_config.get_config()
+config = mpc_config_testing.get_config()
                              
 class unit(unittest.TestCase):
     
@@ -82,7 +82,8 @@ class functional(unittest.TestCase):
                               weather_config = config['weather_config'],
                               control_config = config['control_config'],
                               constraint_config = config['constraint_config'],
-                              price_config = config['price_config'])
+                              price_config = config['price_config'],
+                              data_manager_config=config['data_manager_config'])
         # Optimize
         control, measurements, other_outputs, statistics = self.controller.optimize(start_time, final_time, init=True)
 
