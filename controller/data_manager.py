@@ -1,6 +1,7 @@
 import pandas as pd
 import datetime
 import os
+from influxdb import DataFrameClient
 
 class Data_Manager():
 
@@ -17,10 +18,33 @@ class Data_Manager():
         '''
         # TODO: handle timezones
         self.data_manager_config = data_manager_config
+
         self.files = self.data_manager_config["source"]["csv_files"]
+        self.init_influx(self.data_manager_config["source"]["influxdb"])
+
         self.data_from_csvs = {}
         self.data_path = data_path + "/"
         self.data_sink = self.data_manager_config["data_sink"]
+
+    def init_influx(self, influx_cfg):
+        '''Initialize influxdb client
+
+            Parameters
+            ----------
+            influx_cfg: dict()
+                influxdb configuration dictionary
+
+            Returns
+            -------`
+            None
+        '''
+        self.influx_client = DataFrameClient(host=influx_cfg["host"],
+                                            port=influx_cfg["port"],
+                                            username=influx_cfg["username"],
+                                            password=influx_cfg["password"],
+                                            ssl=influx_cfg["ssl"],
+                                            verify_ssl=influx_cfg["verify_ssl"],
+                                            database=influx_cfg["database"])
 
     def get_all_csv_data(self):
         '''For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
@@ -30,7 +54,7 @@ class Data_Manager():
             None
 
             Returns
-            -------
+            -------`
             None
 
         '''
@@ -39,31 +63,86 @@ class Data_Manager():
             if os.path.exists(filename):
                 self.data_from_csvs[file] = pd.read_csv(filename, index_col=0, parse_dates=True)
 
-    '''
+    def get_single_data_from_influx(self, measurement, variable, start_time=None, end_time=None):
+        '''From the influxdb measurement, get one particular variable as a DataFrame
+               Parameters
+               ----------
+               measurement: string
+                   measurement which contains the variable to be queried
+               variable: string
+                   variable being queried
+               start_time : datetime
+                   Start time of timeseries
+               end_time : datetime
+                   End time of timeseries
 
-        returns: filename, if found; else None
-    '''
+               Returns
+               -------
+               df: pandas DataFrame
+                   DataFrame where the column is the variable being queried
+           '''
+
+        # TODO: handle start_time, end_time
+
+        q = "select value from %s where \"name\"=\'%s\'" % (measurement, variable)
+        df = self.influx_client.query(q)[measurement]
+        df.columns = variable
+        return df
+
+    def get_section_data_from_influx(self, config, start_time=None, end_time=None):
+        '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
+
+            Parameters
+            ----------
+            config: dict()
+                individual configuration sections for weather, price, control etc.
+            start_time : datetime
+                Start time of timeseries
+            end_time : datetime
+                End time of timeseries
+
+            Returns
+            -------
+            df: pandas DataFrame
+                DataFrame where each column is a variable in the variables section in the configuration
+        '''
+
+        # TODO: handle start_time, end_time
+        measurement = config["measurement"]
+        variables = config["variables"].keys()
+
+        df_list = []
+        column_names = []
+        for variable in variables:
+            q = "select value from %s where \"name\"=\'%s\'"%(measurement, variable)
+            df = self.influx_client.query(q)[measurement]
+            df.index = df.index.tz_localize(None)
+            df_list.append(df)
+            column_names.append(config["variables"][variable])
+        final_df = pd.concat(df_list, axis=1)
+        final_df.columns = column_names
+        return final_df
+
     def find_file_from_variable(self, variable):
         '''Find which file the variable belongs to, by checking column names of each csv file
 
-        Parameters
-        ----------
-        variable: str
-            variable name
+            Parameters
+            ----------
+            variable: str
+                variable name
 
-        Returns
-        -------
-        file: str
-            filename of the csv file in which the variable is present or None, if variable not found in any file
+            Returns
+            -------
+            file: str
+                filename of the csv file in which the variable is present or None, if variable not found in any file
         '''
         for file in self.files:
-
             if variable in self.data_from_csvs[file].columns:
                 return file
         return None
 
     def get_timeseries_from_config(self, config, start_time=None, end_time=None):
-        '''From the configuration dictionary, get a DataFrame of all the variables in the variable mapFor all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
+        '''From the configuration dictionary, get a DataFrame of all the variables from any source
 
             Parameters
             ----------
@@ -89,17 +168,21 @@ class Data_Manager():
         variables = section_config["variables"].keys()
         source = section_config["type"]
 
-        for variable in variables:
-            if source == "csv":
+        if source == "csv":
+            for variable in variables:
                 file = self.find_file_from_variable(variable)
                 if file == None:
                     print('variable %s'%variable)
                 else:
                     column_names.append(section_config["variables"][variable])
                     df_list.append(self.data_from_csvs[file][[variable]])
+            df = pd.concat(df_list, axis=1)
+            df.columns = column_names
 
-        df = pd.concat(df_list, axis=1)
-        df.columns = column_names
+        elif source == "influxdb":
+            df = self.get_section_data_from_influx(section_config)
+
+
         # df.index = pd.to_datetime(df.index, utc=True)
         # return df.loc[start_time: end_time]
         return df
