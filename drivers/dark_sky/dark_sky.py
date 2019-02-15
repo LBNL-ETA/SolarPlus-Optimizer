@@ -3,6 +3,10 @@ import json
 import requests as req
 import yaml
 import argparse
+import numpy as np
+import pandas as pd
+from pvlib import solarposition
+
 # Add influx driver to path
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 influx_folder='influx_dataframe_client'
@@ -57,7 +61,7 @@ class API_Collection_Layer:
         '''
         Push 48 hour forecast data from DarkSky
         Params:         database, measurement, forecast_timestamp, data
-        Returns:        Dataframe containing wunderground data
+        Returns:        Dataframe containing darksky data
         '''
         send_dict = []
         json_prediction = {}
@@ -83,14 +87,63 @@ class API_Collection_Layer:
 
         return send_dict
 
+    # datetime should include timezone information, otherwise UTC time by default
+    alt_ang = solarposition.get_solarposition(datetime,lat,lon)['elevation']
+    sin_alt = np.sin(np.radians(alt_ang))
+    zh_solar_const = 1355 # W/m2, solar constant used by Zhang-Huang model
+    solar_const = 1367 # general solar constant
 
+    def solar_model_ZhHu(sin_alt,cloud_cover,temperature,rel_hum,wind_speed):
+        '''
+        Estimate Global Horizontal Irradiance (GHI) from Zhang-Huang solar forecast model
+        Params: sin_alt, sine of solar altitude
+                cloud_cover: [0,1];
+                temperature: degC;
+                relative humidity: %;
+                wind_speed: m/s;
+        Returns: estimated GHI
+        '''
+        c0 = 0.5598; c1 = 0.4982; c2 = -0.6762; c3 = 0.02842
+        c4 = -0.00317; c5 = 0.014; d = -17.853; k = 0.843
+        estimated_ghi = pd.Series(index=datetime)
+        deltaT = pd.Series(index=datetime)
+        for n in range(len(estimated_ghi)):
+            deltaT[n] = temperature[n]-temperature[n-3]
+            estimated_ghi[n] = (zh_solar_const*np.sin(np.radians(alt_ang[n]))*(c0+c1*cloud_cover[n]
+                        +c2*cloud_cover[n]**2+c3*deltaT[n]+c4*rel_hum[n]*100+c5*wind_speed[n])+d)/k
+            estimated_ghi[n] = estimated_ghi[n] if estimated_ghi[n]>0 else 0
 
+        return estimated_ghi
+
+    def Perez_split(ghi,sin_alt):
+        '''
+        Estimate beam radiation and diffuse radiation from GHI and solar altitude
+        Params: GHI, W/m2
+                sin_alt, sine of solar altitude
+        Returns: beam_rad, beam radiation, W/m2
+                 diff_rad, diffuse radiation, W/m2
+        '''
+        clear_index_kt = ghi/(solar_const*sin_alt)
+        clear_index_ktc = 0.4268 + 0.1934 * sin_alt
+        clear_index_kds = pd.Series(index=ghi.index)
+        for i in range(len(ghi)):
+            if clear_index_kt[i] < clear_index_ktc[i]:
+                clear_index_kds[i] = (3.996-3.862*sin_alt[i]+1.54*(sin_alt[i])**2) * (clear_index_kt[i])**3
+            else:
+                clear_index_kds[i] = clear_index_kt[i]-(1.107+0.03569*sin_alt[i]+1.681*(sin_alt[i])**2)
+                                    *(1.0-clear_index_kt[i])**3
+        # Calculate direct normal radiation, W/m2
+        beam_rad = zh_solar_const*sin_alt*clear_index_kds*(1.0-clear_index_kt)/(1.0-clear_index_kds)
+        # Calculation diffuse horizontal radiation, W/m2
+        diff_rad = zh_solar_const*sin_alt*(clear_index_kt-clear_index_kds)/(1.0-clear_index_kds)
+
+        return beam_rad, diff_rad
 
     def get_data_dark_sky(self):
         '''
         Pull data from DarkSky
         Params:         None
-        Returns:        Dataframe containing wunderground data
+        Returns:        Dataframe containing darksky data
         '''
         send_dict = []
         json_prediction = {}
