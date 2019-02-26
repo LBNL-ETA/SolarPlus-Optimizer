@@ -42,14 +42,15 @@ class API_Collection_Layer:
 
         self.test_client = Influx_Dataframe_Client(config_file,db_section)
 
-    def solar_model_ZhHu(self, forecast_df, sin_alt, zh_solar_const, alt_ang, solar_const):
+    def solar_model_ZhHu(self, forecast_df, sin_alt, zh_solar_const, solar_const):
         '''
         Estimate Global Horizontal Irradiance (GHI) from Zhang-Huang solar forecast model
         Params: sin_alt, sine of solar altitude
-                cloud_cover: [0,1];
+                forecast_df should include the following columns:
+                cloudCover: [0,1];
                 temperature: degC;
                 relative humidity: %;
-                wind_speed: m/s;
+                windSpeed: m/s;
         Returns: estimated GHI
         '''
 
@@ -76,8 +77,7 @@ class API_Collection_Layer:
     def Perez_split(self, forecast_df):
         '''
         Estimate beam radiation and diffuse radiation from GHI and solar altitude
-        Params: GHI, W/m2
-                sin_alt, sine of solar altitude
+        Params: forecast_df includes the estimated GHI
         Returns: beam_rad, beam radiation, W/m2
                  diff_rad, diffuse radiation, W/m2
         '''
@@ -88,18 +88,18 @@ class API_Collection_Layer:
         zh_solar_const = 1355 # W/m2, solar constant used by Zhang-Huang model
         solar_const = 1367 # general solar constant
 
-        df = self.solar_model_ZhHu(forecast_df=forecast_df, sin_alt=sin_alt,  zh_solar_const=zh_solar_const, alt_ang=alt_ang, solar_const=solar_const)
+        df = self.solar_model_ZhHu(forecast_df=forecast_df, sin_alt=sin_alt,  zh_solar_const=zh_solar_const, solar_const=solar_const)
 
         clear_index_kt = df['estimated_ghi']/(solar_const*sin_alt)
         clear_index_ktc = 0.4268 + 0.1934 * sin_alt
-        
-        diff = clear_index_kt < clear_index_ktc
+
+        diff = (clear_index_kt < clear_index_ktc)*1  # *1 converts boolean to integer
         clear_index_kds = diff * ((3.996 - 3.862 * sin_alt + 1.54 * (sin_alt)**2) * (clear_index_kt)**3) + \
                         (1-diff) * (clear_index_kt - (1.107 + 0.03569 * sin_alt + 1.681 * (sin_alt)**2) * (1.0-clear_index_kt)**3)
 
         # Calculate direct normal radiation, W/m2
         df['beam_rad'] = zh_solar_const * sin_alt * clear_index_kds * (1.0 - clear_index_kt) / (1.0 - clear_index_kds)
-        # Calculation diffuse horizontal radiation, W/m2
+        # Calculate diffuse horizontal radiation, W/m2
         df['diff_rad'] = zh_solar_const * sin_alt * (clear_index_kt - clear_index_kds) / (1.0 - clear_index_kds)
         return df
 
@@ -112,11 +112,11 @@ class API_Collection_Layer:
         send_dict = []
         json_prediction = {}
         database = 'dark_sky'
-    #url = 'https://api.darksky.net/forecast/[key]/[latitude],[longitude]'
+        #url = 'https://api.darksky.net/forecast/[key]/[latitude],[longitude]'
         url = self.URL + self.API + '/' + self.COORDINATES
         response = req.get(url)
         json_data = json.loads(response.text)
-    
+
         if (response.status_code != 200):
             print("Error in retrieving data from DarkSky!")
             return None

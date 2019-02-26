@@ -63,7 +63,8 @@ class Data_Manager():
         return None
 
     def get_timeseries_from_config(self, config, start_time=None, end_time=None):
-        '''From the configuration dictionary, get a DataFrame of all the variables in the variable mapFor all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
+        '''From the configuration dictionary, get a DataFrame of all the variables in the variable map
+           For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
 
             Parameters
             ----------

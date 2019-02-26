@@ -11,40 +11,41 @@ import mpc_config_testing
 import pandas as pd
 
 config = mpc_config_testing.get_config()
-                             
+
 class unit(unittest.TestCase):
-    
+
     def setUp(self):
         self.start_time = pd.to_datetime('6/1/2018')
         self.final_time = pd.to_datetime('6/6/2018')
         self.controller = mpc(config['model_config'],
-                              config['opt_config'], 
+                              config['opt_config'],
                               config['system_config'],
                               weather_config = config['weather_config'],
                               control_config = config['control_config'],
+                              setpoints_config = config['setpoints_config'],
                               constraint_config = config['constraint_config'],
                               price_config = config['price_config'],
                               data_manager_config=config['data_manager_config'])
-    
+
     def test_update_exo(self):
-        for exo in [self.controller.weather, 
-                    self.controller.control, 
-                    self.controller.other_input, 
-                    self.controller.constraint, 
+        for exo in [self.controller.weather,
+                    self.controller.control,
+                    self.controller.other_input,
+                    self.controller.constraint,
                     self.controller.price]:
             self.controller._update_exo(exo, self.start_time, self.final_time)
             if exo:
                 print(exo.display_data())
-    
+
     def test_update_system(self):
         self.controller._update_system(self.start_time, self.final_time)
         print(self.controller.system.display_measurements('Measured'))
-        
+
     def test_estimate_state(self):
         self.controller._update_system(self.start_time, self.final_time)
         self.controller._estimate_state(self.final_time)
         print(self.controller.parameter.display_data())
-        
+
 class functional(unittest.TestCase):
 
     def test_simulate(self):
@@ -57,11 +58,14 @@ class functional(unittest.TestCase):
                               config['system_config'],
                               weather_config = config['weather_config'],
                               control_config = config['control_config'],
+                              setpoints_config = config['setpoints_config'],
                               constraint_config = config['constraint_config'],
                               price_config = config['price_config'],
                               data_manager_config=config['data_manager_config'])
         # Simulate
         measurements, other_outputs = self.controller.simulate(start_time, final_time)
+        measurements.to_csv("measurements_simulate.csv")
+        other_outputs.to_csv("other_outputs_simulate.csv")
         # Plot
         plt.figure(1)
         for key in measurements.columns:
@@ -81,11 +85,15 @@ class functional(unittest.TestCase):
                               config['system_config'],
                               weather_config = config['weather_config'],
                               control_config = config['control_config'],
+                              setpoints_config = config['setpoints_config'],
                               constraint_config = config['constraint_config'],
                               price_config = config['price_config'],
                               data_manager_config=config['data_manager_config'])
         # Optimize
         control, measurements, other_outputs, statistics = self.controller.optimize(start_time, final_time, init=True)
+        control.to_csv("control_optimize.csv")
+        measurements.to_csv("measurements_optimize.csv")
+        other_outputs.to_csv("other_outputs_optimize.csv")
 
         # Plot
         for key in measurements.columns:
@@ -142,8 +150,6 @@ class functional(unittest.TestCase):
             plt.xticks(np.linspace(0, 24, num=13))
             plt.savefig('price.png')
         plt.show()
-        
-            
-                         
+
 if __name__ == '__main__':
     unittest.main()

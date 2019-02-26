@@ -80,6 +80,16 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               # 'SOC':('SOC',units.unit1)
                               }
                        },
+"setpoints_config" :   {
+                      'vm'  : {'uCharge':('uCharge',units.unit1),
+                               'uDischarge':('uDischarge',units.unit1),
+                               'Trtu':('Trtu',units.degC),
+                               'Tref':('Tref',units.degC),
+                               'Tfre':('Tfre',units.degC)
+#                              'Trtu_cool':('Trtu',units.degC),
+#                               'Trtu_heat':('Trtu',units.degC)
+                               }
+                        },
 "data_manager_config": {
     "source": {
         "csv_files": [
