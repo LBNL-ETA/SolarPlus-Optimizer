@@ -279,6 +279,22 @@ class Data_Manager():
             df.to_csv(filename)
 
     def write_df_to_influx(self, df, influx_dataframe_client, measurement):
+        '''Write df to influx: overwrites if timestamp already exists for each column
+
+            Parameters
+            ----------
+            df: DataFrame
+                DataFrame, whose each column has to be written to influx
+            influx_dataframe_client: influxdb.DataFrameClient
+                client to send data to influxdb
+            measurement: str
+                name of measurement to store the values
+
+            Returns
+            -------
+            None
+
+        '''
         df.index.name = 'time'
         df_to_send = []
         for col in df.columns:
@@ -289,7 +305,7 @@ class Data_Manager():
             df2['value'] = df2['value'].astype(float)
             df_to_send.append(df2)
         df = pd.concat(df_to_send, axis=0)
-        influx_dataframe_client.write_points(dataframe=df, measurement='setpoints', tag_columns=['name'],
+        influx_dataframe_client.write_points(dataframe=df, measurement=measurement, tag_columns=['name'],
                                         field_columns=['value'])
 
     def set_setpoints(self, df):
