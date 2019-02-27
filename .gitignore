@@ -3,9 +3,10 @@
 *.pyc
 *.png
 
-# Data folder
-#############
+# Folders
+#########
 data/*
+simulation/output/*
 
 # Dymola output files
 #####################
