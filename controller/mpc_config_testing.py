@@ -28,14 +28,12 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 "opt_config" :        {'problem'  : 'EnergyCostMin',
                      'power_var': 'J'},
 
-"weather_config" :    {'type': 'csv',
-                     'path': os.path.join('data','Temperature.csv'),
+"weather_config" :    {
                      'vm'  : {'Outdoor':('weaTDryBul', units.degC),
                               'Solar Radiation':('weaHGloHor', units.W_m2)},
                      'geo' : (40.88,-124.0)},
 
-"control_config" :    {'type': 'csv',
-                     'path': os.path.join('data','Control2.csv'),
+"control_config" :    {
                      'vm'  : {
                               'HVAC1_Norm' : ('uCool', units.unit1),
                               'RefComp_Norm' : ('uRef', units.unit1),
@@ -44,8 +42,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'uCharge' : ('uCharge', units.unit1),
                               'uDischarge' : ('uDischarge', units.unit1)}},
 
-"constraint_config" : {'type': 'csv',
-                     'path': os.path.join('data','Constraint.csv'),
+"constraint_config" : {
                      'vm'  : {'Trtu_min':('Trtu', 'GTE', units.degC),
                               'Trtu_max':('Trtu', 'LTE', units.degC),
                               'Tref_min':('Tref', 'GTE', units.degC),
@@ -68,36 +65,54 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'uFreCool_max':('uFreCool', 'LTE', units.unit1),
                               'demand':('Pnet', 'LTE', units.kW)}},
 
-"price_config" :      {'type': 'csv',
-                     'path': os.path.join('data','Price.csv'),
+"price_config" :      {
                      'vm'  : {'pi_e':('pi_e', units.dol_kWh)}},
 
-"system_config" :     {'type': 'csv',
-                     'path': os.path.join('data','Temperature.csv'),
-                     'vm'  : {'Refrigerator East':('Tref', units.degC),
-                              'HVAC East':('Trtu', units.degC),
-                              'Freezer':('Tfre', units.degC),
+"system_config" :     {
+                     'vm'  : {'Tref':('Tref', units.degC),
+                              'Trtu':('Trtu', units.degC),
+                              'Tfre':('Tfre', units.degC),
                               # 'SOC':('SOC',units.unit1)
                               }
                        },
+"setpoints_config" :   {
+                      'vm'  : {'uCharge':('uCharge',units.unit1),
+                               'uDischarge':('uDischarge',units.unit1),
+                               'Trtu':('Trtu',units.degC),
+                               'Tref':('Tref',units.degC),
+                               'Tfre':('Tfre',units.degC)
+#                              'Trtu_cool':('Trtu',units.degC),
+#                               'Trtu_heat':('Trtu',units.degC)
+                               }
+                        },
 "data_manager_config": {
     "source": {
         "csv_files": [
-            "Temperature.csv",
-            "Price.csv",
-            "Control2.csv",
-            "Constraint.csv",
+            # "Temperature.csv",
+            # "Price.csv",
+            # "Control2.csv",
+            # "Constraint.csv",
+            # "setpoints.csv"
+            # "emulation_states.csv",
         ],
+        "influxdb": {
+            "config_filename": "controller/access_config_testing.yaml",
+            "section": "influxdb"
+        }
     },
     "weather": {
-        "type": "csv",
+        # "type": "csv",
+        "type": "influxdb",
+        "measurement": "temperature",
         "variables": {
             "Outdoor": "Outdoor",
             "Solar Radiation": "Solar Radiation"
         }
     },
     "control": {
-        "type": "csv",
+        # "type": "csv",
+        "type": "influxdb",
+        "measurement": "control",
         "variables": {
             "FreComp": "FreComp",
             "RefComp": "RefComp",
@@ -105,7 +120,9 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "constraint": {
-        "type": "csv",
+        # "type": "csv",
+        "type": "influxdb",
+        "measurement": "constraint",
         "variables": {
             "Trtu_min": "Trtu_min",
             "Trtu_max": "Trtu_max",
@@ -131,23 +148,29 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "price": {
-        "type": "csv",
+        # "type": "csv",
+        "type": "influxdb",
+        "measurement": "price",
         "variables": {
             "pi_e": "pi_e"
         }
     },
     "system": {
-        "type": "csv",
+        # TODO: change to emulation states measuremnt
+        "type": "influxdb",
+        "measurement": "temperature",
         "variables": {
-            "Refrigerator East": "Refrigerator East",
-            "HVAC East": "HVAC East",
-            "Freezer": "Freezer",
+            "Refrigerator East": "Tref",
+            "HVAC East": "Trtu",
+            "Freezer": "Tfre",
         }
     },
     "data_sink": {
         "setpoints": {
             "type": "csv",
             "filename": "setpoints.csv"
+            # "type": "influxdb",
+            # "measurement": "setpoints"
         },
         "variables": {
             "uCharge": {
@@ -181,7 +204,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
 
     }
-}
+},
+"plot_charts": False
 }
 
 def get_config():

@@ -2,6 +2,8 @@
 #######
 *.pyc
 *.png
+*.yaml
+*.csv
 
 # Folders
 #########
@@ -31,3 +33,7 @@ simulation/output/*
 ###############
 process/results/*
 
+# OS/editor files
+#################
+.DS_Store
+.idea/

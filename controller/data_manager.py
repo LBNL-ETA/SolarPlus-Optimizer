@@ -2,6 +2,7 @@ import pandas as pd
 import datetime
 import os
 from influxdb import DataFrameClient
+import yaml
 
 class Data_Manager():
 
@@ -19,8 +20,13 @@ class Data_Manager():
         # TODO: handle timezones
         self.data_manager_config = data_manager_config
 
-        self.files = self.data_manager_config["source"]["csv_files"]
-        self.init_influx(self.data_manager_config["source"]["influxdb"])
+        for source_type in self.data_manager_config["source"]:
+            if source_type == "csv_files":
+                self.files = self.data_manager_config["source"][source_type]
+            elif source_type == "influxdb":
+                with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
+                    self.influx_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
+                self.init_influx(influx_cfg=self.influx_cfg)
 
         self.data_from_csvs = {}
         self.data_path = data_path + "/"
@@ -142,7 +148,8 @@ class Data_Manager():
         return None
 
     def get_timeseries_from_config(self, config, start_time=None, end_time=None):
-        '''From the configuration dictionary, get a DataFrame of all the variables from any source
+        '''From the configuration dictionary, get a DataFrame of all the variables in the variable map
+           For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
 
             Parameters
             ----------
@@ -271,6 +278,20 @@ class Data_Manager():
         else:
             df.to_csv(filename)
 
+    def write_df_to_influx(self, df, influx_dataframe_client, measurement):
+        df.index.name = 'time'
+        df_to_send = []
+        for col in df.columns:
+            df2 = df[[col]]
+            df2.columns = ['value']
+            df2['name'] = col
+            df2 = df2.dropna()
+            df2['value'] = df2['value'].astype(float)
+            df_to_send.append(df2)
+        df = pd.concat(df_to_send, axis=0)
+        influx_dataframe_client.write_points(dataframe=df, measurement='setpoints', tag_columns=['name'],
+                                        field_columns=['value'])
+
     def set_setpoints(self, df):
         '''Set following variables: uCharge, uDischarge, Trtu, Tref, Tfre, Trtu_cool, Trtu_heat
 
@@ -284,9 +305,14 @@ class Data_Manager():
             None
 
         '''
+        #TODO: include push to devices when ready
+
         if self.data_sink["setpoints"]["type"] == "csv":
             filename = self.data_path + self.data_sink["setpoints"]["filename"]
             self.write_df_to_csv(df=df, filename=filename)
+        elif self.data_sink["setpoints"]["type"] == "influxdb":
+            measurement = self.data_path + self.data_sink["setpoints"]["measurement"]
+            self.write_df_to_influx(df=df, influx_dataframe_client=self.influx_client, measurement=measurement)
 
     def set_data(self, df):
         '''Set one or more columns in the dataframe to corresponding destinations in data_sink

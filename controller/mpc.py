@@ -66,6 +66,7 @@ class mpc(object):
         self.setpoints_config = setpoints_config
         self.other_input_config = other_input_config
         self.constraint_config = constraint_config
+        self.data_manager_config = data_manager_config
         self.price_config = price_config
         # Get timezone
         self.tz_name = tz_name
