@@ -95,13 +95,36 @@ class Data_Manager():
         df.columns = variable
         return df
 
-    def get_section_data_from_influx(self, config, start_time=None, end_time=None):
+    def check_if_valid_measurement(self, influx_client, measurement):
+        '''Check if measurement exists in influxdb database or if it is not empty
+
+            Parameters
+            ----------
+            influx_client: influxdb.DataFrameClient
+                client to send/receive data to/from influxdb
+            measurement: str
+                check if this measurement is valid
+
+            Returns
+            -------
+            flag: bool
+                True if measuremnet exists and has data, otherwise False
+        '''
+        response = influx_client.query("select * from {}".format(measurement))
+        if response == {}:
+            return False
+        else:
+            return True
+
+    def get_section_data_from_influx(self, config, influx_client, start_time=None, end_time=None):
         '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
 
             Parameters
             ----------
             config: dict()
                 individual configuration sections for weather, price, control etc.
+            influx_client: influxdb.DataFrameClient
+                client to send/receive data to/from influxdb
             start_time : datetime
                 Start time of timeseries
             end_time : datetime
@@ -115,13 +138,15 @@ class Data_Manager():
 
         # TODO: handle start_time, end_time
         measurement = config["measurement"]
+        if not self.check_if_valid_measurement(influx_client=influx_client, measurement=measurement):
+            return pd.DataFrame()
         variables = config["variables"].keys()
 
         df_list = []
         column_names = []
         for variable in variables:
             q = "select value from %s where \"name\"=\'%s\'"%(measurement, variable)
-            df = self.influx_client.query(q)[measurement]
+            df = influx_client.query(q)[measurement]
             df.index = df.index.tz_localize(None)
             df_list.append(df)
             column_names.append(config["variables"][variable])
@@ -187,7 +212,7 @@ class Data_Manager():
             df.columns = column_names
 
         elif source == "influxdb":
-            df = self.get_section_data_from_influx(section_config)
+            df = self.get_section_data_from_influx(config=section_config, influx_client=self.influx_client)
 
 
         # df.index = pd.to_datetime(df.index, utc=True)
@@ -286,7 +311,7 @@ class Data_Manager():
             df: DataFrame
                 DataFrame, whose each column has to be written to influx
             influx_dataframe_client: influxdb.DataFrameClient
-                client to send data to influxdb
+                client to send/receive data to/from influxdb
             measurement: str
                 name of measurement to store the values
 
@@ -322,13 +347,13 @@ class Data_Manager():
 
         '''
         #TODO: include push to devices when ready
-
-        if self.data_sink["setpoints"]["type"] == "csv":
-            filename = self.data_path + self.data_sink["setpoints"]["filename"]
-            self.write_df_to_csv(df=df, filename=filename)
-        elif self.data_sink["setpoints"]["type"] == "influxdb":
-            measurement = self.data_path + self.data_sink["setpoints"]["measurement"]
-            self.write_df_to_influx(df=df, influx_dataframe_client=self.influx_client, measurement=measurement)
+        for source_type in self.data_sink["setpoints"]["type"].split('|'):
+            if source_type == "csv":
+                filename = self.data_path + self.data_sink["setpoints"]["filename"]
+                self.write_df_to_csv(df=df, filename=filename)
+            elif source_type == "influxdb":
+                measurement = self.data_sink["setpoints"]["measurement"]
+                self.write_df_to_influx(df=df, influx_dataframe_client=self.influx_client, measurement=measurement)
 
     def set_data(self, df):
         '''Set one or more columns in the dataframe to corresponding destinations in data_sink
@@ -344,16 +369,28 @@ class Data_Manager():
 
         '''
         csv_file_var_map = {}
+        influxdb_var_map = {}
         sink_variables = self.data_sink["variables"]
         for var in df.columns:
-            if sink_variables[var]["type"] == csv:
-                filename = sink_variables[var]["filename"]
-                vars = csv_file_var_map.get(filename, [])
-                vars.append(var)
-                csv_file_var_map[filename] = vars
+            for source_type in sink_variables[var]["type"].split('|'):
+                if source_type == "csv":
+                    filename = sink_variables[var]["filename"]
+                    vars = csv_file_var_map.get(filename, [])
+                    vars.append(var)
+                    csv_file_var_map[filename] = vars
+                elif source_type == "influxdb":
+                    measurement = sink_variables[var]["measurement"]
+                    vars = influxdb_var_map.get(measurement, [])
+                    vars.append(var)
+                    influxdb_var_map[measurement] = vars
 
         for file in csv_file_var_map:
             cols = csv_file_var_map[file]
             part_df = df[[cols]]
             name = self.data_path + file
             self.write_df_to_csv(df=part_df, filename=name)
+
+        for measurement in influxdb_var_map:
+            cols = influxdb_var_map[measurement]
+            part_df = df[[cols]]
+            self.write_df_to_influx(df=part_df, influx_dataframe_client=self.influx_client, measurement=measurement)

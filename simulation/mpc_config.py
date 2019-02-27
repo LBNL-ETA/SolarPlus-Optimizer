@@ -94,22 +94,24 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 "data_manager_config": {
     "source": {
         "csv_files": [
-            "Temperature.csv",
-            "Price.csv",
-            "Control2.csv",
-            "Constraint.csv",
             "emulation_states.csv",
         ],
+        "influxdb": {
+            "config_filename": "controller/access_config_testing.yaml",
+            "section": "influxdb"
+        }
     },
     "weather": {
-        "type": "csv",
+        "type": "influxdb",
+        "measurement": "temperature",
         "variables": {
             "Outdoor": "Outdoor",
             "Solar Radiation": "Solar Radiation"
         }
     },
     "control": {
-        "type": "csv",
+        "type": "influxdb",
+        "measurement": "control",
         "variables": {
             "FreComp": "FreComp",
             "RefComp": "RefComp",
@@ -117,7 +119,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "constraint": {
-        "type": "csv",
+        "type": "influxdb",
+        "measurement": "constraint",
         "variables": {
             "Trtu_min": "Trtu_min",
             "Trtu_max": "Trtu_max",
@@ -143,7 +146,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "price": {
-        "type": "csv",
+        "type": "influxdb",
+        "measurement": "price",
         "variables": {
             "pi_e": "pi_e"
         }
@@ -160,9 +164,23 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             # "Freezer": "Tfre",
         }
     },
+    "setpoints": {
+        "type": "influxdb",
+        "measurement": "setpoints",
+        "variables": {
+            'Trtu_heat': 'Trtu_heat',
+            'Trtu_cool': 'Trtu_cool',
+            'Tref': 'Tref',
+            'Tfre': 'Tfre',
+            'uCharge': 'uCharge',
+            'uDischarge': 'uDischarge'
+        }
+    },
     "data_sink": {
         "setpoints": {
-            "type": "csv",
+            # "type": "csv",
+            "type": "csv|influxdb",
+            "measurement": "setpoints",
             "filename": "setpoints.csv"
         },
         "variables": {
@@ -197,7 +215,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
 
     }
-}
+},
+"use_data_manager_in_emulator": True
 }
 
 def get_config():
