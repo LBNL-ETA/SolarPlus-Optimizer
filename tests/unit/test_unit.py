@@ -60,11 +60,11 @@ class unit(unittest.TestCase):
                     yReference = self.exo_data[column],
                     yTest = exo_data[column],
                     atolx = 1,
-                    rtoly = 0.1,
+                    rtoly = 0.05,
                     outputDirectory = results_dir
                     )
             error_df = pd.read_csv(os.path.join(results_dir, 'errors.csv'))
-            self.assertEqual(error_df.iloc(axis=1)[1].sum(),0)
+            self.assertAlmostEqual(error_df.iloc(axis=1)[1].max(),0)
         shutil.rmtree(results_dir)
 
     def test_update_system(self):
@@ -79,11 +79,11 @@ class unit(unittest.TestCase):
                     yReference = self.measurements[column],
                     yTest = measurements[column],
                     atolx = 1,
-                    rtoly = 0.1,
+                    rtoly = 0.05,
                     outputDirectory = results_dir
                     )
             error_df = pd.read_csv(os.path.join(results_dir, 'errors.csv'))
-            self.assertEqual(error_df.iloc(axis=1)[1].sum(),0)
+            self.assertAlmostEqual(error_df.iloc(axis=1)[1].max(),0)
         shutil.rmtree(results_dir)
 
     def test_estimate_state(self):

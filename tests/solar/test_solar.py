@@ -64,7 +64,7 @@ class functional(unittest.TestCase):
                     )
         error_df = pd.read_csv(os.path.join(results_dir, 'errors.csv'))
         #pf.plot_funnel(results_dir)
-        self.assertEqual(error_df.iloc(axis=1)[1].sum(),0)
+        self.assertAlmostEqual(error_df.iloc(axis=1)[1].max(),0)
         shutil.rmtree(results_dir)
 
         fig, ax1 = plt.subplots(figsize=[18,8])

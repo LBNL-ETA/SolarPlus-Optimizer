@@ -56,7 +56,7 @@ class test_simulate(unittest.TestCase):
                     outputDirectory = results_dir
                     )
             error_df = pd.read_csv(os.path.join(results_dir, 'errors.csv'))
-            self.assertEqual(error_df.iloc(axis=1)[1].sum(),0)
+            self.assertAlmostEqual(error_df.iloc(axis=1)[1].max(),0)
         shutil.rmtree(results_dir)
 
         # Plot
@@ -106,7 +106,7 @@ class test_optimize(unittest.TestCase):
                     rtoly = 0.05,
                     outputDirectory = results_dir)
             error_df = pd.read_csv(os.path.join(results_dir, 'errors.csv'))
-            self.assertEqual(error_df.iloc(axis=1)[1].sum(),0)
+            self.assertAlmostEqual(error_df.iloc(axis=1)[1].max(),0)
         shutil.rmtree(results_dir)
 
         # Plot
