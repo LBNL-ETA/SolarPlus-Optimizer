@@ -67,7 +67,7 @@ class test_simulate(unittest.TestCase):
         plt.legend()
         plt.figure(2)
         self.controller.control.display_data().plot()
-        plt.show()
+        plt.savefig("measurements.png")
 
 class test_optimize(unittest.TestCase):
     def setUp(self):
@@ -163,7 +163,6 @@ class test_optimize(unittest.TestCase):
             plt.xlim([0,24])
             plt.xticks(np.linspace(0, 24, num=13))
             plt.savefig('price.png')
-        plt.show()
 
 if __name__ == '__main__':
     unittest.main()

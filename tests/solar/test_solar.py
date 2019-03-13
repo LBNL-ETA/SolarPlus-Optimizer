@@ -79,7 +79,7 @@ class functional(unittest.TestCase):
         lines = line1+line2+line3
         labs = [l.get_label() for l in lines]
         ax1.legend(lines, labs, loc='upper left')
-        plt.show()
+        plt.savefig("Estimated GHI.png")
 
         fig, ax1 = plt.subplots(figsize=[18,8])
         ax1.plot(datetime,estimated_df['estimated_ghi'],label="global horizontal radiation")
@@ -89,7 +89,7 @@ class functional(unittest.TestCase):
         ax1.set_ylabel('Solar radiation ($W/m^{2}$)')
         ax1.legend()
         ax1.grid()
-        plt.show()
+        plt.savefig("Beam and diffuse radiation.png")
 
 
 if __name__ == '__main__':
