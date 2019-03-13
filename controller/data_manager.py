@@ -1,6 +1,8 @@
 import pandas as pd
 import datetime
 import os
+from influxdb import DataFrameClient
+import yaml
 
 class Data_Manager():
 
@@ -17,10 +19,38 @@ class Data_Manager():
         '''
         # TODO: handle timezones
         self.data_manager_config = data_manager_config
-        self.files = self.data_manager_config["source"]["csv_files"]
+
+        for source_type in self.data_manager_config["source"]:
+            if source_type == "csv_files":
+                self.files = self.data_manager_config["source"][source_type]
+            elif source_type == "influxdb":
+                with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
+                    self.influx_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
+                self.init_influx(influx_cfg=self.influx_cfg)
+
         self.data_from_csvs = {}
         self.data_path = data_path + "/"
         self.data_sink = self.data_manager_config["data_sink"]
+
+    def init_influx(self, influx_cfg):
+        '''Initialize influxdb client
+
+            Parameters
+            ----------
+            influx_cfg: dict()
+                influxdb configuration dictionary
+
+            Returns
+            -------`
+            None
+        '''
+        self.influx_client = DataFrameClient(host=influx_cfg["host"],
+                                            port=influx_cfg["port"],
+                                            username=influx_cfg["username"],
+                                            password=influx_cfg["password"],
+                                            ssl=influx_cfg["ssl"],
+                                            verify_ssl=influx_cfg["verify_ssl"],
+                                            database=influx_cfg["database"])
 
     def get_all_csv_data(self):
         '''For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
@@ -30,7 +60,7 @@ class Data_Manager():
             None
 
             Returns
-            -------
+            -------`
             None
 
         '''
@@ -39,25 +69,105 @@ class Data_Manager():
             if os.path.exists(filename):
                 self.data_from_csvs[file] = pd.read_csv(filename, index_col=0, parse_dates=True)
 
-    '''
+    def get_single_data_from_influx(self, measurement, variable, start_time=None, end_time=None):
+        '''From the influxdb measurement, get one particular variable as a DataFrame
+               Parameters
+               ----------
+               measurement: string
+                   measurement which contains the variable to be queried
+               variable: string
+                   variable being queried
+               start_time : datetime
+                   Start time of timeseries
+               end_time : datetime
+                   End time of timeseries
 
-        returns: filename, if found; else None
-    '''
+               Returns
+               -------
+               df: pandas DataFrame
+                   DataFrame where the column is the variable being queried
+           '''
+
+        # TODO: handle start_time, end_time
+
+        q = "select value from %s where \"name\"=\'%s\'" % (measurement, variable)
+        df = self.influx_client.query(q)[measurement]
+        df.columns = variable
+        return df
+
+    def check_if_valid_measurement(self, influx_client, measurement):
+        '''Check if measurement exists in influxdb database or if it is not empty
+
+            Parameters
+            ----------
+            influx_client: influxdb.DataFrameClient
+                client to send/receive data to/from influxdb
+            measurement: str
+                check if this measurement is valid
+
+            Returns
+            -------
+            flag: bool
+                True if measuremnet exists and has data, otherwise False
+        '''
+        response = influx_client.query("select * from {}".format(measurement))
+        if response == {}:
+            return False
+        else:
+            return True
+
+    def get_section_data_from_influx(self, config, influx_client, start_time=None, end_time=None):
+        '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
+
+            Parameters
+            ----------
+            config: dict()
+                individual configuration sections for weather, price, control etc.
+            influx_client: influxdb.DataFrameClient
+                client to send/receive data to/from influxdb
+            start_time : datetime
+                Start time of timeseries
+            end_time : datetime
+                End time of timeseries
+
+            Returns
+            -------
+            df: pandas DataFrame
+                DataFrame where each column is a variable in the variables section in the configuration
+        '''
+
+        # TODO: handle start_time, end_time
+        measurement = config["measurement"]
+        if not self.check_if_valid_measurement(influx_client=influx_client, measurement=measurement):
+            return pd.DataFrame()
+        variables = config["variables"].keys()
+
+        df_list = []
+        column_names = []
+        for variable in variables:
+            q = "select value from %s where \"name\"=\'%s\'"%(measurement, variable)
+            df = influx_client.query(q)[measurement]
+            df.index = df.index.tz_localize(None)
+            df_list.append(df)
+            column_names.append(config["variables"][variable])
+        final_df = pd.concat(df_list, axis=1)
+        final_df.columns = column_names
+        return final_df
+
     def find_file_from_variable(self, variable):
         '''Find which file the variable belongs to, by checking column names of each csv file
 
-        Parameters
-        ----------
-        variable: str
-            variable name
+            Parameters
+            ----------
+            variable: str
+                variable name
 
-        Returns
-        -------
-        file: str
-            filename of the csv file in which the variable is present or None, if variable not found in any file
+            Returns
+            -------
+            file: str
+                filename of the csv file in which the variable is present or None, if variable not found in any file
         '''
         for file in self.files:
-
             if variable in self.data_from_csvs[file].columns:
                 return file
         return None
@@ -90,17 +200,21 @@ class Data_Manager():
         variables = section_config["variables"].keys()
         source = section_config["type"]
 
-        for variable in variables:
-            if source == "csv":
+        if source == "csv":
+            for variable in variables:
                 file = self.find_file_from_variable(variable)
                 if file == None:
                     print('variable %s'%variable)
                 else:
                     column_names.append(section_config["variables"][variable])
                     df_list.append(self.data_from_csvs[file][[variable]])
+            df = pd.concat(df_list, axis=1)
+            df.columns = column_names
 
-        df = pd.concat(df_list, axis=1)
-        df.columns = column_names
+        elif source == "influxdb":
+            df = self.get_section_data_from_influx(config=section_config, influx_client=self.influx_client)
+
+
         # df.index = pd.to_datetime(df.index, utc=True)
         # return df.loc[start_time: end_time]
         return df
@@ -189,6 +303,36 @@ class Data_Manager():
         else:
             df.to_csv(filename)
 
+    def write_df_to_influx(self, df, influx_dataframe_client, measurement):
+        '''Write df to influx: overwrites if timestamp already exists for each column
+
+            Parameters
+            ----------
+            df: DataFrame
+                DataFrame, whose each column has to be written to influx
+            influx_dataframe_client: influxdb.DataFrameClient
+                client to send/receive data to/from influxdb
+            measurement: str
+                name of measurement to store the values
+
+            Returns
+            -------
+            None
+
+        '''
+        df.index.name = 'time'
+        df_to_send = []
+        for col in df.columns:
+            df2 = df[[col]]
+            df2.columns = ['value']
+            df2['name'] = col
+            df2 = df2.dropna()
+            df2['value'] = df2['value'].astype(float)
+            df_to_send.append(df2)
+        df = pd.concat(df_to_send, axis=0)
+        influx_dataframe_client.write_points(dataframe=df, measurement=measurement, tag_columns=['name'],
+                                        field_columns=['value'])
+
     def set_setpoints(self, df):
         '''Set following variables: uCharge, uDischarge, Trtu, Tref, Tfre, Trtu_cool, Trtu_heat
 
@@ -202,9 +346,14 @@ class Data_Manager():
             None
 
         '''
-        if self.data_sink["setpoints"]["type"] == "csv":
-            filename = self.data_path + self.data_sink["setpoints"]["filename"]
-            self.write_df_to_csv(df=df, filename=filename)
+        #TODO: include push to devices when ready
+        for source_type in self.data_sink["setpoints"]["type"].split('|'):
+            if source_type == "csv":
+                filename = self.data_path + self.data_sink["setpoints"]["filename"]
+                self.write_df_to_csv(df=df, filename=filename)
+            elif source_type == "influxdb":
+                measurement = self.data_sink["setpoints"]["measurement"]
+                self.write_df_to_influx(df=df, influx_dataframe_client=self.influx_client, measurement=measurement)
 
     def set_data(self, df):
         '''Set one or more columns in the dataframe to corresponding destinations in data_sink
@@ -220,16 +369,28 @@ class Data_Manager():
 
         '''
         csv_file_var_map = {}
+        influxdb_var_map = {}
         sink_variables = self.data_sink["variables"]
         for var in df.columns:
-            if sink_variables[var]["type"] == csv:
-                filename = sink_variables[var]["filename"]
-                vars = csv_file_var_map.get(filename, [])
-                vars.append(var)
-                csv_file_var_map[filename] = vars
+            for source_type in sink_variables[var]["type"].split('|'):
+                if source_type == "csv":
+                    filename = sink_variables[var]["filename"]
+                    vars = csv_file_var_map.get(filename, [])
+                    vars.append(var)
+                    csv_file_var_map[filename] = vars
+                elif source_type == "influxdb":
+                    measurement = sink_variables[var]["measurement"]
+                    vars = influxdb_var_map.get(measurement, [])
+                    vars.append(var)
+                    influxdb_var_map[measurement] = vars
 
         for file in csv_file_var_map:
             cols = csv_file_var_map[file]
             part_df = df[[cols]]
             name = self.data_path + file
             self.write_df_to_csv(df=part_df, filename=name)
+
+        for measurement in influxdb_var_map:
+            cols = influxdb_var_map[measurement]
+            part_df = df[[cols]]
+            self.write_df_to_influx(df=part_df, influx_dataframe_client=self.influx_client, measurement=measurement)

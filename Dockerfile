@@ -20,7 +20,9 @@ RUN pip install --user \
 	scikit-learn==0.18.2 \
 	sphinx==1.6.3 \
 	numpydoc==0.7.0 \
-	tzwhere==2.3
+	tzwhere==2.3 \
+	influxdb==5.0.0 \
+	pyyaml==3.13
 
 RUN mkdir git && cd git && \
     mkdir mpcpy && cd mpcpy && git clone https://github.com/lbl-srg/MPCPy && cd .. && \

@@ -53,8 +53,11 @@ if controller is 'mpc':
                      constraint_config = config['constraint_config'],
                      data_manager_config = config['data_manager_config'],
                      price_config = config['price_config'])
-# Instantiate emulator
-emu = emulator(outdir)
+
+# Instantiate emulator to None
+emu = None
+use_data_manager_in_emulator = config.get("use_data_manager_in_emulator", False)
+
 # Initialize emulator states for controller
 # Remove previous simulation if exists
 if os.path.exists(emulation_states_csv):
@@ -109,6 +112,11 @@ for i in iterations[:-1]:
         emu_start_time = sim_steps[i]
     else:
         emu_start_time = 'continue'
+
+    if emu == None:
+        # Instantiate emulator
+        emu = emulator(use_data_manager_in_emulator=use_data_manager_in_emulator, data_manager=controller.data_manager, outdir=outdir)
+
     emu_measurements = emu.simulate(emu_start_time, emu_final_time)
     # Save emulator data
     emu_measurements.to_csv(outdir+'/emu_measurements_{0}.csv'.format(i))

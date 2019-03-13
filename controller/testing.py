@@ -67,6 +67,8 @@ class functional(unittest.TestCase):
         measurements.to_csv("measurements_simulate.csv")
         other_outputs.to_csv("other_outputs_simulate.csv")
         # Plot
+        if not config["plot_charts"]:
+            return
         plt.figure(1)
         for key in measurements.columns:
             plt.plot(measurements.index, measurements[key].get_values()-273.15, label = '{0}_simulated'.format(key), alpha=0.5)
@@ -96,6 +98,9 @@ class functional(unittest.TestCase):
         other_outputs.to_csv("other_outputs_optimize.csv")
 
         # Plot
+        if not config["plot_charts"]:
+            return
+
         for key in measurements.columns:
             plt.figure(1)
             time_diff = (measurements.index.values-measurements.index.values[0])
