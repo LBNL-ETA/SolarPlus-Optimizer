@@ -5,7 +5,7 @@ simulateModel("SolarPlus.Building.Examples.FeedbackControl",
               startTime=7776000,
               stopTime=7948800, 
               numberOfIntervals=0, 
-              outputInterval=300, 
+              outputInterval=60, 
               method="Cvode", 
               tolerance=1e-06, 
               resultFile="feedback_control");

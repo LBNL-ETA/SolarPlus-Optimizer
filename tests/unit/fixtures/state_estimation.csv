@@ -1,0 +1,5 @@
+Name,Free,Unit,Value
+SOC_0,False,1,0.25
+Tfre_0,False,degC,-24.400000000000006
+Tref_0,False,degC,5.600000000000023
+Trtu_0,False,degC,22.100000000000023

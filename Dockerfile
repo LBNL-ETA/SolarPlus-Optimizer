@@ -14,13 +14,15 @@ USER developer
 WORKDIR $HOME
 
 RUN pip install --user \
-	pandas==0.20.3 \
+	pandas==0.22.0 \
 	python-dateutil==2.6.1 \
 	pytz==2017.2 \
 	scikit-learn==0.18.2 \
 	sphinx==1.6.3 \
 	numpydoc==0.7.0 \
-	tzwhere==2.3
+	tzwhere==2.3 \
+	influxdb==5.0.0 \
+	pyyaml==3.13
 
 RUN mkdir git && cd git && \
     mkdir mpcpy && cd mpcpy && git clone https://github.com/lbl-srg/MPCPy && cd .. && \
@@ -36,6 +38,3 @@ ENV SEPARATE_PROCESS_JVM /usr/lib/jvm/java-8-openjdk-amd64/
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
 ENV PYTHONPATH $PYTHONPATH:$HOME/git/estimationpy-ka/EstimationPy-KA:$HOME/git/mpcpy/MPCPy:$JMODELICA_HOME/Python:$JMODELICA_HOME/Python/pymodelica
 ENV MODELICAPATH $MODELICAPATH:$HOME/git/buildings/modelica-buildings
-
-
-
