@@ -450,6 +450,8 @@ class Modbus_Driver(object):
 
         for key in self.holding_register_dict:
             print(key)
+            print(self.holding_register_dict[key][0])
+            print(self.holding_register_dict[key][1])
             output[key] = self.decode_register(self.holding_register_dict[key][0],self.holding_register_dict[key][1])
 
         for key in self.input_register_dict:
