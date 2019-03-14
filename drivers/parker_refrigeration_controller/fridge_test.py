@@ -1,9 +1,9 @@
 from modbus_driver import Modbus_Driver
-import time
-from struct import *
+#import time
+#from struct import *
 
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
+#from pymodbus.constants import Endian
+#from pymodbus.payload import BinaryPayloadDecoder
 
 def set_default(register_dict,obj):
     """
