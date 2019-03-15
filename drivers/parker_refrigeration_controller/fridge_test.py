@@ -44,7 +44,7 @@ print("Register values after changing SP value:")
 output = obj.get_data()
 print(output)
 for key in output.keys():
-    print(key + " = " + "output[" + key + "]")
+    print(key + " = " + "output[" + "'"+ key + "'"+ "]")
     """
     temperature = hour.get('apparentTemperature', None)
     precipIntensity = hour.get('precipIntensity', None)
