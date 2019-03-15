@@ -44,7 +44,12 @@ print("Register values after changing SP value:")
 output = obj.get_data()
 print(output)
 for key in output.keys():
-    print(key)
+    print(key + " = " + "output[" + key + "]")
+    """
+    temperature = hour.get('apparentTemperature', None)
+    precipIntensity = hour.get('precipIntensity', None)
+    precipProbability = hour.get('precipProbability', None)
+    """
 
 #set_default(obj.holding_register_dict,obj)
 #set_all_param(obj.holding_register_dict,obj)
