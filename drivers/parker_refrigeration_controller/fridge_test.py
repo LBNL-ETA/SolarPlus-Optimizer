@@ -43,6 +43,8 @@ print()
 print("Register values after changing SP value:")
 output = obj.get_data()
 print(output)
+for key in output.keys():
+    print(key)
 
 #set_default(obj.holding_register_dict,obj)
 #set_all_param(obj.holding_register_dict,obj)
