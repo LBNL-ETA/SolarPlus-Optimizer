@@ -55,8 +55,8 @@ def process_control_df(df, pre_fix=False):
             df[key_new] = np.round(df[key_new])
 
     df['uHeat'] = 0
-    df['uCharge'] = 0
-    df['uDischarge'] = 0
+    df['uBattery'] = 0
+    #df['uDischarge'] = 0
 
     df.index.name = 'Time'
     return df

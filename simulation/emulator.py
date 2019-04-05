@@ -20,8 +20,8 @@ class emulator(object):
                         'Trtu_cool': ('setCool', units.K),
                         'Tref': ('setRef', units.K),
                         'Tfre': ('setFre', units.K),
-                        'uCharge': ('uCharge', units.unit1),
-                        'uDischarge': ('uDischarge', units.unit1)};
+                        'uBattery': ('uBattery', units.unit1)};
+                        #'uDischarge': ('uDischarge', units.unit1)};
 
         self.use_data_manager_in_emulator = use_data_manager_in_emulator
         print("use_data_manager_in_emulator: ",self.use_data_manager_in_emulator)
@@ -46,7 +46,7 @@ class emulator(object):
         libraries = []
         self.moinfo = (mopath, modelpath, libraries)
         # Model measurements
-        meas_list = ['Trtu', 'Tref', 'Tfre', 'Pnet', 'Prtu', 'Pref', 'Pfre','Pcharge', 'Pdischarge', 'SOC']
+        meas_list = ['Trtu', 'Tref', 'Tfre', 'Pnet', 'Prtu', 'Pref', 'Pfre','Pbattery', 'Grtu', 'SOC']
         sample_rate = 300
         self.measurements = dict()
         for meas in meas_list:
