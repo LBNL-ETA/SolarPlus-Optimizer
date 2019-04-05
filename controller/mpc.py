@@ -532,7 +532,7 @@ class mpc(object):
         # Set default options
         opt_options = opt_object.get_optimization_options()
         opt_options['n_e'] = 24*4
-        opt_options['IPOPT_options']['tol'] = 1e-10
+        opt_options['IPOPT_options']['tol'] = 1e-6
         opt_object.set_optimization_options(opt_options)
 
         return opt_object
@@ -588,6 +588,7 @@ class mpc(object):
 
             exo_object._df = df
             exo_object.collect_data(start_time, final_time)
+            print(exo_object.display_data())
 
         return None
 

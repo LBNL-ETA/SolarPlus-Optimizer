@@ -12,13 +12,13 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                          'modelpath' : 'SolarPlus.Building.Optimization.Store',
                          'libraries' : os.getenv('MODELICAPATH'),
                          'measurements' : ['Trtu', 'Tref', 'Tfre', 'SOC'],
-                         'other_outputs' : ['Pnet', 'Prtu', 'Pref', 'Pfre','Pcharge', 'Pdischarge'],
+                         'other_outputs' : ['Pnet', 'Prtu', 'Pref', 'Pfre','Pbattery', 'Grtu'],
                          'sample_rate' : 1800,
                          'parameters' : {'Name':      ['Trtu_0', 'Tref_0', 'Tfre_0', 'SOC_0'],
                                          'Free':      [False,    False,    False,    False],
                                          'Value':     [294.15,   276.65,   248.15,     0.5],
-                                         'Minimum':   [10,       0,        -40,      0],
-                                         'Maximum':   [35,       20,       0,        1],
+                                         'Minimum':   [283.15,   273.15,   233.15,      0],
+                                         'Maximum':   [308.15,   293.15,   273.15,      1],
                                          'Covariance':[0,        0,        0,        0],
                                          'Unit' :     ['K',   'K',   'K',   '1']},
                           'init_vm' : {'Trtu_0' : 'Trtu',
@@ -45,8 +45,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'RefComp_Norm' : ('uRef', units.unit1),
                               'FreComp_Split_Norm' : ('uFreCool', units.unit1),
                               'uHeat' : ('uHeat', units.unit1),
-                              'uCharge' : ('uCharge', units.unit1),
-                              'uDischarge' : ('uDischarge', units.unit1)}},
+                              'uBattery' : ('uBattery', units.unit1)}},
+                              #'uDischarge' : ('uDischarge', units.unit1)}},
 
 "constraint_config" : {
                      'vm'  : {'Trtu_min':('Trtu', 'GTE', units.degC),
@@ -61,10 +61,10 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'uCool_max':('uCool', 'LTE', units.unit1),
                               'uHeat_min':('uHeat', 'GTE', units.unit1),
                               'uHeat_max':('uHeat', 'LTE', units.unit1),
-                              'uCharge_min':('uCharge', 'GTE', units.unit1),
-                              'uCharge_max':('uCharge', 'LTE', units.unit1),
-                              'uDischarge_min':('uDischarge', 'GTE', units.unit1),
-                              'uDischarge_max':('uDischarge', 'LTE', units.unit1),
+                              'uBattery_min':('uBattery', 'GTE', units.unit1),
+                              'uBattery_max':('uBattery', 'LTE', units.unit1),
+                              #'uDischarge_min':('uDischarge', 'GTE', units.unit1),
+                              #'uDischarge_max':('uDischarge', 'LTE', units.unit1),
                               'uRef_min':('uRef', 'GTE', units.unit1),
                               'uRef_max':('uRef', 'LTE', units.unit1),
                               'uFreCool_min':('uFreCool', 'GTE', units.unit1),
@@ -81,8 +81,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'SOC':('SOC',units.unit1)}},
 
 "setpoints_config" :   {
-                      'vm'  : {'uCharge':('uCharge',units.unit1),
-                               'uDischarge':('uDischarge',units.unit1),
+                      'vm'  : {'uBattery':('uBattery',units.unit1),
+                               #'uDischarge':('uDischarge',units.unit1),
                                'Trtu':('Trtu',units.degC),
                                'Tref':('Tref',units.degC),
                                'Tfre':('Tfre',units.degC)
@@ -94,6 +94,11 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 "data_manager_config": {
     "source": {
         "csv_files": [
+            "Constraint.csv",
+            "Control2.csv",
+            "Price.csv",
+            #"setpoints.csv",
+            #"Temperature.csv",
             "emulation_states.csv",
         ],
         "influxdb": {
@@ -102,6 +107,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "weather": {
+        # type": "csv",
         "type": "influxdb",
         "measurement": "temperature",
         "variables": {
@@ -110,7 +116,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "control": {
-        "type": "influxdb",
+        "type": "csv",
+        #"type": "influxdb",
         "measurement": "control",
         "variables": {
             "FreComp": "FreComp",
@@ -119,7 +126,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "constraint": {
-        "type": "influxdb",
+        "type": "csv",
+        # "type": "influxdb",
         "measurement": "constraint",
         "variables": {
             "Trtu_min": "Trtu_min",
@@ -134,10 +142,10 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "uCool_max": "uCool_max",
             "uHeat_min": "uHeat_min",
             "uHeat_max": "uHeat_max",
-            "uCharge_min": "uCharge_min",
-            "uCharge_max": "uCharge_max",
-            "uDischarge_min": "uDischarge_min",
-            "uDischarge_max": "uDischarge_max",
+            "uBattery_min": "uBattery_min",
+            "uBattery_max": "uBattery_max",
+            #"uDischarge_min": "uDischarge_min",
+            #"uDischarge_max": "uDischarge_max",
             "uRef_min": "uRef_min",
             "uRef_max": "uRef_max",
             "uFreCool_min": "uFreCool_min",
@@ -146,7 +154,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "price": {
-        "type": "influxdb",
+        "type": "csv",
+        #"type": "influxdb",
         "measurement": "price",
         "variables": {
             "pi_e": "pi_e"
@@ -165,6 +174,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "setpoints": {
+        #"type": "csv",
         "type": "influxdb",
         "measurement": "setpoints",
         "variables": {
@@ -172,26 +182,26 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             'Trtu_cool': 'Trtu_cool',
             'Tref': 'Tref',
             'Tfre': 'Tfre',
-            'uCharge': 'uCharge',
-            'uDischarge': 'uDischarge'
+            'uBattery': 'uBattery',
+            #'uDischarge': 'uDischarge'
         }
     },
     "data_sink": {
         "setpoints": {
-            # "type": "csv",
+            #"type": "csv",
             "type": "csv|influxdb",
             "measurement": "setpoints",
             "filename": "setpoints.csv"
         },
         "variables": {
-            "uCharge": {
+            "uBattery": {
                 "type": "csv",
                 "filename": "setpoints.csv"
             },
-            "uDischarge": {
-                "type": "csv",
-                "filename": "setpoints.csv"
-            },
+            #"uDischarge": {
+            #    "type": "csv",
+            #    "filename": "setpoints.csv"
+            #},
             "Trtu": {
                 "type": "csv",
                 "filename": "setpoints.csv"
