@@ -13,6 +13,7 @@ obj = Modbus_Driver("wattnode_config.yaml")
 
 obj.initialize_modbus()
 
+print(obj.decode_register(1000,'32float'))
 output = obj.get_data()
 print(output)
 

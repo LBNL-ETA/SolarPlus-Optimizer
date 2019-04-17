@@ -1,9 +1,4 @@
 from modbus_driver import Modbus_Driver
-import time
-from struct import *
-
-from pymodbus.constants import Endian
-from pymodbus.payload import BinaryPayloadDecoder
 
 def set_default(register_dict,obj):
     """
@@ -48,6 +43,13 @@ print()
 print("Register values after changing SP value:")
 output = obj.get_data()
 print(output)
+for key in output.keys():
+    print(key + " = " + "output[" + "'"+ key + "'"+ "]")
+    """
+    temperature = hour.get('apparentTemperature', None)
+    precipIntensity = hour.get('precipIntensity', None)
+    precipProbability = hour.get('precipProbability', None)
+    """
 
 #set_default(obj.holding_register_dict,obj)
 #set_all_param(obj.holding_register_dict,obj)

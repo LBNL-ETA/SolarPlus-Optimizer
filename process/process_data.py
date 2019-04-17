@@ -309,4 +309,40 @@ def clean_temperature_data(start_time, final_time, plot=True):
     
     return df_temp
     
-clean_power_data('6/1/2018', '7/15/2018', save=True, plot=False)
+def all_operation_simulated():    
+    start_time = 7776000
+    final_time = 7948800
+    # Get temperature from historic data
+    csvpath = os.path.join('models','feedback_control.csv')
+    df = pd.read_csv(csvpath, index_col = 'Time')
+    fix,ax = plt.subplots(6,1, sharex=True)
+    ax[0].plot(df['store.Trtu'].loc[start_time:final_time] - 273.15, label='HVAC', alpha=0.75)
+    ax[0].plot(df['store.weaTDryBul'].loc[start_time:final_time] - 273.15, label='Outdoor', alpha=0.75)
+    ax[0].set_ylabel('Temperature [degC]')
+    ax[0].set_ylim([5,25])
+    ax[0].legend()
+    ax[1].plot(df['store.Prtu'].loc[start_time:final_time], label='HVAC')
+    ax[1].set_ylabel('Power [W]')
+    ax[1].set_ylim([0,6000])
+    ax[1].legend()
+    ax[2].plot(df['store.Tref'].loc[start_time:final_time]-273.15, label='Ref Comp')
+    ax[2].set_ylabel('Temperature [degC]')
+    ax[2].set_ylim([2,8])
+    ax[2].legend()
+    ax[3].plot(df['store.Pref'].loc[start_time:final_time], label='Ref')
+    ax[3].set_ylabel('Power [W]')
+    ax[3].set_ylim([0,5000])
+    ax[3].legend()
+    ax[4].plot(df['store.Tfre'].loc[start_time:final_time]-273.15, label='Fre')
+    ax[4].set_ylabel('Temperature [degC]')
+    ax[4].set_ylim([-26,-10])
+    ax[4].legend()
+    ax[5].plot(df['store.Pfre'].loc[start_time:final_time], label='Fre Comp')
+    ax[5].set_ylabel('Power [W]')
+    ax[5].set_xlabel('Month-Day-Hour')
+    ax[5].set_ylim([0,8000])
+    ax[5].set_yticks([0,2500, 5000, 7500])
+    ax[5].legend()
+    plt.show()
+    
+all_operation_simulated()

@@ -3,7 +3,7 @@ modbus:
     UNIT_ID: 0x1
     byte_order: big
     word_order: little
-    enable_logging: False
+    enable_logging: True
     #                          ### Modbus type ###
     # This can be set to 'tcp' or 'serial' and determines the modbus method that
     # the driver will use.  The appropriate settings will be used below and the
@@ -36,8 +36,8 @@ modbus:
     #                          ### Coil/Discrete registers ###
     # These registers only need a name and the first value is the
     # register address.
-    coil_registers: {status: [0],other_status: [47]}
-    discrete_registers: {status_discrete: [0],other_status_discrete: [47]}
+    # coil_registers: {status: [0],other_status: [47]}
+    # discrete_registers: {status_discrete: [0],other_status_discrete: [47]}
     #                          ### Input/Holding registers ###
     # These registers need a unique name (key of dictionary) that is not
     # used in any other type of register. The value of the dictionary is
