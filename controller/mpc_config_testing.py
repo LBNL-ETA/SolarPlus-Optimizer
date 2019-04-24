@@ -86,6 +86,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                                }
                         },
 "data_manager_config": {
+    "site": "blr",
     "source": {
         "csv_files": [
             # "Temperature.csv",
@@ -109,6 +110,14 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Solar Radiation": "Solar Radiation"
         }
     },
+    # "test_query": {
+    #     "type": "xbos",
+    #     "variables": {
+    #         "FreComp": {
+    #             "uuid": "enter uuid here"
+    #         }
+    #     }
+    # },
     "control": {
         # "type": "csv",
         "type": "influxdb",
