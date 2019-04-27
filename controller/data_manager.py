@@ -3,6 +3,7 @@ import datetime
 import os
 from influxdb import DataFrameClient
 import yaml
+import requests
 
 class Data_Manager():
 
@@ -23,10 +24,12 @@ class Data_Manager():
         for source_type in self.data_manager_config["source"]:
             if source_type == "csv_files":
                 self.files = self.data_manager_config["source"][source_type]
-            elif source_type == "influxdb":
-                with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
-                    self.influx_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
-                self.init_influx(influx_cfg=self.influx_cfg)
+#            elif source_type == "influxdb":
+#                with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
+#                    self.influx_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
+#                self.init_influx(influx_cfg=self.influx_cfg)
+            elif source_type == "xbos":
+                self.url = self.data_manager_config["source"][source_type]["container_url"]
 
         self.data_from_csvs = {}
         self.data_path = data_path + "/"
@@ -153,6 +156,38 @@ class Data_Manager():
         final_df = pd.concat(df_list, axis=1)
         final_df.columns = column_names
         return final_df
+        
+    def get_section_data_from_xbos(self, config, start_time=None, end_time=None):
+        '''From the configuration dictionary, get a DataFrame of all the variables from XBOS
+
+            Parameters
+            ----------
+            config: dict()
+                individual configuration sections for weather, price, control etc.
+            start_time : datetime
+                Start time of timeseries
+            end_time : datetime
+                End time of timeseries
+
+            Returns
+            -------
+            df: pandas DataFrame
+                DataFrame where each column is a variable in the variables section in the configuration
+        '''
+
+        # TODO: handle start_time, end_time
+        variables = config["variables"].keys()
+        df_list = []
+        column_names = []
+        for variable in variables:
+            y = requests.post('{0}/getdata'.format(self.url), data={'variable':variable}).json()
+            df = pd.read_json(y, orient='columns')
+            df.index = df.index.tz_localize(None)
+            df_list.append(df)
+            column_names.append(config["variables"][variable])
+        final_df = pd.concat(df_list, axis=1)
+        final_df.columns = column_names
+        return final_df
 
     def find_file_from_variable(self, variable):
         '''Find which file the variable belongs to, by checking column names of each csv file
@@ -213,6 +248,10 @@ class Data_Manager():
 
         elif source == "influxdb":
             df = self.get_section_data_from_influx(config=section_config, influx_client=self.influx_client)
+            
+        elif source == "xbos":
+            df = self.get_section_data_from_xbos(config=section_config)
+            
 
 
         # df.index = pd.to_datetime(df.index, utc=True)
@@ -354,6 +393,11 @@ class Data_Manager():
             elif source_type == "influxdb":
                 measurement = self.data_sink["setpoints"]["measurement"]
                 self.write_df_to_influx(df=df, influx_dataframe_client=self.influx_client, measurement=measurement)
+            elif source_type == "xbos":
+                u = {'Trtu':df['Trtu'].get_values()[-1]}
+                print(u)
+                y = requests.post('{0}/setsetpoints'.format(self.url), data=u).json()
+                print(y)
 
     def set_data(self, df):
         '''Set one or more columns in the dataframe to corresponding destinations in data_sink
