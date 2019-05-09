@@ -98,7 +98,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Control2.csv",
             "Price.csv",
             #"setpoints.csv",
-            #"Temperature.csv",
+            "Temperature.csv",
             "emulation_states.csv",
         ],
         "influxdb": {
@@ -107,8 +107,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "weather": {
-        # type": "csv",
-        "type": "influxdb",
+        "type": "csv",
+        #"type": "influxdb",
         "measurement": "temperature",
         "variables": {
             "Outdoor": "Outdoor",

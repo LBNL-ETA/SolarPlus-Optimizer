@@ -13,14 +13,15 @@ class emulator(object):
 
     def __init__(self, use_data_manager_in_emulator=False, data_manager=None, outdir=None):
 
-        weather_vm = {'Outdoor': ('weaTDryBul', units.degC)}
+        weather_vm = {'Outdoor': ('weaTDryBul', units.degC),
+                      'Solar Radiation': ('weaHGloHor', units.W_m2)}
         geography = (40.88, -124.0)
 
         setpoints_vm = {'Trtu_heat': ('setHeat', units.K),
                         'Trtu_cool': ('setCool', units.K),
                         'Tref': ('setRef', units.K),
                         'Tfre': ('setFre', units.K),
-                        'uBattery': ('uBattery', units.unit1)};
+                        'uBattery': ('uBattery', units.unit1)}
                         #'uDischarge': ('uDischarge', units.unit1)};
 
         self.use_data_manager_in_emulator = use_data_manager_in_emulator
@@ -46,7 +47,7 @@ class emulator(object):
         libraries = []
         self.moinfo = (mopath, modelpath, libraries)
         # Model measurements
-        meas_list = ['Trtu', 'Tref', 'Tfre', 'Pnet', 'Prtu', 'Pref', 'Pfre','Pbattery', 'Grtu', 'SOC']
+        meas_list = ['Trtu', 'Tref', 'Tfre', 'Pnet', 'Prtu', 'Pref', 'Pfre','Pbattery', 'Grtu', 'SOC', 'Ppv']
         sample_rate = 300
         self.measurements = dict()
         for meas in meas_list:
