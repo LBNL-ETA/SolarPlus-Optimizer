@@ -164,7 +164,7 @@ class mpc(object):
 
         return setpoints
 
-    def simulate(self, start_time, final_time, optimal=False):
+    def simulate(self, start_time, final_time, optimal=True):
         '''Simulate the model with an initial point from measurements.
 
         Parameters
@@ -189,6 +189,7 @@ class mpc(object):
 
         # Update system measurements
         self._update_system(start_time, final_time)
+        # print(self._update_system(start_time,final_time))
         # Estimate state
         self._estimate_state(start_time)
         # Update exodata
@@ -203,6 +204,7 @@ class mpc(object):
         self.model.simulate(start_time, final_time)
         # Get solution
         measurements = self.model.display_measurements('Simulated')
+        # print(measurements)
         other_outputs = pd.DataFrame(index=measurements.index)
         for key in self.other_outputs:
             other_outputs[key] = self.model._res[key]
@@ -231,6 +233,7 @@ class mpc(object):
             # print(time)
             value = self.model.display_measurements('Measured').loc[time,self.init_vm[par]]
             # Set the value in the model
+            # print('Setting {0} as {1}'.format(par, value))
             self.model.parameter_data[par]['Value'].set_data(value)
 
         return None

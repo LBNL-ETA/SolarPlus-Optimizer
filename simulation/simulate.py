@@ -89,6 +89,7 @@ for i in iterations[:-1]:
     else:
         init = False
     control, measurements, other_outputs, statistics = controller.optimize(opt_start_time, opt_final_time, init=init)
+    # print(measurements)
     # Save optimization result data
     control.to_csv(outdir+'/control_{0}.csv'.format(i))
     measurements.to_csv(outdir+'/measurements_{0}.csv'.format(i))

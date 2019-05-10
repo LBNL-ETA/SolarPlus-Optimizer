@@ -388,7 +388,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealOutput y "Controller output"
           annotation (Placement(transformation(extent={{100,30},{120,50}})));
         Buildings.Controls.OBC.CDL.Continuous.Hysteresis hys(uLow=273.15 + 21.9,
-            uHigh=273.15 + 22.1)
+            uHigh=273.15 + 22.1,
+          pre_y_start=true)
           annotation (Placement(transformation(extent={{-20,30},{0,50}})));
         Buildings.Controls.OBC.CDL.Logical.Switch swi
           annotation (Placement(transformation(extent={{40,30},{60,50}})));
@@ -826,7 +827,7 @@ package SolarPlus "This package contains models for MPC control optimization."
 
     model Whole_Inputs
       extends BaseClasses.Whole_partial(
-        pv(A=300),
+        pv(A=100),
         thermal(
           Crtu=3e6,
           RTUHeatingCap=58600,
@@ -834,7 +835,7 @@ package SolarPlus "This package contains models for MPC control optimization."
           Rref=0.010,
           Rfre=0.010,
           Cref=1.5e6),
-        multiSum(k={0.001,0.001,0.001,0.001,0.001,0.0001,0.0001}));
+        multiSum(k={0.001,0.001,0.001,0.001,0.001,0.001/4}));
     Modelica.Blocks.Interfaces.RealInput uHeat "Heating signal input"
       annotation (Placement(transformation(extent={{-140,0},{-100,40}})));
     Modelica.Blocks.Interfaces.RealInput uCool "Cooling signal input"
@@ -850,7 +851,7 @@ package SolarPlus "This package contains models for MPC control optimization."
     Modelica.Blocks.Interfaces.RealInput uFreCool
       "Cooling signal input for freezer"
       annotation (Placement(transformation(extent={{-140,-240},{-100,-200}})));
-      Modelica.Blocks.Math.MultiSum multiSum1(k={5,10,10},    nu=3)
+      Modelica.Blocks.Math.MultiSum multiSum1(k={50,10,10},   nu=3)
         annotation (Placement(transformation(extent={{44,-172},{56,-160}})));
     Modelica.Blocks.Math.Product squareTrtu
       annotation (Placement(transformation(extent={{20,-112},{26,-106}})));
@@ -1554,7 +1555,7 @@ package SolarPlus "This package contains models for MPC control optimization."
 
     package BaseClasses
       partial model Whole_partial
-        parameter Modelica.SIunits.Temperature Trtu_0 = 21+273.15 "Initial temperature of rtu zone";
+        parameter Modelica.SIunits.Temperature Trtu_0 = 20+273.15 "Initial temperature of rtu zone";
         parameter Modelica.SIunits.Temperature Tref_0 = 3.5+273.15 "Initial temperature of ref zone";
         parameter Modelica.SIunits.Temperature Tfre_0 = -25+273.15 "Initial temperature of fre zone";
         parameter Modelica.SIunits.DimensionlessRatio SOC_0 = 0.5 "Initial SOC of battery";
@@ -1596,8 +1597,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{100,30},{120,50}})));
         Modelica.Blocks.Interfaces.RealOutput Tfre "Freezer air temperature"
         annotation (Placement(transformation(extent={{100,-150},{120,-130}})));
-        Modelica.Blocks.Math.MultiSum multiSum(nu=7,
-        k={0.001,0.001,0.001,0.001,0.001,0.0001,0.0001,0.0001})
+        Modelica.Blocks.Math.MultiSum multiSum(nu=6, k={0.001,0.001,0.001,0.001,0.001,
+              0.001})
         annotation (Placement(transformation(extent={{66,-66},{78,-54}})));
         Modelica.Blocks.Interfaces.RealOutput Grtu "RTU gas power"
         annotation (Placement(transformation(extent={{100,-30},{120,-10}})));
@@ -1627,27 +1628,22 @@ package SolarPlus "This package contains models for MPC control optimization."
                          color={0,0,127}));
         connect(thermal.Tfre, Tfre) annotation (Line(points={{-19,8},{6,8},{6,-140},{110,
                 -140}},                          color={0,0,127}));
-        connect(multiSum.u[1], Prtu) annotation (Line(points={{66,-56.4},{52,
-                -56.4},{52,80},{110,80}},
-                                color={0,0,127}));
-        connect(multiSum.u[2], Pref) annotation (Line(points={{66,-57.6},{54,
-                -57.6},{54,60},{110,60}},
-                                color={0,0,127}));
-        connect(multiSum.u[3], Pfre) annotation (Line(points={{66,-58.8},{56,
-                -58.8},{56,40},{110,40}},        color={0,0,127}));
-        connect(multiSum.u[4], Pbattery) annotation (Line(points={{66,-60},{58,
-                -60},{58,20},{110,20}}, color={0,0,127}));
+        connect(multiSum.u[1], Prtu) annotation (Line(points={{66,-56.5},{52,-56.5},{52,
+                80},{110,80}},  color={0,0,127}));
+        connect(multiSum.u[2], Pref) annotation (Line(points={{66,-57.9},{54,-57.9},{54,
+                60},{110,60}},  color={0,0,127}));
+        connect(multiSum.u[3], Pfre) annotation (Line(points={{66,-59.3},{56,-59.3},{56,
+                40},{110,40}},                   color={0,0,127}));
+        connect(multiSum.u[4], Pbattery) annotation (Line(points={{66,-60.7},{58,-60.7},
+                {58,20},{110,20}},      color={0,0,127}));
         connect(multiSum.y, Pnet)  annotation (Line(points={{79.02,-60},{110,
                 -60}},                                                              color={0,0,127}));
-        connect(gainPVGen.y, multiSum.u[5]) annotation (Line(points={{40.6,100},
-                {50,100},{50,-61.2},{66,-61.2}}, color={0,0,127}));
-        connect(thermal.Pload, multiSum.u[6]) annotation (Line(points={{-19,2},
-                {0,2},{0,-62.4},{66,-62.4}}, color={0,0,127}));
+        connect(gainPVGen.y, multiSum.u[5]) annotation (Line(points={{40.6,100},{50,100},
+                {50,-62.1},{66,-62.1}},          color={0,0,127}));
         connect(thermal.Grtu, Grtu) annotation (Line(points={{-19,16},{40,16},{40,-20},
                 {110,-20}}, color={0,0,127}));
-        connect(multiSum.u[7], Grtu) annotation (Line(points={{66,-63.6},{60,
-                -63.6},{60,-20},{110,-20}},
-                                     color={0,0,127}));
+        connect(multiSum.u[6], Grtu) annotation (Line(points={{66,-63.5},{60,-63.5},{60,
+                -20},{110,-20}},     color={0,0,127}));
         connect(simple.SOC, SOC) annotation (Line(points={{-18.8,-46},{-5.4,-46},
                 {-5.4,-100},{110,-100}}, color={0,0,127}));
         connect(simple.Preal, Pbattery) annotation (Line(points={{-18.8,-54},{
