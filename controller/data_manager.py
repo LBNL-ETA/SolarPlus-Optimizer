@@ -2,7 +2,6 @@ import pandas as pd
 import datetime
 import os
 from influxdb import DataFrameClient
-import pymortar
 import yaml
 
 class Data_Manager():
