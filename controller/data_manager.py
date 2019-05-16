@@ -175,15 +175,13 @@ class Data_Manager():
         final_df.columns = column_names
         return final_df
 
-    def get_section_data_from_xbos(self, config, xbos_client, window='5m', start_time=None, end_time=None):
+    def get_section_data_from_xbos(self, config, start_time=None, end_time=None):
         '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
 
             Parameters
             ----------
             config: dict()
                 individual configuration sections for weather, price, control etc.
-            xbos_client: MortarClient
-                client to query data via xbos
             start_time : datetime
                 Start time of timeseries
             end_time : datetime
@@ -295,7 +293,7 @@ class Data_Manager():
             df = self.get_section_data_from_influx(config=section_config, influx_client=self.influx_client)
 
         elif source == "xbos":
-            df = self.get_section_data_from_xbos(config=section_config, xbos_client =self.xbos_client, start_time=start_time, end_time=end_time)
+            df = self.get_section_data_from_xbos(config=section_config, start_time=start_time, end_time=end_time)
 
 
         # df.index = pd.to_datetime(df.index, utc=True)
