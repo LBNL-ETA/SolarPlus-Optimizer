@@ -13,18 +13,18 @@ COMMAND_RUN=docker run \
           ${IMG_NAME} /bin/bash -c
 
 build:
-        docker build --no-cache --rm -t ${IMG_NAME} .
-        cd controller && make build
+	docker build --no-cache --rm -t ${IMG_NAME} .
+	cd controller && make build
 
 remove-image:
-        docker rmi ${IMG_NAME}
+	docker rmi ${IMG_NAME}
 
 run:
-        cd controller && make stop
-        docker network rm my-net
-        docker network create ${NETWORK}
-        cd controller && make run-network
-        $(COMMAND_RUN) \
+	cd controller && make stop
+	docker network rm my-net
+	docker network create ${NETWORK}
+	cd controller && make run-network
+	$(COMMAND_RUN) \
             "cd /mnt/shared && bash"
-        cd controller && make stop
-        docker network rm my-net
+	cd controller && make stop
+	docker network rm my-net
