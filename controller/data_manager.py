@@ -3,6 +3,7 @@ import datetime
 import os
 from influxdb import DataFrameClient
 import yaml
+import requests
 
 class Data_Manager():
 
@@ -27,10 +28,10 @@ class Data_Manager():
                 with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
                     self.influx_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
                 self.init_influx(influx_cfg=self.influx_cfg)
-            # elif source_type == "xbos":
-            #     with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
-            #         self.xbos_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
-            #     self.init_xbos(xbos_cfg=self.xbos_cfg)
+            elif source_type == "xbos":
+                with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
+                    self.xbos_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
+                self.init_xbos(xbos_cfg=self.xbos_cfg)
 
         self.data_from_csvs = {}
         self.data_path = data_path + "/"
@@ -57,19 +58,20 @@ class Data_Manager():
                                             verify_ssl=influx_cfg["verify_ssl"],
                                             database=influx_cfg["database"])
 
-    # def init_xbos(self, xbos_cfg):
-    #     '''Initialize xbos client
-    #
-    #         Parameters
-    #         ----------
-    #         xbos_cfg: dict()
-    #             xbos configuration dictionary
-    #
-    #         Returns
-    #         -------
-    #         None
-    #     '''
-    #     self.xbos_client = MortarClient(cfg=xbos_cfg)
+    def init_xbos(self, xbos_cfg):
+        '''Initialize xbos client
+
+            Parameters
+            ----------
+            xbos_cfg: dict()
+                xbos configuration dictionary
+
+            Returns
+            -------
+            None
+        '''
+        self.xbos_url = xbos_cfg['web_server_url']
+        self.xbos_req_headers = {'Content-Type': 'application/json'}
 
     def get_all_csv_data(self):
         '''For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
@@ -173,63 +175,64 @@ class Data_Manager():
         final_df.columns = column_names
         return final_df
 
-    # def get_section_data_from_xbos(self, config, xbos_client, window='5m', start_time=None, end_time=None):
-    #     '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
-    #
-    #         Parameters
-    #         ----------
-    #         config: dict()
-    #             individual configuration sections for weather, price, control etc.
-    #         xbos_client: MortarClient
-    #             client to query data via xbos
-    #         start_time : datetime
-    #             Start time of timeseries
-    #         end_time : datetime
-    #             End time of timeseries
-    #
-    #         Returns
-    #         -------
-    #         df: pandas DataFrame
-    #             DataFrame where each column is a variable in the variables section in the configuration
-    #     '''
-    #
-    #     # TODO: handle start_time, end_time
-    #     measurement = config["measurement"]
-    #     if not self.check_if_valid_measurement(influx_client=influx_client, measurement=measurement):
-    #         return pd.DataFrame()
-    #     variable_cfg = config["variables"]
-    #     variables = variable_cfg.keys()
-    #
-    #     df_list = []
-    #     column_names = []
-    #     for variable in variables:
-    #         uuid = variable_cfg[variable][uuid]
-    #         req = pymortar.FetchRequest(
-    #             sites=self.site,
-    #             dataFrames=[
-    #                 pymortar.DataFrame(
-    #                     name="timeseries_data",
-    #                     aggregation=pymortar.MEAN,
-    #                     window=window,
-    #                     uuids=[uuid],
-    #                 )
-    #             ],
-    #             # TODO: start and end
-    #             time=pymortar.TimeParams(
-    #                 start="2019-04-01T00:00:00Z",
-    #                 end="2019-05-01T00:00:00Z",
-    #             )
-    #         )
-    #         res = xbos_client.fetch(req)
-    #         df = res['timeseries_data']
-    #
-    #         df.index = df.index.tz_localize(None)
-    #         df_list.append(df)
-    #
-    #         column_names.append(variable)
-    #     final_df = pd.concat(df_list, axis=1)
-    #     final_df.columns = column_names
-    #     return final_df
+    def get_section_data_from_xbos(self, config, xbos_client, window='5m', start_time=None, end_time=None):
+        '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
+
+            Parameters
+            ----------
+            config: dict()
+                individual configuration sections for weather, price, control etc.
+            xbos_client: MortarClient
+                client to query data via xbos
+            start_time : datetime
+                Start time of timeseries
+            end_time : datetime
+                End time of timeseries
+
+            Returns
+            -------
+            df: pandas DataFrame
+                DataFrame where each column is a variable in the variables section in the configuration
+        '''
+
+
+        measurement = config["measurement"]
+        if not self.check_if_valid_measurement(influx_client=influx_client, measurement=measurement):
+            return pd.DataFrame()
+        variable_cfg = config["variables"]
+        variables = variable_cfg.keys()
+
+        df_list = []
+        column_names = []
+        for variable in variables:
+            req_data = variable_cfg[variable].copy()
+            start = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+            end = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+            sites = [self.site]
+
+            req_data.update(
+                {
+                    "site": sites,
+                    "start": start,
+                    "end": end
+                }
+            )
+            rsp = requests.get(self.xbos_url, headers=self.xbos_req_headers, data=json.dumps(req_data))
+            if rsp.statusCode == 200:
+                op = json.loads(rsp.json()["data"])
+                df = pd.DataFrame(op)
+                df.index = pd.to_datetime(df.index, unit='ms')
+                # TODO: handle timzones
+                # df.index = df.index.tz_localize(None)
+            else:
+                df = pd.DataFrame()
+
+            df_list.append(df)
+            column_names.append(variable)
+
+        final_df = pd.concat(df_list, axis=1)
+        final_df.columns = column_names
+        return final_df
 
     def find_file_from_variable(self, variable):
         '''Find which file the variable belongs to, by checking column names of each csv file
@@ -291,8 +294,8 @@ class Data_Manager():
         elif source == "influxdb":
             df = self.get_section_data_from_influx(config=section_config, influx_client=self.influx_client)
 
-        # elif source == "xbos":
-        #     df = self.get_section_data_from_xbos(config=section_config, xbos_client =self.xbos_client)
+        elif source == "xbos":
+            df = self.get_section_data_from_xbos(config=section_config, xbos_client =self.xbos_client, start_time=start_time, end_time=end_time)
 
 
         # df.index = pd.to_datetime(df.index, utc=True)

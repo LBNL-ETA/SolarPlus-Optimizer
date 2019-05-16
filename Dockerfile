@@ -22,7 +22,9 @@ RUN pip install --user \
 	numpydoc==0.7.0 \
 	tzwhere==2.3 \
 	influxdb==5.0.0 \
-	pyyaml==3.13
+	pyyaml==3.13 \
+	requests==2.21.0 \
+	pydoe
 
 RUN mkdir git && cd git && \
     mkdir mpcpy && cd mpcpy && git clone https://github.com/lbl-srg/MPCPy && cd .. && \

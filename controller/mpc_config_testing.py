@@ -99,25 +99,22 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         "influxdb": {
             "config_filename": "controller/access_config_testing.yaml",
             "section": "influxdb"
+        },
+        "xbos": {
+            "config_filename": "controller/access_config_testing.yaml",
+            "section": "xbos"
         }
     },
     "weather": {
         # "type": "csv",
-        "type": "influxdb",
-        "measurement": "temperature",
+        # "type": "influxdb",
+        # "measurement": "temperature",
+        "type": "xbos",
         "variables": {
-            "Outdoor": "Outdoor",
-            "Solar Radiation": "Solar Radiation"
+            "Outdoor": {"uuid": "0065f75b-e6fe-4c5e-b737-b500c19edb68", "window": "5m", "agg": "MEAN"},
+            "Solar Radiation": {"uuid": "0b16aec1-3074-4ce6-b564-98ac6a37e3c7", "window": "5m", "agg": "MEAN"}
         }
     },
-    # "test_query": {
-    #     "type": "xbos",
-    #     "variables": {
-    #         "FreComp": {
-    #             "uuid": "enter uuid here"
-    #         }
-    #     }
-    # },
     "control": {
         # "type": "csv",
         "type": "influxdb",
