@@ -4,6 +4,7 @@ import os
 from influxdb import DataFrameClient
 import yaml
 import requests
+import json
 
 class Data_Manager():
 
@@ -194,9 +195,6 @@ class Data_Manager():
         '''
 
 
-        measurement = config["measurement"]
-        if not self.check_if_valid_measurement(influx_client=influx_client, measurement=measurement):
-            return pd.DataFrame()
         variable_cfg = config["variables"]
         variables = variable_cfg.keys()
 
@@ -337,7 +335,7 @@ class Data_Manager():
 
         return pd.concat(df_list, axis=1)
 
-    def get_data_from_config(self, config, start_time=None, end_time=None):
+    def get_data_from_config(self, config, start_time=datetime.datetime(2018, 1, 1, 0, 0, 0), end_time=datetime.datetime(2018, 12, 31, 23, 59, 59)):
         '''Get config file from mpc and retrieve required variables
 
             Parameters

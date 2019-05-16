@@ -37,3 +37,8 @@ process/results/*
 #################
 .DS_Store
 .idea/
+
+# XBOS files
+############
+*.pem
+*.ent
