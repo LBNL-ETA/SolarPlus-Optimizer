@@ -30,6 +30,7 @@ RUN mkdir git && cd git && \
     mkdir mpcpy && cd mpcpy && git clone https://github.com/lbl-srg/MPCPy && cd .. && \
     mkdir estimationpy-ka && cd estimationpy-ka && git clone https://github.com/krzysztofarendt/EstimationPy-KA && cd .. && \
     mkdir buildings && cd buildings && git clone https://github.com/lbl-srg/modelica-buildings.git
+    mkdir funnel && cd funnel && git clone https://github.com/lbl-srg/funnel.git
 
 WORKDIR $ROOT_DIR
 
@@ -38,5 +39,5 @@ ENV IPOPT_HOME $ROOT_DIR/Ipopt-3.12.4
 ENV SUNDIALS_HOME $JMODELICA_HOME/ThirdParty/Sundials
 ENV SEPARATE_PROCESS_JVM /usr/lib/jvm/java-8-openjdk-amd64/
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
-ENV PYTHONPATH $PYTHONPATH:$HOME/git/estimationpy-ka/EstimationPy-KA:$HOME/git/mpcpy/MPCPy:$JMODELICA_HOME/Python:$JMODELICA_HOME/Python/pymodelica
+ENV PYTHONPATH $PYTHONPATH:$HOME/git/estimationpy-ka/EstimationPy-KA:$HOME/git/mpcpy/MPCPy:$JMODELICA_HOME/Python:$JMODELICA_HOME/Python/pymodelica:$HOME/git/funnel/funnel
 ENV MODELICAPATH $MODELICAPATH:$HOME/git/buildings/modelica-buildings

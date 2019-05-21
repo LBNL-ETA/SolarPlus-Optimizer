@@ -26,6 +26,7 @@ RUN python3 -m pip install --upgrade pip && \
     flask \
     pyxbos \
     pymortar \
-    pyyaml
+    pyyaml \
+    cryptography
 
 WORKDIR $HOME

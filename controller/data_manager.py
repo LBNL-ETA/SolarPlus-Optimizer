@@ -214,7 +214,7 @@ class Data_Manager():
                 }
             )
             rsp = requests.get(self.xbos_url, headers=self.xbos_req_headers, data=json.dumps(req_data))
-            if rsp.statusCode == 200:
+            if rsp.status_code == 200:
                 op = json.loads(rsp.json()["data"])
                 df = pd.DataFrame(op)
                 df.index = pd.to_datetime(df.index, unit='ms')

@@ -1,9 +1,9 @@
 IMG_NAME=solarplusoptimizer
-NETWORK=my-net
+
 COMMAND_RUN=docker run \
           --name mpcpy \
           --detach=false \
-          --network=${NETWORK} \
+          --net="host" \
           -e DISPLAY=${DISPLAY} \
           -v /tmp/.X11-unix:/tmp/.X11-unix \
           --rm \
@@ -14,17 +14,10 @@ COMMAND_RUN=docker run \
 
 build:
 	docker build --no-cache --rm -t ${IMG_NAME} .
-	cd controller && make build
 
 remove-image:
 	docker rmi ${IMG_NAME}
 
 run:
-	cd controller && make stop
-	docker network rm my-net
-	docker network create ${NETWORK}
-	cd controller && make run-network
 	$(COMMAND_RUN) \
             "cd /mnt/shared && bash"
-	cd controller && make stop
-	docker network rm my-net
