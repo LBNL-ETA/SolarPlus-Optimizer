@@ -46,6 +46,7 @@ class functional(unittest.TestCase):
         return syn
 
     def test_forecast(self):
+        plt.rcParams.update({'font.size': 18})
         ds_sum = self.ds(self.start_day,self.end_day)
         syn_sum = self.syn(self.start_day,self.end_day)
         datetime = ds_sum.index

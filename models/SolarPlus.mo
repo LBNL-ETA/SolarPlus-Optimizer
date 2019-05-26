@@ -819,8 +819,8 @@ package SolarPlus "This package contains models for MPC control optimization."
               0},{110,0}},                     color={0,0,127}));
       connect(intBattery.y, uBattery) annotation (Line(points={{-85.6,-60},{-70,-60},
               {-70,-34},{-54,-34},{-54,-158},{110,-158}}, color={0,0,127}));
-      connect(intBattery.y, simple.u) annotation (Line(points={{-85.6,-60},{-63.8,-60},
-              {-63.8,-50},{-42,-50}}, color={0,0,127}));
+      connect(intBattery.y, Battery.u) annotation (Line(points={{-85.6,-60},{-63.8,
+              -60},{-63.8,-50},{-42,-50}}, color={0,0,127}));
     annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
           coordinateSystem(preserveAspectRatio=false)));
     end Whole_Derivative;
@@ -830,8 +830,9 @@ package SolarPlus "This package contains models for MPC control optimization."
         pv(A=100),
         thermal(
           Crtu=3e6,
-          RTUHeatingCap=58600,
-          RTUCoolingCap=34000,
+          RTUHeatingCap=29300,
+          RTUCoolingCap=24910,
+          RTUCoolingCOP=2.59,
           Rref=0.010,
           Rfre=0.010,
           Cref=1.5e6),
@@ -887,7 +888,7 @@ package SolarPlus "This package contains models for MPC control optimization."
               -180},{-120,-180}},    color={0,0,127}));
     connect(thermal.uFreCool, uFreCool) annotation (Line(points={{-42,0},{-74,0},{-74,
               -220},{-120,-220}},    color={0,0,127}));
-      connect(uBattery, simple.u) annotation (Line(points={{-120,-60},{-82,-60},
+      connect(uBattery, Battery.u) annotation (Line(points={{-120,-60},{-82,-60},
               {-82,-50},{-42,-50}}, color={0,0,127}));
       connect(add.u1, Trtu) annotation (Line(points={{-40,-96},{-58,-96},{-58,
               -80},{110,-80}}, color={0,0,127}));
@@ -1602,10 +1603,10 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{66,-66},{78,-54}})));
         Modelica.Blocks.Interfaces.RealOutput Grtu "RTU gas power"
         annotation (Placement(transformation(extent={{100,-30},{120,-10}})));
-        Batteries.Simple simple(
+        Batteries.Simple Battery(
           Ecap(displayUnit="kWh") = 626400000,
           P_cap=10900,
-          SOC_0=0.5)
+          SOC_0=SOC_0)
           annotation (Placement(transformation(extent={{-40,-60},{-20,-40}})));
       equation
         connect(pv.Iinc, weaHGloHor) annotation (Line(points={{-42,80},{-50,80},{-50,100},
@@ -1644,9 +1645,9 @@ package SolarPlus "This package contains models for MPC control optimization."
                 {110,-20}}, color={0,0,127}));
         connect(multiSum.u[6], Grtu) annotation (Line(points={{66,-63.5},{60,-63.5},{60,
                 -20},{110,-20}},     color={0,0,127}));
-        connect(simple.SOC, SOC) annotation (Line(points={{-18.8,-46},{-5.4,-46},
+        connect(Battery.SOC, SOC) annotation (Line(points={{-18.8,-46},{-5.4,-46},
                 {-5.4,-100},{110,-100}}, color={0,0,127}));
-        connect(simple.Preal, Pbattery) annotation (Line(points={{-18.8,-54},{
+        connect(Battery.Preal, Pbattery) annotation (Line(points={{-18.8,-54},{
                 20,-54},{20,20},{110,20}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-220},
                   {100,100}}),                                      graphics={
