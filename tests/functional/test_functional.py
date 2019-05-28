@@ -5,13 +5,13 @@ This module contains functional tests of the MPC controller.
 """
 from __future__ import division
 import unittest
-from controller.mpc import mpc
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-import numpy as np
+from controller.mpc import mpc
 import tests.mpc_config_testing as mpc_config_testing
 import pandas as pd
 import os
-import sys
 import numpy as np
 import shutil
 import pyfunnel as pf
@@ -52,7 +52,7 @@ class test_simulate(unittest.TestCase):
                     yReference = self.measurements[column],
                     yTest = measurements[column],
                     atolx = 1,
-                    rtoly = 0.05,
+                    rtoly = 0.07,
                     outputDirectory = results_dir
                     )
             error_df = pd.read_csv(os.path.join(results_dir, 'errors.csv'))
