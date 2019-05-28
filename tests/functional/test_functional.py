@@ -5,15 +5,13 @@ This module contains functional tests of the MPC controller.
 """
 from __future__ import division
 import unittest
-from controller.mpc import mpc
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-import numpy as np
+from controller.mpc import mpc
 import tests.mpc_config_testing as mpc_config_testing
 import pandas as pd
 import os
-import sys
 import numpy as np
 import shutil
 import pyfunnel as pf
