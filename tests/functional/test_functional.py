@@ -6,6 +6,7 @@ This module contains functional tests of the MPC controller.
 from __future__ import division
 import unittest
 from controller.mpc import mpc
+import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
