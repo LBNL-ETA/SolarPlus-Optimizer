@@ -852,83 +852,92 @@ package SolarPlus "This package contains models for MPC control optimization."
     Modelica.Blocks.Interfaces.RealInput uFreCool
       "Cooling signal input for freezer"
       annotation (Placement(transformation(extent={{-140,-240},{-100,-200}})));
-      Modelica.Blocks.Math.MultiSum multiSum1(k={50,10,10},   nu=3)
-        annotation (Placement(transformation(extent={{44,-172},{56,-160}})));
+      Modelica.Blocks.Math.MultiSum multiSum1(k={5,10,10},    nu=3)
+        annotation (Placement(transformation(extent={{44,-182},{56,-170}})));
     Modelica.Blocks.Math.Product squareTrtu
-      annotation (Placement(transformation(extent={{20,-112},{26,-106}})));
-      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant rtu(k=22 + 273.15)
-        annotation (Placement(transformation(extent={{-70,-128},{-50,-108}})));
+      annotation (Placement(transformation(extent={{14,-112},{20,-106}})));
+      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant rtu(k=22.5 +
+            273.15)
+        annotation (Placement(transformation(extent={{-80,-130},{-60,-110}})));
       Modelica.Blocks.Math.Add add(k2=-1)
-        annotation (Placement(transformation(extent={{-38,-112},{-18,-92}})));
+        annotation (Placement(transformation(extent={{-40,-120},{-20,-100}})));
       Modelica.Blocks.Math.Add add1(k2=-1)
-        annotation (Placement(transformation(extent={{-18,-154},{2,-134}})));
+        annotation (Placement(transformation(extent={{-40,-160},{-20,-140}})));
     Modelica.Blocks.Math.Product squareTref
-        annotation (Placement(transformation(extent={{16,-148},{22,-142}})));
+        annotation (Placement(transformation(extent={{14,-152},{20,-146}})));
       Buildings.Controls.OBC.CDL.Continuous.Sources.Constant ref(k=4 + 273.15)
-        annotation (Placement(transformation(extent={{-70,-160},{-50,-140}})));
+        annotation (Placement(transformation(extent={{-80,-170},{-60,-150}})));
       Modelica.Blocks.Math.Add add2(k2=-1)
-        annotation (Placement(transformation(extent={{-28,-202},{-8,-182}})));
+        annotation (Placement(transformation(extent={{-40,-200},{-20,-180}})));
     Modelica.Blocks.Math.Product squareTfre
-        annotation (Placement(transformation(extent={{16,-180},{22,-174}})));
+        annotation (Placement(transformation(extent={{14,-180},{20,-174}})));
       Buildings.Controls.OBC.CDL.Continuous.Sources.Constant fre(k=-24.5 +
             273.15)
-        annotation (Placement(transformation(extent={{-68,-214},{-48,-194}})));
+        annotation (Placement(transformation(extent={{-80,-210},{-60,-190}})));
       Modelica.Blocks.Interfaces.RealOutput Pnet_pen
-        annotation (Placement(transformation(extent={{100,-182},{120,-162}})));
+        annotation (Placement(transformation(extent={{100,-180},{120,-160}}),
+            iconTransformation(extent={{100,-182},{120,-162}})));
       Buildings.Controls.OBC.CDL.Continuous.Add add3
-        annotation (Placement(transformation(extent={{70,-128},{90,-108}})));
+        annotation (Placement(transformation(extent={{70,-180},{90,-160}})));
     equation
     connect(thermal.uHeat, uHeat) annotation (Line(points={{-42,16},{-80,16},{-80,20},
               {-120,20}},   color={0,0,127}));
     connect(thermal.uCool, uCool) annotation (Line(points={{-42,12},{-94,12},{-94,-20},
               {-120,-20}},    color={0,0,127}));
-    connect(thermal.uRef, uRef) annotation (Line(points={{-42,8},{-90,8},{-90,-20},{
-              -90,-20},{-90,-140},{-120,-140}},     color={0,0,127}));
-    connect(thermal.uFreDef, uFreDef) annotation (Line(points={{-42,4},{-78,4},{-78,
-              -180},{-120,-180}},    color={0,0,127}));
-    connect(thermal.uFreCool, uFreCool) annotation (Line(points={{-42,0},{-74,0},{-74,
-              -220},{-120,-220}},    color={0,0,127}));
-      connect(uBattery, Battery.u) annotation (Line(points={{-120,-60},{-82,-60},
-              {-82,-50},{-42,-50}}, color={0,0,127}));
-      connect(add.u1, Trtu) annotation (Line(points={{-40,-96},{-58,-96},{-58,
+    connect(thermal.uRef, uRef) annotation (Line(points={{-42,8},{-92,8},{-92,
+              -140},{-120,-140}},                   color={0,0,127}));
+    connect(thermal.uFreDef, uFreDef) annotation (Line(points={{-42,4},{-90,4},
+              {-90,-180},{-120,-180}},
+                                     color={0,0,127}));
+    connect(thermal.uFreCool, uFreCool) annotation (Line(points={{-42,0},{-88,0},
+              {-88,-220},{-120,-220}},
+                                     color={0,0,127}));
+      connect(uBattery, Battery.u) annotation (Line(points={{-120,-60},{-86,-60},
+              {-86,-50},{-42,-50}}, color={0,0,127}));
+      connect(add.u1, Trtu) annotation (Line(points={{-42,-104},{-58,-104},{-58,
               -80},{110,-80}}, color={0,0,127}));
-      connect(add.u2, rtu.y) annotation (Line(points={{-40,-108},{-40,-118},{
-              -49,-118}}, color={0,0,127}));
-      connect(add.y, squareTrtu.u1) annotation (Line(points={{-17,-102},{2,-102},
-              {2,-107.2},{19.4,-107.2}}, color={0,0,127}));
-      connect(squareTrtu.y, multiSum1.u[1]) annotation (Line(points={{26.3,-109},
-              {38,-109},{38,-163.2},{44,-163.2}}, color={0,0,127}));
-      connect(add1.u1, Tref) annotation (Line(points={{-20,-138},{-30,-138},{
-              -30,-120},{110,-120}}, color={0,0,127}));
+      connect(add.y, squareTrtu.u1) annotation (Line(points={{-19,-110},{-4,
+              -110},{-4,-107.2},{13.4,-107.2}},
+                                         color={0,0,127}));
+      connect(squareTrtu.y, multiSum1.u[1]) annotation (Line(points={{20.3,-109},
+              {32,-109},{32,-173.2},{44,-173.2}}, color={0,0,127}));
       connect(ref.y, add1.u2)
-        annotation (Line(points={{-49,-150},{-20,-150}}, color={0,0,127}));
-      connect(add1.y, squareTref.u1) annotation (Line(points={{3,-144},{10,-144},
-              {10,-143.2},{15.4,-143.2}}, color={0,0,127}));
-      connect(squareTref.u2, add1.y) annotation (Line(points={{15.4,-146.8},{
-              9.7,-146.8},{9.7,-144},{3,-144}}, color={0,0,127}));
-      connect(add2.y, squareTfre.u1) annotation (Line(points={{-7,-192},{4,-192},
-              {4,-175.2},{15.4,-175.2}}, color={0,0,127}));
-      connect(fre.y, add2.u2) annotation (Line(points={{-47,-204},{-39.5,-204},
-              {-39.5,-198},{-30,-198}}, color={0,0,127}));
-      connect(add2.u1, Tfre) annotation (Line(points={{-30,-186},{-40,-186},{
-              -40,-158},{24,-158},{24,-154},{68,-154},{68,-140},{110,-140}},
-                                 color={0,0,127}));
-      connect(squareTref.y, multiSum1.u[2]) annotation (Line(points={{22.3,-145},
-              {32,-145},{32,-166},{44,-166}}, color={0,0,127}));
-      connect(squareTfre.y, multiSum1.u[3]) annotation (Line(points={{22.3,-177},
-              {39.15,-177},{39.15,-168.8},{44,-168.8}}, color={0,0,127}));
+        annotation (Line(points={{-59,-160},{-50,-160},{-50,-156},{-42,-156}},
+                                                         color={0,0,127}));
+      connect(add1.y, squareTref.u1) annotation (Line(points={{-19,-150},{-4,
+              -150},{-4,-147.2},{13.4,-147.2}},
+                                          color={0,0,127}));
+      connect(squareTref.u2, add1.y) annotation (Line(points={{13.4,-150.8},{
+              -4.3,-150.8},{-4.3,-150},{-19,-150}},
+                                                color={0,0,127}));
+      connect(add2.y, squareTfre.u1) annotation (Line(points={{-19,-190},{0,
+              -190},{0,-175.2},{13.4,-175.2}},
+                                         color={0,0,127}));
+      connect(fre.y, add2.u2) annotation (Line(points={{-59,-200},{-49.5,-200},
+              {-49.5,-196},{-42,-196}}, color={0,0,127}));
+      connect(squareTref.y, multiSum1.u[2]) annotation (Line(points={{20.3,-149},
+              {30,-149},{30,-176},{44,-176}}, color={0,0,127}));
+      connect(squareTfre.y, multiSum1.u[3]) annotation (Line(points={{20.3,-177},
+              {25.15,-177},{25.15,-178.8},{44,-178.8}}, color={0,0,127}));
       connect(multiSum.y, Pnet)
         annotation (Line(points={{79.02,-60},{110,-60}}, color={0,0,127}));
-      connect(squareTfre.u2, add2.y) annotation (Line(points={{15.4,-178.8},{10,
-              -178.8},{10,-192},{-7,-192}}, color={0,0,127}));
-      connect(add.y, squareTrtu.u2) annotation (Line(points={{-17,-102},{2,-102},
-              {2,-110.8},{19.4,-110.8}}, color={0,0,127}));
-      connect(multiSum1.y, add3.u2) annotation (Line(points={{57.02,-166},{62,
-              -166},{62,-124},{68,-124}}, color={0,0,127}));
-      connect(add3.u1, Pnet) annotation (Line(points={{68,-112},{48,-112},{48,
+      connect(squareTfre.u2, add2.y) annotation (Line(points={{13.4,-178.8},{4,
+              -178.8},{4,-190},{-19,-190}}, color={0,0,127}));
+      connect(add.y, squareTrtu.u2) annotation (Line(points={{-19,-110},{-4,
+              -110},{-4,-110.8},{13.4,-110.8}},
+                                         color={0,0,127}));
+      connect(multiSum1.y, add3.u2) annotation (Line(points={{57.02,-176},{68,
+              -176}},                     color={0,0,127}));
+      connect(add3.u1, Pnet) annotation (Line(points={{68,-164},{48,-164},{48,
               -90},{88,-90},{88,-60},{110,-60}}, color={0,0,127}));
-      connect(add3.y, Pnet_pen) annotation (Line(points={{91,-118},{96,-118},{
-              96,-172},{110,-172}}, color={0,0,127}));
+      connect(add3.y, Pnet_pen) annotation (Line(points={{91,-170},{110,-170}},
+                                    color={0,0,127}));
+      connect(rtu.y, add.u2) annotation (Line(points={{-59,-120},{-46,-120},{
+              -46,-116},{-42,-116}}, color={0,0,127}));
+      connect(add1.u1, Tref) annotation (Line(points={{-42,-144},{-54,-144},{
+              -54,-132},{0,-132},{0,-120},{110,-120}}, color={0,0,127}));
+      connect(add2.u1, Tfre) annotation (Line(points={{-42,-184},{-54,-184},{
+              -54,-166},{26,-166},{26,-140},{110,-140}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Bitmap(extent={{-90,-110},{92,-4}}, fileName=
                   "modelica://SolarPlus/StoreFigure.png"),
