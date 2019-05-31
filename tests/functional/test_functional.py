@@ -52,7 +52,7 @@ class test_simulate(unittest.TestCase):
                     yReference = self.measurements[column],
                     yTest = measurements[column],
                     atolx = 1,
-                    rtoly = 0.07,
+                    rtoly = 0.05,
                     outputDirectory = results_dir
                     )
             error_df = pd.read_csv(os.path.join(results_dir, 'errors.csv'))
@@ -94,7 +94,9 @@ class test_optimize(unittest.TestCase):
                               data_manager_config=config['data_manager_config'])
         # Optimize
         control, measurements, other_outputs, statistics = self.controller.optimize(start_time, final_time, init=True)
-
+        control.to_csv('control_optimize.csv')
+        measurements.to_csv('measurements_optimize.csv')
+        other_outputs.to_csv('other_outputs_optimize.csv')
         results_dir = os.path.abspath(os.path.join(__file__,'..','results'))
         for column in control.columns:
             pf.compareAndReport(
