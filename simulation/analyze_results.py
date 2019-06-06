@@ -130,4 +130,4 @@ def _plot_each(df_list,plot_vars):
     plt.show()
     
 if __name__ == '__main__':
-    emulation()
+    mpc()

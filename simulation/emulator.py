@@ -14,7 +14,8 @@ class emulator(object):
     def __init__(self, use_data_manager_in_emulator=False, data_manager=None, outdir=None):
 
         weather_vm = {'Outdoor': ('weaTDryBul', units.degC),
-                      'Solar Radiation': ('weaHGloHor', units.W_m2)}
+                      'poa_pv': ('weaPoaPv', units.W_m2),
+                      'poa_win': ('weaPoaWin', units.W_m2)}
         geography = (40.88, -124.0)
 
         setpoints_vm = {'Trtu_heat': ('setHeat', units.K),
@@ -51,7 +52,7 @@ class emulator(object):
         sample_rate = 300
         self.measurements = dict()
         for meas in meas_list:
-            self.measurements[meas] = {'Sample' : variables.Static('{0}_sample'.format(meas), sample_rate, units.s)};
+            self.measurements[meas] = {'Sample' : variables.Static('{0}_sample'.format(meas), sample_rate, units.s)}
 
     def simulate(self, start_time, final_time):
         # Update exodata
