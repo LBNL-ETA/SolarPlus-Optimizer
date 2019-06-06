@@ -1,0 +1,5 @@
+device_info:
+  veraplus_ip: 192.168.1.3
+  device_id: 13
+  service_id: TemperatureSensor1
+  temperature_variable_name: CurrentTemperature

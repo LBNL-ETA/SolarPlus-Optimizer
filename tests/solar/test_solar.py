@@ -52,6 +52,7 @@ class functional(unittest.TestCase):
         datetime = ds_sum.index
         estimated_df = self.api.Perez_split(ds_sum)
         measured_ghi = syn_sum['GHI']
+        # self.api.plane_of_array(ds_sum).to_csv('df_all_solar.csv')
 
         results_dir = os.path.abspath(os.path.join(__file__,'..','results'))
         pf.compareAndReport(
@@ -64,7 +65,7 @@ class functional(unittest.TestCase):
                     outputDirectory = results_dir
                     )
         error_df = pd.read_csv(os.path.join(results_dir, 'errors.csv'))
-        #pf.plot_funnel(results_dir)
+        # pf.plot_funnel(results_dir)
         self.assertAlmostEqual(error_df.iloc(axis=1)[1].max(),0)
         shutil.rmtree(results_dir)
 

@@ -5,13 +5,13 @@ This module contains functional tests of the MPC controller.
 """
 from __future__ import division
 import unittest
-from controller.mpc import mpc
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-import numpy as np
+from controller.mpc import mpc
 import tests.mpc_config_testing as mpc_config_testing
 import pandas as pd
 import os
-import sys
 import numpy as np
 import shutil
 import pyfunnel as pf
@@ -94,7 +94,6 @@ class test_optimize(unittest.TestCase):
                               data_manager_config=config['data_manager_config'])
         # Optimize
         control, measurements, other_outputs, statistics = self.controller.optimize(start_time, final_time, init=True)
-
         results_dir = os.path.abspath(os.path.join(__file__,'..','results'))
         for column in control.columns:
             pf.compareAndReport(
