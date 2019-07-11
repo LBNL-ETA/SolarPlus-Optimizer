@@ -47,9 +47,6 @@ class test_simulate(unittest.TestCase):
         # Simulate
         measurements, other_outputs = self.controller.simulate(start_time, final_time)
 
-        measurements = measurements.tz_convert(self.tz_local)
-        other_outputs = other_outputs.tz_convert(self.tz_local)
-
         # only measurements results are compared
         results_dir = os.path.abspath(os.path.join(__file__,'..','results'))
         for column in measurements.columns:
@@ -103,11 +100,6 @@ class test_optimize(unittest.TestCase):
                               data_manager_config=config['data_manager_config'])
         # Optimize
         control, measurements, other_outputs, statistics = self.controller.optimize(start_time, final_time, init=True)
-
-        control = control.tz_convert(self.tz_local)
-        measurements = measurements.tz_convert(self.tz_local)
-        other_outputs = other_outputs.tz_convert(self.tz_local)
-
 
         results_dir = os.path.abspath(os.path.join(__file__,'..','results'))
         for column in control.columns:
