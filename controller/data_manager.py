@@ -161,10 +161,8 @@ class Data_Manager():
                 DataFrame where each column is a variable in the variables section in the configuration
         '''
 
-        measurement = config["measurement"]
-        if not self.check_if_valid_measurement(influx_client=influx_client, measurement=measurement):
-            return pd.DataFrame()
-        variables = config["variables"].keys()
+
+        variables = config["variables"]
 
         df_list = []
         column_names = []
@@ -253,17 +251,17 @@ class Data_Manager():
                     column_names.append(section_config["variables"][variable])
                     df = self.data_from_csvs[file][[variable]].loc[start_time: end_time]
                     df_list.append(df)
-            df = pd.concat(df_list, axis=1)
-            df.columns = column_names
+            final_df = pd.concat(df_list, axis=1)
+            final_df.columns = column_names
 
         elif source == "influxdb":
-            df = self.get_section_data_from_influx(config=section_config, influx_client=self.influx_client, start_time=start_time, end_time=end_time)
+            final_df = self.get_section_data_from_influx(config=section_config, influx_client=self.influx_client, start_time=start_time, end_time=end_time)
 
 
         # df.index = pd.to_datetime(df.index, utc=True)
         # return df.loc[start_time: end_time]
-        df = df.tz_localize(None)
-        return df
+        final_df = final_df.tz_localize(None)
+        return final_df
 
     def get_data(self, variable_list, start_time=None, end_time=None):
         '''Return a DataFrame of all the variables in the variable_list
