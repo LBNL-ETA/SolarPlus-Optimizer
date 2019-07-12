@@ -102,6 +102,10 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         "influxdb": {
             "config_filename": "controller/access_config_testing.yaml",
             "section": "influxdb"
+        },
+        "xbos": {
+            "config_filename": "controller/access_config_testing.yaml",
+            "section": "xbos"
         }
     },
     "weather": {

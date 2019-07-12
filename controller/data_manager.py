@@ -163,18 +163,16 @@ class Data_Manager():
         else:
             return True
 
-    def get_section_data_from_influx(self, config, influx_client, start_time=None, end_time=None):
+    def get_section_data_from_influx(self, config, start_time=None, end_time=None):
         '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
 
             Parameters
             ----------
             config: dict()
                 individual configuration sections for weather, price, control etc.
-            influx_client: influxdb.DataFrameClient
-                client to send/receive data to/from influxdb
-            start_time : datetime
+            start_time : datetime in utc
                 Start time of timeseries
-            end_time : datetime
+            end_time : datetime in utc
                 End time of timeseries
 
             Returns
@@ -210,7 +208,7 @@ class Data_Manager():
             else:
                 q = "select %s(value) as value from %s where \"uuid\"=\'%s\' and time >= '%s' and time <= '%s' group by time(%s)"%(agg, measurement, uuid, st, et, window)
 
-            df = influx_client.query(q)[measurement]
+            df = self.influx_client.query(q)[measurement]
             # df.index = df.index.tz_localize(None)
             df_list.append(df)
             column_names.append(variable)
@@ -225,9 +223,9 @@ class Data_Manager():
             ----------
             config: dict()
                 individual configuration sections for weather, price, control etc.
-            start_time : datetime
+            start_time : datetime in utc
                 Start time of timeseries
-            end_time : datetime
+            end_time : datetime in utc
                 End time of timeseries
 
             Returns
@@ -237,31 +235,42 @@ class Data_Manager():
         '''
 
 
-        variable_cfg = config["variables"]
-        variables = variable_cfg.keys()
+        variables = config["variables"]
 
         df_list = []
         column_names = []
-        for variable in variables:
-            req_data = variable_cfg[variable].copy()
-            start = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-            end = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-            sites = [self.site]
+        if start_time != None:
+            st = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            st = "2018-01-01T08:00:00Z"
 
-            req_data.update(
-                {
-                    "site": sites,
-                    "start": start,
-                    "end": end
-                }
-            )
+        if end_time != None:
+            et = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            et = "2019-01-01T07:59:59Z"
+
+        for variable in variables:
+            variable_cfg = variables[variable]
+            uuid = variable_cfg.get('uuid')
+            window = variable_cfg.get('window', '5m')
+            agg = variable_cfg.get('agg', 'MEAN')
+            start = st
+            end = et
+            sites = [self.site]
+            req_data = {
+                "uuid": uuid,
+                "window": window,
+                "agg": agg,
+                "start": start,
+                "end": end,
+                "site": sites
+            }
+
             rsp = requests.get(self.xbos_url, headers=self.xbos_req_headers, data=json.dumps(req_data))
             if rsp.status_code == 200:
                 op = json.loads(rsp.json()["data"])
                 df = pd.DataFrame(op)
                 df.index = pd.to_datetime(df.index, unit='ms')
-                # TODO: handle timzones
-                # df.index = df.index.tz_localize(None)
             else:
                 df = pd.DataFrame()
 
@@ -331,14 +340,11 @@ class Data_Manager():
             final_df.columns = column_names
 
         elif source == "influxdb":
-            final_df = self.get_section_data_from_influx(config=section_config, influx_client=self.influx_client, start_time=start_time, end_time=end_time)
+            final_df = self.get_section_data_from_influx(config=section_config, start_time=start_time, end_time=end_time)
 
         elif source == "xbos":
-            df = self.get_section_data_from_xbos(config=section_config, start_time=start_time, end_time=end_time)
+            final_df = self.get_section_data_from_xbos(config=section_config, start_time=start_time, end_time=end_time)
 
-
-        # df.index = pd.to_datetime(df.index, utc=True)
-        # return df.loc[start_time: end_time]
         final_df = final_df.tz_localize(None)
         return final_df
 
