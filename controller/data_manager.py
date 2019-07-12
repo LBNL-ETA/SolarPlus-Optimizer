@@ -1,4 +1,5 @@
 import pandas as pd
+import pytz
 import datetime
 import os
 from influxdb import DataFrameClient
@@ -38,6 +39,9 @@ class Data_Manager():
         self.data_path = data_path + "/"
         self.data_sink = self.data_manager_config["data_sink"]
         self.site = self.data_manager_config["site"]
+
+        self.tz_local = pytz.timezone("America/Los_Angeles")
+        self.tz_utc = pytz.timezone("UTC")
 
     def init_influx(self, influx_cfg):
         '''Initialize influxdb client
@@ -89,9 +93,12 @@ class Data_Manager():
         for file in self.files:
             filename = self.data_path + file
             if os.path.exists(filename):
-                self.data_from_csvs[file] = pd.read_csv(filename, index_col=0, parse_dates=True)
+                df = pd.read_csv(filename, index_col=0, parse_dates=True)
+                df = df.tz_localize(self.tz_local).tz_convert(self.tz_utc)
+                self.data_from_csvs[file] = df
 
-    def get_single_data_from_influx(self, measurement, variable, start_time=None, end_time=None):
+
+    def get_single_data_from_influx(self, measurement, variable_uuid, start_time=None, end_time=None, window='5m', agg='mean'):
         '''From the influxdb measurement, get one particular variable as a DataFrame
                Parameters
                ----------
@@ -110,9 +117,27 @@ class Data_Manager():
                    DataFrame where the column is the variable being queried
            '''
 
-        # TODO: handle start_time, end_time
+        # Assumption: start_time and end_time are in UTC
 
-        q = "select value from %s where \"name\"=\'%s\'" % (measurement, variable)
+        st = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        et = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        uuid = variable_uuid
+
+        if start_time == None and end_time == None:
+            q = "select %s(value) as value from %s where \"uuid\"=\'%s\' group by time(%s)" % (
+            agg, measurement, uuid, window)
+        elif start_time == None:
+            q = "select %s(value) as value from %s where \"uuid\"=\'%s\' and time >= '%s' group by time(%s)" % (
+            agg, measurement, uuid, st, window)
+        elif end_time == None:
+            q = "select %s(value) as value from %s where \"uuid\"=\'%s\' and time <= '%s' group by time(%s)" % (
+            agg, measurement, uuid, et, window)
+        else:
+            q = "select %s(value) as value from %s where \"uuid\"=\'%s\' and time >= '%s' and time <= '%s' group by time(%s)" % (
+            agg, measurement, uuid, st, et, window)
+
+
         df = self.influx_client.query(q)[measurement]
         df.columns = variable
         return df
@@ -138,18 +163,16 @@ class Data_Manager():
         else:
             return True
 
-    def get_section_data_from_influx(self, config, influx_client, start_time=None, end_time=None):
+    def get_section_data_from_influx(self, config, start_time=None, end_time=None):
         '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
 
             Parameters
             ----------
             config: dict()
                 individual configuration sections for weather, price, control etc.
-            influx_client: influxdb.DataFrameClient
-                client to send/receive data to/from influxdb
-            start_time : datetime
+            start_time : datetime in utc
                 Start time of timeseries
-            end_time : datetime
+            end_time : datetime in utc
                 End time of timeseries
 
             Returns
@@ -158,20 +181,37 @@ class Data_Manager():
                 DataFrame where each column is a variable in the variables section in the configuration
         '''
 
-        # TODO: handle start_time, end_time
-        measurement = config["measurement"]
-        if not self.check_if_valid_measurement(influx_client=influx_client, measurement=measurement):
-            return pd.DataFrame()
-        variables = config["variables"].keys()
+
+        variables = config["variables"]
 
         df_list = []
         column_names = []
+        if start_time != None:
+            st = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        if end_time != None:
+            et = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+
         for variable in variables:
-            q = "select value from %s where \"name\"=\'%s\'"%(measurement, variable)
-            df = influx_client.query(q)[measurement]
-            df.index = df.index.tz_localize(None)
+            variable_cfg = variables[variable]
+            uuid = variable_cfg.get('uuid')
+            window = variable_cfg.get('window', '5m')
+            agg = variable_cfg.get('agg', 'mean')
+            measurement = variable_cfg.get('measurement', 'timeseries')
+
+            if start_time == None and end_time == None:
+                q = "select %s(value) as value from %s where \"uuid\"=\'%s\' group by time(%s)" % (agg, measurement, uuid, window)
+            elif start_time == None:
+                q = "select %s(value) as value from %s where \"uuid\"=\'%s\' and time >= '%s' group by time(%s)" % (agg, measurement, uuid, st, window)
+            elif end_time == None:
+                q = "select %s(value) as value from %s where \"uuid\"=\'%s\' and time <= '%s' group by time(%s)" % (agg, measurement, uuid, et, window)
+            else:
+                q = "select %s(value) as value from %s where \"uuid\"=\'%s\' and time >= '%s' and time <= '%s' group by time(%s)"%(agg, measurement, uuid, st, et, window)
+
+            df = self.influx_client.query(q)[measurement]
+            # df.index = df.index.tz_localize(None)
             df_list.append(df)
-            column_names.append(config["variables"][variable])
+            column_names.append(variable)
         final_df = pd.concat(df_list, axis=1)
         final_df.columns = column_names
         return final_df
@@ -183,9 +223,9 @@ class Data_Manager():
             ----------
             config: dict()
                 individual configuration sections for weather, price, control etc.
-            start_time : datetime
+            start_time : datetime in utc
                 Start time of timeseries
-            end_time : datetime
+            end_time : datetime in utc
                 End time of timeseries
 
             Returns
@@ -195,31 +235,42 @@ class Data_Manager():
         '''
 
 
-        variable_cfg = config["variables"]
-        variables = variable_cfg.keys()
+        variables = config["variables"]
 
         df_list = []
         column_names = []
-        for variable in variables:
-            req_data = variable_cfg[variable].copy()
-            start = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-            end = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-            sites = [self.site]
+        if start_time != None:
+            st = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            st = "2018-01-01T08:00:00Z"
 
-            req_data.update(
-                {
-                    "site": sites,
-                    "start": start,
-                    "end": end
-                }
-            )
+        if end_time != None:
+            et = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            et = "2019-01-01T07:59:59Z"
+
+        for variable in variables:
+            variable_cfg = variables[variable]
+            uuid = variable_cfg.get('uuid')
+            window = variable_cfg.get('window', '5m')
+            agg = variable_cfg.get('agg', 'MEAN')
+            start = st
+            end = et
+            sites = [self.site]
+            req_data = {
+                "uuid": uuid,
+                "window": window,
+                "agg": agg,
+                "start": start,
+                "end": end,
+                "site": sites
+            }
+
             rsp = requests.get(self.xbos_url, headers=self.xbos_req_headers, data=json.dumps(req_data))
             if rsp.status_code == 200:
                 op = json.loads(rsp.json()["data"])
                 df = pd.DataFrame(op)
                 df.index = pd.to_datetime(df.index, unit='ms')
-                # TODO: handle timzones
-                # df.index = df.index.tz_localize(None)
             else:
                 df = pd.DataFrame()
 
@@ -256,9 +307,9 @@ class Data_Manager():
             ----------
             config: section name in config file ("weather"/"price"/"control"/"constraint"/"system")
                 pointer to individual configuration sections for weather, price, control etc.
-            start_time : datetime
+            start_time : datetime in UTC
                 Start time of timeseries
-            end_time : datetime
+            end_time : datetime in UTC
                 End time of timeseries
 
             Returns
@@ -267,7 +318,7 @@ class Data_Manager():
                 DataFrame, whose each column is the timeseries of the variables in data_manager_config[config]["variables"]
 
         '''
-        # TODO: handle st, et for influx and XBOS versions
+        # TODO: add XBOS versions
         # if start_time!=None and end_time!=None:
         #     # get data for that time period
         df_list = []
@@ -283,20 +334,19 @@ class Data_Manager():
                     print('variable %s'%variable)
                 else:
                     column_names.append(section_config["variables"][variable])
-                    df_list.append(self.data_from_csvs[file][[variable]])
-            df = pd.concat(df_list, axis=1)
-            df.columns = column_names
+                    df = self.data_from_csvs[file][[variable]].loc[start_time: end_time]
+                    df_list.append(df)
+            final_df = pd.concat(df_list, axis=1)
+            final_df.columns = column_names
 
         elif source == "influxdb":
-            df = self.get_section_data_from_influx(config=section_config, influx_client=self.influx_client)
+            final_df = self.get_section_data_from_influx(config=section_config, start_time=start_time, end_time=end_time)
 
         elif source == "xbos":
-            df = self.get_section_data_from_xbos(config=section_config, start_time=start_time, end_time=end_time)
+            final_df = self.get_section_data_from_xbos(config=section_config, start_time=start_time, end_time=end_time)
 
-
-        # df.index = pd.to_datetime(df.index, utc=True)
-        # return df.loc[start_time: end_time]
-        return df
+        final_df = final_df.tz_localize(None)
+        return final_df
 
     def get_data(self, variable_list, start_time=None, end_time=None):
         '''Return a DataFrame of all the variables in the variable_list
@@ -342,9 +392,9 @@ class Data_Manager():
             ----------
             config: section name in config file ("weather"/"price"/"control"/"constraint"/"system")
                 pointer to individual configuration sections for weather, price, control etc.
-            start_time : datetime
+            start_time : datetime in UTC
                 Start time of timeseries
-            end_time : datetime
+            end_time : datetime in UTC
                 End time of timeseries
 
             Returns

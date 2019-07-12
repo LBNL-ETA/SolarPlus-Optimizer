@@ -91,6 +91,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                                }
                         },
 "data_manager_config": {
+    "site": "blr",
     "source": {
         "csv_files": [
             "Temperature.csv",
@@ -98,12 +99,23 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Control2.csv",
             "Constraint.csv",
         ],
+        "influxdb": {
+            "config_filename": "controller/access_config_testing.yaml",
+            "section": "influxdb"
+        },
+        "xbos": {
+            "config_filename": "controller/access_config_testing.yaml",
+            "section": "xbos"
+        }
     },
     "weather": {
-        "type": "csv",
+        # "type": "csv",
+        "type": "influxdb",
         "variables": {
-            "Outdoor": "Outdoor",
-            "Solar Radiation": "Solar Radiation"
+            # "Outdoor": "Outdoor",
+            # "Solar Radiation": "Solar Radiation"
+            "Outdoor": {"uuid": "86f72439-35a3-4997-a14f-24f8a889b164", "window": "5m", "agg": "MEAN", "measurement": "timeseries"},
+            "Solar Radiation": {"uuid": "cbe9c24e-f8ab-41d5-be16-3ecb5b441a39", "window": "5m", "agg": "MEAN", "measurement": "timeseries"}
         }
     },
     "control": {

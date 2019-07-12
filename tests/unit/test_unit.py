@@ -12,14 +12,17 @@ import pyfunnel as pf
 import os
 import numpy as np
 import shutil
+import pytz
 
 config = mpc_config_testing.get_config()
 
 class unit(unittest.TestCase):
 
     def setUp(self):
-        self.start_time = pd.to_datetime('6/1/2018')
-        self.final_time = pd.to_datetime('6/6/2018')
+        self.tz_local = pytz.timezone("America/Los_Angeles")
+        self.tz_utc = pytz.timezone("UTC")
+        self.start_time = pd.to_datetime('6/1/2018').tz_localize(self.tz_local).tz_convert(self.tz_utc)
+        self.final_time = pd.to_datetime('6/6/2018').tz_localize(self.tz_local).tz_convert(self.tz_utc)
         exo_data = os.path.abspath(os.path.join(__file__,'..','fixtures','exo_data.csv'))
         measurements = os.path.abspath(os.path.join(__file__,'..','fixtures','measurements.csv'))
         state_estimation = os.path.abspath(os.path.join(__file__,'..','fixtures','state_estimation.csv'))

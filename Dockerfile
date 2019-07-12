@@ -8,7 +8,8 @@ USER root
 # -------------
 RUN apt-get update && apt-get install -y \
 	libgeos-dev \
-	git
+	git \
+	vim
 
 USER developer
 WORKDIR $HOME
@@ -21,7 +22,7 @@ RUN pip install --user \
 	sphinx==1.6.3 \
 	numpydoc==0.7.0 \
 	tzwhere==2.3 \
-	influxdb==5.0.0 \
+	influxdb==5.2.2 \
 	pyyaml==3.13 \
 	requests==2.21.0 \
 	pydoe
