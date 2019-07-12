@@ -3,7 +3,7 @@ server:
     ########################## Modbus server settings #########################
 
     port: 5020
-    UNIT_ID: 0x1
+    slave_id: 0x1
     update_time: 5
 
     ######################### Register settings ###############################

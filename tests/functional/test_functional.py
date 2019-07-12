@@ -5,16 +5,17 @@ This module contains functional tests of the MPC controller.
 """
 from __future__ import division
 import unittest
-from controller.mpc import mpc
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-import numpy as np
+from controller.mpc import mpc
 import tests.mpc_config_testing as mpc_config_testing
 import pandas as pd
 import os
-import sys
 import numpy as np
 import shutil
 import pyfunnel as pf
+import pytz
 
 config = mpc_config_testing.get_config()
 
@@ -26,10 +27,12 @@ class test_simulate(unittest.TestCase):
         other_outputs = os.path.abspath(os.path.join(__file__,'..','fixtures','other_outputs_simulate.csv'))
         self.measurements = pd.read_csv(measurements,index_col='Time')
         self.other_outputs = pd.read_csv(other_outputs,index_col='Time')
+        self.tz_local = pytz.timezone("America/Los_Angeles")
+        self.tz_utc = pytz.timezone("UTC")
 
     def test_simulate(self):
-        start_time = pd.to_datetime('6/1/2018')
-        final_time = pd.to_datetime('6/6/2018')
+        start_time = pd.to_datetime('6/1/2018').tz_localize(self.tz_local).tz_convert(self.tz_utc)
+        final_time = pd.to_datetime('6/6/2018').tz_localize(self.tz_local).tz_convert(self.tz_utc)
         # Instantiate
         config['model_config']['modelpath'] = 'SolarPlus.Building.Optimization.StoreSim'
         self.controller = mpc(config['model_config'],
@@ -43,6 +46,7 @@ class test_simulate(unittest.TestCase):
                               data_manager_config=config['data_manager_config'])
         # Simulate
         measurements, other_outputs = self.controller.simulate(start_time, final_time)
+
         # only measurements results are compared
         results_dir = os.path.abspath(os.path.join(__file__,'..','results'))
         for column in measurements.columns:
@@ -78,10 +82,12 @@ class test_optimize(unittest.TestCase):
         self.control = pd.read_csv(control,index_col='Time')
         self.measurements = pd.read_csv(measurements,index_col='Time')
         self.other_outputs = pd.read_csv(other_outputs,index_col='Time')
+        self.tz_local = pytz.timezone("America/Los_Angeles")
+        self.tz_utc = pytz.timezone("UTC")
 
     def test_optimize(self):
-        start_time = pd.to_datetime('6/1/2018')
-        final_time = pd.to_datetime('6/2/2018')
+        start_time = pd.to_datetime('6/1/2018').tz_localize(self.tz_local).tz_convert(self.tz_utc)
+        final_time = pd.to_datetime('6/6/2018').tz_localize(self.tz_local).tz_convert(self.tz_utc)
         # Instantiate
         self.controller = mpc(config['model_config'],
                               config['opt_config'],

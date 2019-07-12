@@ -5,7 +5,7 @@ import yaml
 import argparse
 import numpy as np
 import pandas as pd
-from pvlib import solarposition
+from pvlib import solarposition, irradiance
 
 # Add influx driver to path
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,7 +42,7 @@ class API_Collection_Layer:
 
         self.test_client = Influx_Dataframe_Client(config_file,db_section)
 
-    def solar_model_ZhHu(self, forecast_df, sin_alt, zh_solar_const, solar_const):
+    def solar_model_ZhHu(self, forecast_df, sin_alt, zh_solar_const):
         '''
         Estimate Global Horizontal Irradiance (GHI) from Zhang-Huang solar forecast model
         Params: sin_alt, sine of solar altitude
@@ -88,7 +88,7 @@ class API_Collection_Layer:
         zh_solar_const = 1355 # W/m2, solar constant used by Zhang-Huang model
         solar_const = 1367 # general solar constant
 
-        df = self.solar_model_ZhHu(forecast_df=forecast_df, sin_alt=sin_alt,  zh_solar_const=zh_solar_const, solar_const=solar_const)
+        df = self.solar_model_ZhHu(forecast_df=forecast_df, sin_alt=sin_alt,  zh_solar_const=zh_solar_const)
 
         clear_index_kt = df['estimated_ghi']/(solar_const*sin_alt)
         clear_index_ktc = 0.4268 + 0.1934 * sin_alt
@@ -101,6 +101,25 @@ class API_Collection_Layer:
         df['beam_rad'] = zh_solar_const * sin_alt * clear_index_kds * (1.0 - clear_index_kt) / (1.0 - clear_index_kds)
         # Calculate diffuse horizontal radiation, W/m2
         df['diff_rad'] = zh_solar_const * sin_alt * (clear_index_kt - clear_index_kds) / (1.0 - clear_index_kds)
+        return df
+
+    def plane_of_array(self, df):
+        """
+        :param df: data frame includes GHI, beam_rad, diff_rad
+        :return: df with plane of array solar radiation on pv and windows
+        """
+        pv_tilt = 8
+        pv_azimuth = 37
+        albedo = 0.2
+        win_tilt = 90
+        win_azimuth = 0
+        datetime = df.index
+        alt_ang = solarposition.get_solarposition(datetime, self.lat, self.lng)['elevation']
+        azi_ang = solarposition.get_solarposition(datetime, self.lat, self.lng)['azimuth']
+        df['poa_pv'] = irradiance.get_total_irradiance(pv_tilt, pv_azimuth, alt_ang, azi_ang, df['beam_rad'],
+                                                       df['estimated_ghi'], df['diff_rad'], albedo)['poa_global']
+        df['poa_win'] = irradiance.get_total_irradiance(win_tilt, win_azimuth, alt_ang, azi_ang, df['beam_rad'],
+                                                       df['estimated_ghi'], df['diff_rad'], albedo)['poa_global']
         return df
 
     def get_data_dark_sky(self):

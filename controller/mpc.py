@@ -548,9 +548,9 @@ class mpc(object):
         ----------
         exo_object : mpcpy.exodata.[object]
             The exodata object to update.
-        start_time : pandas datetime
+        start_time : pandas datetime in utc
             The start time of the update period.
-        final_time : pandas datetime
+        final_time : pandas datetime in utc
             The final time of the update period.
 
         Returns
