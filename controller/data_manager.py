@@ -20,7 +20,6 @@ class Data_Manager():
             data_manager_config: dict
                 configuration dict for data_manager
         '''
-        # TODO: handle timezones
         self.data_manager_config = data_manager_config
 
         for source_type in self.data_manager_config["source"]:
@@ -240,6 +239,8 @@ class Data_Manager():
         df_list = []
         column_names = []
         if start_time != None:
+            #TODO: handle this better
+            start_time = start_time - datetime.timedelta(minutes=5)
             st = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
         else:
             st = "2018-01-01T08:00:00Z"
@@ -318,9 +319,6 @@ class Data_Manager():
                 DataFrame, whose each column is the timeseries of the variables in data_manager_config[config]["variables"]
 
         '''
-        # TODO: add XBOS versions
-        # if start_time!=None and end_time!=None:
-        #     # get data for that time period
         df_list = []
         column_names = []
         section_config = self.data_manager_config[config]
@@ -385,7 +383,7 @@ class Data_Manager():
 
         return pd.concat(df_list, axis=1)
 
-    def get_data_from_config(self, config, start_time=datetime.datetime(2018, 1, 1, 0, 0, 0), end_time=datetime.datetime(2018, 12, 31, 23, 59, 59)):
+    def get_data_from_config(self, config, start_time=None, end_time=None):
         '''Get config file from mpc and retrieve required variables
 
             Parameters

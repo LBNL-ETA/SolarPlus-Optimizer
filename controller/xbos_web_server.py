@@ -25,6 +25,7 @@ class XBOS_Web_Server:
 
     def get_data(self):
         req = request.get_json()
+        print(req)
         uuid = req['uuid']
         time_now = datetime.datetime.now()
         start = req.get('start', (time_now - datetime.timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ"))
