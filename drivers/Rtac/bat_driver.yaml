@@ -3,6 +3,7 @@ modbus:
     UNIT_ID: 0x1
     byte_order: big
     word_order: little
+    enable_logging: false
     #                          ### Modbus type ###
     # This can be set to 'tcp' or 'serial' and determines the modbus method that
     # the driver will use.  The appropriate settings will be used below and the
@@ -17,7 +18,7 @@ modbus:
     parity: E
     baudrate: 19200
     #                          ### Modbus TCP Settings ###
-    ip: 127.0.0.1
+    ip: 0.0.0.0
     port: 5020
     ########################## Regitser Settings ###################################
     #                          ### OFFSET Regitsers
