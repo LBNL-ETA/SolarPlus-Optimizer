@@ -9,8 +9,7 @@ To test the RTAC driver/XBOS ingester this simulator has been setup to emulate t
 
 In order to run the simulator use:
 ```
-conda activate modbus_simulator
-python updating_server.py config.yaml
+python updating_server.py bat_server.yaml
 ```
 
 The virtual environment modbus_simulator has the necessary versions of Pymodbus and Python to work with the simulator
