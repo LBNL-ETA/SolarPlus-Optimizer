@@ -49,9 +49,10 @@ print("Register values after changing SP value:")
 output = obj.get_data()
 print(output)
 
-#set_default(obj.holding_register_dict,obj)
-#set_all_param(obj.holding_register_dict,obj)
-"""
+set_default(obj.holding_register_dict,obj)
+set_all_param(obj.holding_register_dict,obj)
+set_default(obj.holding_register_dict,obj)
+
 print("               ")
 print("               ")
 print("               ")
@@ -59,7 +60,7 @@ print("               ")
 
 output = obj.get_data()
 print(output)
-"""
+
 
 
 obj.kill_modbus()
