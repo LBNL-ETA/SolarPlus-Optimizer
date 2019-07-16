@@ -1,36 +1,5 @@
 dark_sky:
     api: 763827c188fa2c8c4cca914f16caf2d0
-    url: https://api.darksky.net/forecast/
-    lat: 40.5301
-    lng: -124.0000
-
-local_database_config:
-    host: localhost
-    database: dark_sky
-    protocol: json
-    port: 8086
-    use_ssl: False
-    verify_ssl_is_on: False
-    measurement_name: btu_meters
-    username: admin
-    password: password
-    tags:
-    sensor_id:
-    tag_dict: {}
-    fields: []
-
-# Not sure if this will be used for weather
-remote_database_config:
-    host: localhost
-    database: remote_dark_sky_test
-    protocol: json
-    port: 8086
-    use_ssl: False
-    verify_ssl_is_on: False
-    measurement_name: btu_meters
-    username: admin
-    password: password
-    tags:
-    sensor_id:
-    tag_dict: {}
-    fields: []
+    url: https://api.darksky.net/forecast
+    lat: 40.884062
+    lng: -124.0003142
