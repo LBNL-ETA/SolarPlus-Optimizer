@@ -441,21 +441,15 @@ class Modbus_Driver(object):
 
         output = {}
         for key in self.coil_register_dict:
-            print(key)
             output[key] = self.read_coil(self.coil_register_dict[key][0])
 
         for key in self.discrete_register_dict:
-            print(key)
             output[key] = self.read_discrete(self.discrete_register_dict[key][0])
 
         for key in self.holding_register_dict:
-            print(key)
-            print(self.holding_register_dict[key][0])
-            print(self.holding_register_dict[key][1])
             output[key] = self.decode_register(self.holding_register_dict[key][0],self.holding_register_dict[key][1])
 
         for key in self.input_register_dict:
-            print(key)
             output[key] = self.decode_input_register(self.input_register_dict[key][0],self.input_register_dict[key][1])
 
         return output
