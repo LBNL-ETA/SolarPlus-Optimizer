@@ -11,19 +11,20 @@ import os
 config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                          'modelpath' : 'SolarPlus.Building.Optimization.Store',
                          'libraries' : os.getenv('MODELICAPATH'),
-                         'measurements' : ['Trtu', 'Tref', 'Tfre'],
+                         'measurements' : ['Trtu', 'Tref', 'Tfre', 'SOC'],
                          'other_outputs' : ['Pnet', 'Prtu', 'Pref', 'Pfre','Pcharge', 'Pdischarge', 'SOC'],
                          'sample_rate' : 3600,
                          'parameters' : {'Name':      ['Trtu_0', 'Tref_0', 'Tfre_0', 'SOC_0'],
                                          'Free':      [False,    False,    False,    False],
-                                         'Value':     [0,        0,        0,        0.25],
+                                         'Value':     [22,       14,        -24,        0.25],
                                          'Minimum':   [10,       0,        -40,      0],
                                          'Maximum':   [35,       20,       0,        1],
                                          'Covariance':[0,        0,        0,        0],
                                          'Unit' :     ['degC',   'degC',   'degC',   '1']},
                           'init_vm' : {'Trtu_0' : 'Trtu',
                                        'Tref_0' : 'Tref',
-                                       'Tfre_0' : 'Tfre'}},
+                                       'Tfre_0' : 'Tfre',
+                                       'SOC_0'  : 'SOC'}},
 
 "opt_config" :        {'problem'  : 'EnergyCostMin',
                      'power_var': 'J'},
@@ -73,11 +74,11 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                      'vm'  : {'pi_e':('pi_e', units.dol_kWh)}},
 
 "system_config" :     {'type': 'csv',
-                     'path': os.path.join('data','Temperature.csv'),
-                     'vm'  : {'Refrigerator East':('Tref', units.degC),
-                              'HVAC East':('Trtu', units.degC),
-                              'Freezer':('Tfre', units.degC),
-                              # 'SOC':('SOC',units.unit1)
+                     'path': os.path.join('data','emulation_states.csv'),
+                     'vm'  : {'Tref':('Tref', units.degC),
+                              'Trtu':('Trtu', units.degC),
+                              'Tfre':('Tfre', units.degC),
+                              'SOC':('SOC',units.unit1)
                               }
                        },
 "setpoints_config" :   {
@@ -98,12 +99,9 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Price.csv",
             "Control2.csv",
             "Constraint.csv",
-            "setpoints.csv"
-        ],
-        "influxdb": {
-            "config_filename": "controller/access_config_testing.yaml",
-            "section": "influxdb"
-        }
+            "setpoints.csv",
+	    "emulation_states.csv"
+        ]
     },
     "weather": {
         "type": "csv",
@@ -158,9 +156,10 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
     "system": {
         "type": "csv",
         "variables": {
-            "Refrigerator East": "Refrigerator East",
-            "HVAC East": "HVAC East",
-            "Freezer": "Freezer",
+            "Tref": "Tref",
+            "Trtu": "Trtu",
+            "Tfre": "Tfre",
+            "SOC":"SOC"
         }
     },
     "setpoints": {
