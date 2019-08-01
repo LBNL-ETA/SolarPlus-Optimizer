@@ -13,7 +13,7 @@ class WeatherCurrentDriver(Driver):
         self.apikey = cfg['darksky']['apikey']
         self.coords = cfg['darksky']['coordinates']
         self.url = self.baseurl + self.apikey + '/' + self.coords
-        self.topic = cfg['topic']
+        self.service_name = cfg['service_name']
 
     def read(self, requestid=None):
         response = requests.get(self.url)
@@ -57,42 +57,53 @@ class WeatherCurrentDriver(Driver):
                 )
             )
         )
-        self.report(self.topic, msg)
+        self.report(self.service_name, msg)
+
+
+if __name__ == '__main__':
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("config_file", help="config file with api key as well as namespace")
-    parser.add_argument("ent_file", help="entity file")
     args = parser.parse_args()
     config_file = args.config_file
-    ent_file = args.ent_file
 
     with open(config_file) as f:
-        # use safe_load instead load for security reasons
         driverConfig = yaml.safe_load(f)
 
-    namespace = driverConfig['wavemq']['namespace']
-    topic = driverConfig['wavemq']['topic']
-    rate = driverConfig['wavemq']['rate']
-    api = driverConfig['dark_sky']['api']
-    url = driverConfig['dark_sky']['url']
-    latlong = driverConfig['dark_sky']['latlong']
-    cfg = {
+    xbosConfig = driverConfig['xbos']
+    waved = xbosConfig.get('waved', 'localhost:777')
+    wavemq = xbosConfig.get('wavemq', 'locahost:4516')
+    namespace = xbosConfig.get('namespace')
+    base_resource = xbosConfig.get('base_resource')
+    service_name = xbosConfig.get('service_name')
+    entity = xbosConfig.get('entity')
+    rate = xbosConfig.get('rate')
+    driver_id = xbosConfig.get('id', 'darksky-driver')
+
+    darkskyConfig = driverConfig['dark_sky']
+    url = darkskyConfig.get('url', 'https://api.darksky.net/forecast/')
+    api = darkskyConfig.get('api')
+    coordinates = darkskyConfig.get('latlong')
+
+    xbos_cfg = {
+        'waved': waved
+        'wavemq': wavemq,
+        'namespace': namespace,
+        'base_resource': base_resource,
+        'entity': entity,
+        'id': driver_id,
+        'rate': rate, 
+        'service_name_map': service_name_map,
+        
         'darksky': {
             'apikey': api,
             'url': url,
-            'coordinates': latlong # Should be near BLR
-        },
-        'wavemq': 'localhost:4516',
-        'namespace': namespace,
-        'base_resource': 'dark_sky',
-        'entity': ent_file,
-        'id': 'pyxbos-driver-current-1',
-        'topic': topic,
-        #'rate': 1800, # half hour
-        'rate': rate, # 15 min
+            'coordinates': latlong
+        }
     }
+
     logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
     current_driver = WeatherCurrentDriver(cfg)
     current_driver.begin()

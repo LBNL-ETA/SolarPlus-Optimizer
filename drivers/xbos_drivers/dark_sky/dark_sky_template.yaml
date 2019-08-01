@@ -2,8 +2,12 @@ dark_sky:
     api: 
     url: https://api.darksky.net/forecast/
     latlong: 40.884062,-124.0003142
-wavemq:
+xbos:
+    waved: localhost:777
+    wavemq: localhost:4516
+    base_resource: dark_sky
+    rate: 1800
+    entity: 
     namespace: 
-    rate: 1800 # in seconds
-    topic: blr
-
+    service_name: blr
+    id: darksky_driver

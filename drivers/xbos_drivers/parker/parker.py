@@ -166,7 +166,11 @@ class ParkerDriver(Driver):
 
 
 if __name__ == '__main__':
-    config_file = 'parker_config.yaml'
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config_file", help="config file with api key as well as namespace")
+    args = parser.parse_args()
+    config_file = args.config_file
+    
     with open(config_file) as f:
         driverConfig = yaml.safe_load(f)
 
@@ -188,10 +192,10 @@ if __name__ == '__main__':
         'entity': entity,
         'id': driver_id,
         'rate': rate, 
-        'service_name_map': service_name_map
+        'service_name_map': service_name_map,
         'config_file': config_file
     }
-    
+
     print(getmembers(iot_pb2))
     logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
     e = ParkerDriver(xbos_cfg)
