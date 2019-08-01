@@ -59,10 +59,6 @@ class WeatherCurrentDriver(Driver):
         )
         self.report(self.service_name, msg)
 
-
-if __name__ == '__main__':
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("config_file", help="config file with api key as well as namespace")
