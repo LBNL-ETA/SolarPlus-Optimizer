@@ -1,0 +1,9 @@
+dark_sky:
+    api: 
+    url: https://api.darksky.net/forecast/
+    latlong: 40.884062,-124.0003142
+wavemq:
+    namespace: 
+    rate: 1800 # in seconds
+    topic: blr
+
