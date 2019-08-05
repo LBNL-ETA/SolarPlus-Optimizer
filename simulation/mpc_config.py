@@ -100,80 +100,84 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Control2.csv",
             "Constraint.csv",
             "setpoints.csv",
-	    "emulation_states.csv"
+            "emulation_states.csv"
         ]
     },
     "weather": {
         "type": "csv",
-        #"type": "influxdb",
+        # "type": "influxdb",
         "variables": {
-            "Outdoor": "Outdoor",
-            "Solar Radiation": "Solar Radiation"
-            #"Outdoor": {"uuid": "86f72439-35a3-4997-a14f-24f8a889b164", "window": "5m", "agg": "MEAN", "measurement": "timeseries"},
-            #"Solar Radiation": {"uuid": "cbe9c24e-f8ab-41d5-be16-3ecb5b441a39", "window": "5m", "agg": "MEAN", "measurement": "timeseries"}
+            # influxdb/xbos
+            # "Outdoor": {"uuid": "86f72439-35a3-4997-a14f-24f8a889b164", "window": "5m", "agg": "mean", "measurement": "timeseries"},
+            # "Solar Radiation": {"uuid": "cbe9c24e-f8ab-41d5-be16-3ecb5b441a39", "window": "5m", "agg": "mean", "measurement": "timeseries"}
+
+            # csv
+            "Outdoor": {"filename": "Temperature.csv", "column": "Outdoor", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "Solar Radiation": {"filename": "Temperature.csv", "column": "Solar Radiation", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
         }
     },
     "control": {
         "type": "csv",
         "variables": {
-            "FreComp": "FreComp",
-            "RefComp": "RefComp",
-            "HVAC1": "HVAC1"
+            "FreComp": {"filename": "Control2.csv", "column": "FreComp", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "RefComp": {"filename": "Control2.csv", "column": "RefComp", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "HVAC1": {"filename": "Control2.csv", "column": "HVAC1", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
         }
     },
     "constraint": {
         "type": "csv",
         "variables": {
-            "Trtu_min": "Trtu_min",
-            "Trtu_max": "Trtu_max",
-            "Tref_min": "Tref_min",
-            "Tref_max": "Tref_max",
-            "Tfre_min": "Tfre_min",
-            "Tfre_max": "Tfre_max",
-            "SOC_min": "SOC_min",
-            "SOC_max": "SOC_max",
-            "uCool_min": "uCool_min",
-            "uCool_max": "uCool_max",
-            "uHeat_min": "uHeat_min",
-            "uHeat_max": "uHeat_max",
-            "uCharge_min": "uCharge_min",
-            "uCharge_max": "uCharge_max",
-            "uDischarge_min": "uDischarge_min",
-            "uDischarge_max": "uDischarge_max",
-            "uRef_min": "uRef_min",
-            "uRef_max": "uRef_max",
-            "uFreCool_min": "uFreCool_min",
-            "uFreCool_max": "uFreCool_max",
-            "demand": "demand"
+            "Trtu_min":  {"filename": "Constraint.csv", "column": "Trtu_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "Trtu_max":  {"filename": "Constraint.csv", "column": "Trtu_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "Tref_min":  {"filename": "Constraint.csv", "column": "Tref_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "Tref_max":  {"filename": "Constraint.csv", "column": "Tref_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "Tfre_min":  {"filename": "Constraint.csv", "column": "Tfre_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "Tfre_max":  {"filename": "Constraint.csv", "column": "Tfre_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "SOC_min":  {"filename": "Constraint.csv", "column": "SOC_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "SOC_max":  {"filename": "Constraint.csv", "column": "SOC_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uCool_min":  {"filename": "Constraint.csv", "column": "uCool_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uCool_max":  {"filename": "Constraint.csv", "column": "uCool_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uHeat_min":  {"filename": "Constraint.csv", "column": "uHeat_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uHeat_max":  {"filename": "Constraint.csv", "column": "uHeat_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uCharge_min":  {"filename": "Constraint.csv", "column": "uCharge_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uCharge_max":  {"filename": "Constraint.csv", "column": "uCharge_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uDischarge_min":  {"filename": "Constraint.csv", "column": "uDischarge_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uDischarge_max":  {"filename": "Constraint.csv", "column": "uDischarge_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uRef_min":  {"filename": "Constraint.csv", "column": "uRef_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uRef_max":  {"filename": "Constraint.csv", "column": "uRef_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uFreCool_min":  {"filename": "Constraint.csv", "column": "uFreCool_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uFreCool_max":  {"filename": "Constraint.csv", "column": "uFreCool_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "demand":  {"filename": "Constraint.csv", "column": "demand", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
         }
     },
     "price": {
         "type": "csv",
         "variables": {
-            "pi_e": "pi_e"
+            "pi_e":  {"filename": "Price.csv", "column": "pi_e", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
         }
     },
     "system": {
         "type": "csv",
         "variables": {
-            "Tref": "Tref",
-            "Trtu": "Trtu",
-            "Tfre": "Tfre",
-            "SOC":"SOC"
+            "Tref": {"filename": "emulation_states.csv", "column": "Tref", "tz":"UTC", "agg": "mean", "window": "5m"},
+            "Trtu": {"filename": "emulation_states.csv", "column": "Trtu", "tz":"UTC", "agg": "mean", "window": "5m"},
+            "Tfre": {"filename": "emulation_states.csv", "column": "Tfre", "tz":"UTC", "agg": "mean", "window": "5m"},
+            "SOC": {"filename": "emulation_states.csv", "column": "SOC", "tz":"UTC", "agg": "mean", "window": "5m"}
         }
     },
+
     "setpoints": {
         "type": "csv",
-        #"measurement": "setpoints",
         "variables": {
-            'Trtu_heat': 'Trtu_heat',
-            'Trtu_cool': 'Trtu_cool',
-            'Tref': 'Tref',
-            'Tfre': 'Tfre',
-            'uCharge': 'uCharge',
-            'uDischarge': 'uDischarge'
+            "Trtu_heat": {"filename": "setpoints.csv", "column": "Trtu_heat", "tz":"UTC", "agg": "mean", "window": "5m"},
+            "Trtu_cool": {"filename": "setpoints.csv", "column": "Trtu_cool", "tz":"UTC", "agg": "mean", "window": "5m"},
+            "Tref": {"filename": "setpoints.csv", "column": "Tref", "tz":"UTC", "agg": "mean", "window": "5m"},
+            "Tfre": {"filename": "setpoints.csv", "column": "Tfre", "tz":"UTC", "agg": "mean", "window": "5m"},
+            "uCharge": {"filename": "setpoints.csv", "column": "uCharge", "tz":"UTC", "agg": "mean", "window": "5m"},
+            "uDischarge": {"filename": "setpoints.csv", "column": "uDischarge", "tz":"UTC", "agg": "mean", "window": "5m"}
         }
-    },
+    }, 
+
     "data_sink": {
         "setpoints": {
             "type": "csv",
