@@ -93,16 +93,22 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Price.csv",
             "Control2.csv",
             "Constraint.csv",
-            "setpoints.csv"
+            "setpoints.csv",
+            "emulation_states.csv"
         ],
         "influxdb": {
             "config_filename": "controller/access_config_testing.yaml",
             "section": "influxdb"
+        },
+        "xbos": {
+            "config_filename": "controller/access_config_testing.yaml",
+            "section": "xbos"
         }
     },
     "weather": {
         "type": "csv",
-        # "type": "influxdb",
+        #"type": "influxdb",
+        # "type": "xbos",
         "variables": {
             # influxdb/xbos
             # "Outdoor": {"uuid": "86f72439-35a3-4997-a14f-24f8a889b164", "window": "5m", "agg": "mean", "measurement": "timeseries"},

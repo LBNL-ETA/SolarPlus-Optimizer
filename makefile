@@ -1,15 +1,16 @@
 IMG_NAME=solarplusoptimizer
 
 COMMAND_RUN=docker run \
-	  --name mpcpy \
-	  --detach=false \
-	  -e DISPLAY=${DISPLAY} \
-	  -v /tmp/.X11-unix:/tmp/.X11-unix \
-	  --rm \
-	  -v `pwd`:/mnt/shared \
-	  -i \
+          --name mpcpy \
+          --detach=false \
+          --net="host" \
+          -e DISPLAY=${DISPLAY} \
+          -v /tmp/.X11-unix:/tmp/.X11-unix \
+          --rm \
+          -v `pwd`:/mnt/shared \
+          -i \
           -t \
-	  ${IMG_NAME} /bin/bash -c
+          ${IMG_NAME} /bin/bash -c
 
 build:
 	docker build --no-cache --rm -t ${IMG_NAME} .

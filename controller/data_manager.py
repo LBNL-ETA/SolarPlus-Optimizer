@@ -4,6 +4,8 @@ import datetime
 import os
 from influxdb import DataFrameClient
 import yaml
+import requests
+import json
 
 class Data_Manager():
 
@@ -30,9 +32,14 @@ class Data_Manager():
                 with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
                     self.influx_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
                 self.init_influx(influx_cfg=self.influx_cfg)
+            elif source_type == "xbos":
+                with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
+                    self.xbos_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
+                self.init_xbos(xbos_cfg=self.xbos_cfg)
 
 
         self.data_sink = self.data_manager_config["data_sink"]
+        self.site = self.data_manager_config["site"]
 
         self.tz_local = pytz.timezone("America/Los_Angeles")
         self.tz_utc = pytz.timezone("UTC")
@@ -46,7 +53,7 @@ class Data_Manager():
                 influxdb configuration dictionary
 
             Returns
-            -------`
+            -------
             None
         '''
         self.influx_client = DataFrameClient(host=influx_cfg["host"],
@@ -57,6 +64,21 @@ class Data_Manager():
                                             verify_ssl=influx_cfg["verify_ssl"],
                                             database=influx_cfg["database"])
 
+    def init_xbos(self, xbos_cfg):
+        '''Initialize xbos client
+
+            Parameters
+            ----------
+            xbos_cfg: dict()
+                xbos configuration dictionary
+
+            Returns
+            -------
+            None
+        '''
+        self.xbos_url = xbos_cfg['web_server_url']
+        self.xbos_req_headers = {'Content-Type': 'application/json'}
+
     def init_csv(self, files):
         '''For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
 
@@ -65,7 +87,7 @@ class Data_Manager():
             None
 
             Returns
-            -------`
+            -------
             None
 
         '''
@@ -197,18 +219,16 @@ class Data_Manager():
         return final_df
 
 
-    def get_section_data_from_influx(self, config, influx_client, start_time=None, end_time=None):
+    def get_section_data_from_influx(self, config, start_time=None, end_time=None):
         '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
 
             Parameters
             ----------
             config: dict()
                 individual configuration sections for weather, price, control etc.
-            influx_client: influxdb.DataFrameClient
-                client to send/receive data to/from influxdb
-            start_time : datetime
+            start_time : datetime in utc
                 Start time of timeseries
-            end_time : datetime
+            end_time : datetime in utc
                 End time of timeseries
 
             Returns
@@ -250,10 +270,78 @@ class Data_Manager():
             if agg != 'raw':
                 q += " group by time(%s)"%(window)
 
-            df = influx_client.query(q)[measurement]
+            df = self.influx_client.query(q)[measurement]
             # df.index = df.index.tz_localize(None)
             df_list.append(df)
             column_names.append(variable)
+        final_df = pd.concat(df_list, axis=1)
+        final_df.columns = column_names
+        return final_df
+
+    def get_section_data_from_xbos(self, config, start_time=None, end_time=None):
+        '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
+
+            Parameters
+            ----------
+            config: dict()
+                individual configuration sections for weather, price, control etc.
+            start_time : datetime in utc
+                Start time of timeseries
+            end_time : datetime in utc
+                End time of timeseries
+
+            Returns
+            -------
+            df: pandas DataFrame
+                DataFrame where each column is a variable in the variables section in the configuration
+        '''
+
+
+        variables = config["variables"]
+
+        df_list = []
+        column_names = []
+        if start_time != None:
+            #TODO: handle this better
+            #start_time = start_time - datetime.timedelta(minutes=5)
+            st = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            st = "2018-01-01T08:00:00Z"
+
+        if end_time != None:
+            et = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            et = "2019-01-01T07:59:59Z"
+
+        for variable in variables:
+            variable_cfg = variables[variable]
+            uuid = variable_cfg.get('uuid')
+            window = variable_cfg.get('window', '5m')
+            agg = variable_cfg.get('agg', 'MEAN')
+            agg = agg.upper()
+            start = st
+            end = et
+            sites = [self.site]
+            req_data = {
+                "uuid": uuid,
+                "window": window,
+                "agg": agg,
+                "start": start,
+                "end": end,
+                "site": sites
+            }
+
+            rsp = requests.get(self.xbos_url, headers=self.xbos_req_headers, data=json.dumps(req_data))
+            if rsp.status_code == 200:
+                op = json.loads(rsp.json()["data"])
+                df = pd.DataFrame(op)
+                df.index = pd.to_datetime(df.index, unit='ms')
+            else:
+                df = pd.DataFrame()
+
+            df_list.append(df)
+            column_names.append(variable)
+
         final_df = pd.concat(df_list, axis=1)
         final_df.columns = column_names
         return final_df
@@ -277,9 +365,6 @@ class Data_Manager():
                 DataFrame, whose each column is the timeseries of the variables in data_manager_config[config]["variables"]
 
         '''
-        # TODO: add XBOS versions
-        # if start_time!=None and end_time!=None:
-        #     # get data for that time period
         df_list = []
         column_names = []
         section_config = self.data_manager_config[config]
@@ -289,7 +374,9 @@ class Data_Manager():
         if source == "csv":
             final_df = self.get_section_data_from_csv(config=section_config, start_time=start_time, end_time=end_time)
         elif source == "influxdb":
-            final_df = self.get_section_data_from_influx(config=section_config, influx_client=self.influx_client, start_time=start_time, end_time=end_time)
+            final_df = self.get_section_data_from_influx(config=section_config, start_time=start_time, end_time=end_time)
+        elif source == "xbos":
+            final_df = self.get_section_data_from_xbos(config=section_config, start_time=start_time, end_time=end_time)
 
         final_df = final_df.tz_localize(None)
         return final_df
