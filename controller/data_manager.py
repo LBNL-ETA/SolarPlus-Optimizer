@@ -240,7 +240,7 @@ class Data_Manager():
         column_names = []
         if start_time != None:
             #TODO: handle this better
-            start_time = start_time - datetime.timedelta(minutes=5)
+            #start_time = start_time - datetime.timedelta(minutes=5)
             st = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
         else:
             st = "2018-01-01T08:00:00Z"
@@ -280,6 +280,7 @@ class Data_Manager():
 
         final_df = pd.concat(df_list, axis=1)
         final_df.columns = column_names
+        print(final_df.head())
         return final_df
 
     def find_file_from_variable(self, variable):

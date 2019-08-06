@@ -110,8 +110,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
     },
     "weather": {
         # "type": "csv",
-        "type": "influxdb",
-        #"type": "xbos",
+        #"type": "influxdb",
+        "type": "xbos",
         "variables": {
             # "Outdoor": "Outdoor",
             # "Solar Radiation": "Solar Radiation"
