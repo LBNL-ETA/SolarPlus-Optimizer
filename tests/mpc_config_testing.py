@@ -116,9 +116,9 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
     "control": {
         "type": "csv",
         "variables": {
-            "FreComp": {"filename": "Control2.csv", "column": "FreComp", "tz": "America/Los_Angeles", "agg": "mean","window": "5m"},
-            "RefComp": {"filename": "Control2.csv", "column": "RefComp", "tz": "America/Los_Angeles", "agg": "mean","window": "5m"},
-            "HVAC1": {"filename": "Control2.csv", "column": "HVAC1", "tz": "America/Los_Angeles", "agg": "mean","window": "5m"}
+            "FreComp": {"filename": "Control2.csv", "column": "FreComp", "tz": "America/Los_Angeles", "agg": "raw","window": "5m"},
+            "RefComp": {"filename": "Control2.csv", "column": "RefComp", "tz": "America/Los_Angeles", "agg": "raw","window": "5m"},
+            "HVAC1": {"filename": "Control2.csv", "column": "HVAC1", "tz": "America/Los_Angeles", "agg": "raw","window": "5m"}
         }
     },
     "constraint": {
@@ -170,7 +170,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Tref": {"filename": "setpoints.csv", "column": "Tref", "tz":"UTC", "agg": "mean","window": "5m"},
             "Tfre": {"filename": "setpoints.csv", "column": "Tfre", "tz":"UTC", "agg": "mean","window": "5m"},
         }
-    }, 
+    },
     "data_sink": {
         "setpoints": {
             "type": "csv",
