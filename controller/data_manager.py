@@ -318,6 +318,7 @@ class Data_Manager():
             uuid = variable_cfg.get('uuid')
             window = variable_cfg.get('window', '5m')
             agg = variable_cfg.get('agg', 'MEAN')
+            agg = agg.upper()
             start = st
             end = et
             sites = [self.site]
@@ -343,7 +344,6 @@ class Data_Manager():
 
         final_df = pd.concat(df_list, axis=1)
         final_df.columns = column_names
-        print(final_df.head())
         return final_df
 
     def get_timeseries_from_config(self, config, start_time=None, end_time=None):
