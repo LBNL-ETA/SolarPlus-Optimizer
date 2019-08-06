@@ -176,15 +176,18 @@ class Data_Manager():
 
             if start_time != None and end_time != None:
                 idx = df.loc[start_time: end_time].index
-                df = df.loc[idx, column_name].resample(window).agg(agg_fn)
+                df = df.loc[idx, column_name]
             elif start_time != None:
                 idx = df.loc[start_time:].index
-                df = df.loc[idx, column_name].resample(window).agg(agg_fn)
+                df = df.loc[idx, column_name]
             elif end_time != None:
                 idx = df.loc[:end_time].index
-                df = df.loc[idx, column_name].resample(window).agg(agg_fn)
+                df = df.loc[idx, column_name]
             else:
-                df = df.loc[:, column_name].resample(window).agg(agg_fn)
+                df = df.loc[:, column_name]
+
+            if agg_fn != 'raw':
+                df = df.resample(window).agg(agg_fn)
             df = df.dropna()
 
             df_list.append(df)
@@ -232,14 +235,20 @@ class Data_Manager():
             agg = variable_cfg.get('agg', 'mean')
             measurement = variable_cfg.get('measurement', 'timeseries')
 
-            if start_time == None and end_time == None:
-                q = "select %s(value) as value from %s where \"uuid\"=\'%s\' group by time(%s)" % (agg, measurement, uuid, window)
-            elif start_time == None:
-                q = "select %s(value) as value from %s where \"uuid\"=\'%s\' and time >= '%s' group by time(%s)" % (agg, measurement, uuid, st, window)
-            elif end_time == None:
-                q = "select %s(value) as value from %s where \"uuid\"=\'%s\' and time <= '%s' group by time(%s)" % (agg, measurement, uuid, et, window)
+            if agg != 'raw':
+                q = "select %s(value) as value from %s where \"uuid\"=\'%s\'" %(agg, measurement, uuid)
             else:
-                q = "select %s(value) as value from %s where \"uuid\"=\'%s\' and time >= '%s' and time <= '%s' group by time(%s)"%(agg, measurement, uuid, st, et, window)
+                q = "select value from %s where \"uuid\"=\'%s\'" % (measurement, uuid)
+
+            if start_time != None and end_time != None:
+                q += " and time >= '%s' and time <= '%s'" % (st, et)
+            elif start_time != None:
+                q += " and time >= '%s'" % (st)
+            elif end_time != None:
+                q += " and time <= '%s'" % (et)
+
+            if agg != 'raw':
+                q += " group by time(%s)"%(window)
 
             df = influx_client.query(q)[measurement]
             # df.index = df.index.tz_localize(None)
