@@ -28,9 +28,9 @@ class emulator(object):
 
         if self.use_data_manager_in_emulator:
             self.data_manager = data_manager
-            weather_df = self.data_manager.get_data_from_config("weather")
+            weather_df = self.data_manager.init_data_from_config(config="weather")
             self.weather = exodata.WeatherFromDF(weather_df, weather_vm, geography)
-            setpoints_df = self.data_manager.get_data_from_config("setpoints")
+            setpoints_df = self.data_manager.init_data_from_config(config="setpoints")
             self.setpoints = exodata.OtherInputFromDF(setpoints_df, setpoints_vm)
         else:
             self.outdir = outdir

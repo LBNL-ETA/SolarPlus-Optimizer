@@ -14,6 +14,7 @@ import numpy as np
 from controller.mpc import mpc
 import mpc_config
 from emulator import emulator
+import pytz
 
 # Setup
 # ==========================================================================
@@ -34,6 +35,11 @@ outdir = os.path.join('simulation', 'output')
 sim_steps = pd.date_range(sim_start_time,
                           sim_final_time,
                           freq = '{0}s'.format(sim_control_step))
+tz_local = pytz.timezone("America/Los_Angeles")
+tz_utc = pytz.timezone("UTC")
+
+sim_steps = sim_steps.tz_localize(tz_local).tz_convert(tz_utc)
+
 iterations = range(len(sim_steps))
 # Save setup
 with open(outdir+'/mpc_setup.txt', 'w') as f:
@@ -56,6 +62,7 @@ if controller is 'mpc':
 
 # Instantiate emulator to None
 emu = None
+#use_data_manager_in_emulator = config.get("use_data_manager_in_emulator", False)
 use_data_manager_in_emulator = config.get("use_data_manager_in_emulator", False)
 
 # Initialize emulator states for controller
