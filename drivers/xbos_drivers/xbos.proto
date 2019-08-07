@@ -27,7 +27,7 @@ import "parker.proto";
 import "wattnode.proto";
 
 // kmc flexstat thermostat
-import "flexstat.proto"
+import "flexstat.proto";
 
 // c37 + other energise-related
 import "c37.proto";
@@ -51,7 +51,7 @@ message XBOS {
   DentMeterState DentMeterState = 150;
   ParkerState parker_state = 151;
   WattnodeState wattnode_state = 152;
-  FLexstatState flexstat_state = 153;
+  FlexstatState flexstat_state = 153;
 
   //System Status Fields
   BasicServerStatus BasicServerStatus = 200;

@@ -5,103 +5,103 @@ import "nullabletypes.proto";
 message FlexstatState {
 	//space temperature reading
 	//unit: F
-	double space_temp_sensor = 1;
+	Double space_temp_sensor = 1;
 	//minimum P value for of the PI control
 	//unit: F
-	double minimum_proportional = 2;
+	Double minimum_proportional = 2;
 	//active cooling setpoint
 	//unit: F
-	double active_cooling_setpt = 3;
+	Double active_cooling_setpt = 3;
 	//active heating setpoint
 	//unit: F
-	double active_heating_setpt = 4;
+	Double active_heating_setpt = 4;
 	//cooling setpoint during unoccupied times
 	//unit: F
-	double unocc_cooling_setpt = 5;
+	Double unocc_cooling_setpt = 5;
 	//heating setpoint during unoccupied times
 	//unit: F
-	double unocc_heating_setpt = 6;
+	Double unocc_heating_setpt = 6;
 	//minimum cooling setpoint during occupied times
 	//unit: F
-	double occ_min_clg_setpt = 7;
+	Double occ_min_clg_setpt = 7;
 	//maximum heating setpoint during occupied times
 	//unit: F
-	double occ_max_htg_setpt = 8;
+	Double occ_max_htg_setpt = 8;
 	//override timer
 	//unit: hours
-	double override_timer = 9;
+	Double override_timer = 9;
 	//cooling setpoint during occupied times
 	//unit: F
-	double occ_cooling_setpt = 10;
+	Double occ_cooling_setpt = 10;
 	//heating setpoint during occupied times
 	//unit: F
-	double occ_heating_setpt = 11;
+	Double occ_heating_setpt = 11;
 	//setpoint for the current mode (heating or cooling)
 	//unit: F
-	double current_mode_setpt = 12;
+	Double current_mode_setpt = 12;
 	//setpoint from the user interface on the thermostat
 	//unit: F
-	double ui_setpt = 13;
+	Double ui_setpt = 13;
 	//cooling need
 	//unit: F
-	double cooling_need = 14;
+	Double cooling_need = 14;
 	//heating need
 	//unit: F
-	double heating_need = 15;
+	Double heating_need = 15;
 	//minimum cooling setpoint during unoccupied times
 	//unit: F
-	double unocc_min_clg_setpt = 16;
+	Double unocc_min_clg_setpt = 16;
 	//maximum heating setpoint during unoccupied times
 	//unit: F
-	double unocc_max_htg_setpt = 17;
+	Double unocc_max_htg_setpt = 17;
 	//minimum difference between heating and cooling setpoint
 	//unit: F
-	double min_setpt_diff = 18;
+	Double min_setpt_diff = 18;
 	//minimum setpoint limit
 	//unit: F
-	double min_setpt_limit = 19;
+	Double min_setpt_limit = 19;
 	//space temperature reading
 	//unit: F
-	double space_temp = 20;
+	Double space_temp = 20;
 	//cooling P value of the PI control
 	//unit: F
-	double cooling_prop = 21;
+	Double cooling_prop = 21;
 	//heating P value of the PI control
 	//unit: F
-	double heating_prop = 22;
+	Double heating_prop = 22;
 	//cooling I value of the PI control
 	//unit: per hour
-	double cooling_intg = 23;
+	Double cooling_intg = 23;
 	//heating I value of the PI control
 	//unit: per hour
-	double heating_intg = 24;
+	Double heating_intg = 24;
 	//is fan on or off
 	//unit: T/F
-	bool fan = 25;
+	Bool fan = 25;
 	//is occupied or not
 	//unit: T/F
-	bool occupancy_mode = 26;
+	Bool occupancy_mode = 26;
 	//is setpoint override on or off
 	//unit: T/F
-	bool setpt_override_mode = 27;
+	Bool setpt_override_mode = 27;
 	//is there a fan alaram happening
 	//unit: T/F
-	bool fan_alarm = 28;
+	Bool fan_alarm = 28;
 	//is there a need for fan right now
 	//unit: T/F
-	bool fan_need = 29;
+	Bool fan_need = 29;
 	//is the hvac system in heating mode or not
 	//unit: T/F
-	bool heating_cooling_mode = 30;
+	Bool heating_cooling_mode = 30;
 	//during occupied times, is fan on auto mode or on mode
 	//unit: T/F
-	bool occ_fan_auto_on = 31;
-	during unoccupied times, is fan on auto mode or on mode
+	Bool occ_fan_auto_on = 31;
+	//during unoccupied times, is fan on auto mode or on mode
 	//unit: T/F
-	bool unocc_fan_auto_on = 32;
+	Bool unocc_fan_auto_on = 32;
 	//fan status
 	//unit: T/F
-	bool fan_status = 33;
+	Bool fan_status = 33;
 	//epoch time
 	//unit: seconds
 	uint64 time = 34;

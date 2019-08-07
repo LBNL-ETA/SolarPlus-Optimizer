@@ -6,15 +6,16 @@ xbos:
     entity: 
     namespace: 
     service_name_map: 
-        thermostat1: 192.168.13.1
-        thermostat2: 192.168.13.2
+        thermostat1: {'ip': 192.168.13.1, 'device_id': 1}
+        thermostat2: {'ip': 192.168.13.2, 'device_id': 1}
     id: flexstat-driver
 
 thermostat_config:
   bacnet_network_mask: 
   bacnet_router_address: 
+  bbmd_ttl: 600
   ip_addresses: [192.168.13.1, 192.168.13.2]
-  bacnet_device_id: [1, 1]
+  bacnet_device_ids: [1, 1]
   point_map:
     space_temp_sensor: SPACE TEMP SENSOR
     minimum_proportional: MINIMUM PROPORTIONAL
