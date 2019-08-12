@@ -70,7 +70,35 @@ class ParkerDriver(Driver):
             output['rtc_error_alarm'] = bool(alarm_status & 0x0080)
             #print(output['rtc_error_alarm'])
             #print(format(output['rtc_error_alarm'], '#010b'))
-            print(output)
+            # print(output)
+
+            next_defrost_counter = output.get('next_defrost_counter', None)
+            if next_defrost_counter != None:
+                next_defrost_counter*=15
+
+            cabinet_temperature = output.get('cabinet_temperature', None)
+            if cabinet_temperature != None:
+                cabinet_temperature/=10.0
+
+            evaporator_temperature = output.get('evaporator_temperature', None)
+            if evaporator_temperature != None:
+                evaporator_temperature/=10.0
+
+            auxiliary_temperature = output.get('auxiliary_temperature', None)
+            if auxiliary_temperature != None:
+                auxiliary_temperature/=10
+
+            active_setpoint = output.get('active_setpoint', None)
+            if active_setpoint != None:
+                active_setpoint/=10
+
+            time_until_defrost = output.get('time_until_defrost', None)
+            if time_until_defrost != None:
+                time_until_defrost*=15
+
+            setpoint = output.get('setpoint', None)
+            if setpoint != None:
+                setpoint/=10
 
             msg = xbos_pb2.XBOS(
                 parker_state = parker_pb2.ParkerState(
@@ -79,16 +107,19 @@ class ParkerDriver(Driver):
                     on_standby_status  =   types.Int64(value=output.get('on_standby_status',None)),
                     light_status  =   types.Int64(value=output.get('light_status',None)),
                     aux_output_status  =   types.Int64(value=output.get('aux_output_status',None)),
-                    next_defrost_counter  =   types.Double(value=output.get('next_defrost_counter',None)),
+                    next_defrost_counter  =   types.Double(value=next_defrost_counter),
+
                     door_switch_input_status  =   types.Int64(value=output.get('door_switch_input_status',None)),
                     multipurpose_input_status  =   types.Int64(value=output.get('multipurpose_input_status',None)),
                     compressor_status  =   types.Int64(value=output.get('compressor_status',None)),
                     output_defrost_status  =   types.Int64(value=output.get('output_defrost_status',None)),
                     fans_status  =   types.Int64(value=output.get('fans_status',None)),
                     output_k4_status  =   types.Int64(value=output.get('output_k4_status',None)),
-                    cabinet_temperature  =   types.Double(value=output.get('cabinet_temperature',None)),
-                    evaporator_temperature  =   types.Double(value=output.get('evaporator_temperature',None)),
-                    auxiliary_temperature  =   types.Double(value=output.get('auxiliary_temperature',None)),
+
+                    cabinet_temperature  =   types.Double(value=cabinet_temperature),
+                    evaporator_temperature  =   types.Double(value=evaporator_temperature),
+                    auxiliary_temperature  =   types.Double(value=auxiliary_temperature),
+
                     probe1_failure_alarm  =   types.Int64(value=output.get('probe1_failure_alarm',None)),
                     probe2_failure_alarm  =   types.Int64(value=output.get('probe2_failure_alarm',None)),
                     probe3_failure_alarm  =   types.Int64(value=output.get('probe3_failure_alarm',None)),
@@ -101,17 +132,19 @@ class ParkerDriver(Driver):
                     compressor_blocked_alarm  =   types.Int64(value=output.get('compressor_blocked_alarm',None)),
                     power_failure_alarm  =   types.Int64(value=output.get('power_failure_alarm',None)),
                     rtc_error_alarm  =   types.Int64(value=output.get('rtc_error_alarm',None)),
+
                     energy_saving_regulator_flag  =   types.Int64(value=output.get('energy_saving_regulator_flag',None)),
                     energy_saving_real_time_regulator_flag  =   types.Int64(value=output.get('energy_saving_real_time_regulator_flag',None)),
                     service_request_regulator_flag  =   types.Int64(value=output.get('service_request_regulator_flag',None)),
                     on_standby_regulator_flag  =   types.Int64(value=output.get('on_standby_regulator_flag',None)),
                     new_alarm_to_read_regulator_flag  =   types.Int64(value=output.get('new_alarm_to_read_regulator_flag',None)),
                     defrost_status_regulator_flag  =   types.Int64(value=output.get('defrost_status_regulator_flag',None)),
-                    active_setpoint  =   types.Int64(value=output.get('active_setpoint',None)),
-                    time_until_defrost  =   types.Int64(value=output.get('time_until_defrost',None)),
+                    active_setpoint  =   types.Double(value=active_setpoint),
+                    time_until_defrost  =   types.Double(value=time_until_defrost),
                     current_defrost_counter  =   types.Int64(value=output.get('current_defrost_counter',None)),
                     compressor_delay  =   types.Int64(value=output.get('compressor_delay',None)),
                     num_alarms_in_history  =   types.Int64(value=output.get('num_alarms_in_history',None)),
+
                     energy_saving_status  =   types.Int64(value=output.get('energy_saving_status',None)),
                     service_request_status  =   types.Int64(value=output.get('service_request_status',None)),
                     resistors_activated_by_aux_key_status  =   types.Int64(value=output.get('resistors_activated_by_aux_key_status',None)),
@@ -122,7 +155,8 @@ class ParkerDriver(Driver):
                     resistors_state  =   types.Int64(value=output.get('resistors_state',None)),
                     output_alarm_state  =   types.Int64(value=output.get('output_alarm_state',None)),
                     second_compressor_state  =   types.Int64(value=output.get('second_compressor_state',None)),
-                    setpoint  =   types.Double(value=output.get('setpoint',None)),
+
+                    setpoint  =   types.Double(value=setpoint),
                     r1  =   types.Double(value=output.get('r1',None)),
                     r2  =   types.Double(value=output.get('r2',None)),
                     r4  =   types.Double(value=output.get('r4',None)),
@@ -190,7 +224,6 @@ if __name__ == '__main__':
         'config_file': config_file
     }
 
-    print(getmembers(iot_pb2))
     logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
     e = ParkerDriver(xbos_cfg)
     e.begin()

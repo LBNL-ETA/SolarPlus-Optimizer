@@ -41,7 +41,7 @@ var device_units = map[string]string{
 	"heating_cooling_mode": "T/F",
 	"occ_fan_auto_on": "T/F",
 	"unocc_fan_auto_on": "T/F",
-	"fan_status": "T/F"
+	"fan_status": "T/F",
 }
 
 var device_lookup = map[string]func(msg xbospb.XBOS) (float64, bool){
@@ -242,7 +242,7 @@ var device_lookup = map[string]func(msg xbospb.XBOS) (float64, bool){
 			return float64(msg.FlexstatState.FanStatus.Value), true
 		}
 		return 0, false
-	}
+	},
 }
 func build_device(uri types.SubscriptionURI, name string, msg xbospb.XBOS) types.ExtractedTimeseries {
 	

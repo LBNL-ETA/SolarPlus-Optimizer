@@ -1,9 +1,8 @@
-from pyxbos import *
-import flexstat_pb2
+from pyxbos import flexstat_pb2
+from pyxbos.driver import *
 import yaml
 import argparse
 import time
-from inspect import getmembers
 import BAC0
 
 class FlexstatDriver(Driver):
@@ -18,11 +17,11 @@ class FlexstatDriver(Driver):
 		bacnet_mask = self.thermostat_config.get('bacnet_network_mask')
 		bacnet_router_address = self.thermostat_config.get('bacnet_router_address', None)
 		bbmd_ttl = self.thermostat_config.get('bbmd_ttl', None)
-		if bacnet_router_address == None or bacnet_ttl == None:
+		if bacnet_router_address == None or bbmd_ttl == None:
 			self.bacnet = BAC0.connect(ip=bacnet_mask)
 		else:
-			self.bacnet = BAC0.connect(ip=bacnet_mask, bbmdAddress=bacnet_router_address, bbmdTTL=bacnet_ttl)
-		self.bacnet_points = thermostat_config['point_map']
+			self.bacnet = BAC0.connect(ip=bacnet_mask, bbmdAddress=bacnet_router_address, bbmdTTL=bbmd_ttl)
+		self.point_map = self.thermostat_config['point_map']
 
 		self.device_map = {}
 		for service_name in self.service_name_map:
@@ -39,7 +38,14 @@ class FlexstatDriver(Driver):
 			measurements = {}
 			for point in self.point_map:
 				bacnet_point_name = self.point_map[point]
-				measurements[point] = device[bacnet_point_name]
+				val = device[bacnet_point_name].value
+				if type(val) == str:
+					if val == "active":
+						val = True
+					else:
+						val = False
+				measurements[point] = val
+			print(measurements)
 
 			msg = xbos_pb2.XBOS(
 				flexstat_state = flexstat_pb2.FlexstatState(
@@ -68,15 +74,15 @@ class FlexstatDriver(Driver):
 					heating_prop = types.Double(value=measurements.get('heating_prop',None)),
 					cooling_intg = types.Double(value=measurements.get('cooling_intg',None)),
 					heating_intg = types.Double(value=measurements.get('heating_intg',None)),
-					fan = types.Double(value=measurements.get('fan',None)),
-					occupancy_mode = types.Double(value=measurements.get('occupancy_mode',None)),
-					setpt_override_mode = types.Double(value=measurements.get('setpt_override_mode',None)),
-					fan_alarm = types.Double(value=measurements.get('fan_alarm',None)),
-					fan_need = types.Double(value=measurements.get('fan_need',None)),
-					heating_cooling_mode = types.Double(value=measurements.get('heating_cooling_mode',None)),
-					occ_fan_auto_on = types.Double(value=measurements.get('occ_fan_auto_on',None)),
-					unocc_fan_auto_on = types.Double(value=measurements.get('unocc_fan_auto_on',None)),
-					fan_status = types.Double(value=measurements.get('fan_status',None))
+					fan = types.Int64(value=measurements.get('fan',None)),
+					occupancy_mode = types.Int64(value=measurements.get('occupancy_mode',None)),
+					setpt_override_mode = types.Int64(value=measurements.get('setpt_override_mode',None)),
+					fan_alarm = types.Int64(value=measurements.get('fan_alarm',None)),
+					fan_need = types.Int64(value=measurements.get('fan_need',None)),
+					heating_cooling_mode = types.Int64(value=measurements.get('heating_cooling_mode',None)),
+					occ_fan_auto_on = types.Int64(value=measurements.get('occ_fan_auto_on',None)),
+					unocc_fan_auto_on = types.Int64(value=measurements.get('unocc_fan_auto_on',None)),
+					fan_status = types.Int64(value=measurements.get('fan_status',None))
 				)
 			)
 			print(self.report(service_name, msg))
@@ -99,6 +105,7 @@ if __name__ == '__main__':
 	entity = xbosConfig.get('entity')
 	rate = xbosConfig.get('rate')
 	driver_id = xbosConfig.get('id', 'wattnode-driver')
+	thermostat_config = xbosConfig.get('thermostat_config')
 
 	xbos_cfg = {
 		'waved': waved,
@@ -109,10 +116,10 @@ if __name__ == '__main__':
 		'id': driver_id,
 		'rate': rate, 
 		'service_name_map': service_name_map,
-		'config_file': config_file
+		'config_file': config_file,
+		'thermostat_config': thermostat_config
 	}
 
-	print(getmembers(iot_pb2))
 	logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
-	e = WattnodeDriver(xbos_cfg)
+	e = FlexstatDriver(xbos_cfg)
 	e.begin()
