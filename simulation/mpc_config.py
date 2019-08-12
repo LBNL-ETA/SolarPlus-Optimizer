@@ -26,7 +26,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                                        'Tfre_0' : 'Tfre',
                                        'SOC_0'  : 'SOC'}},
 
-"opt_config" :        {'problem'  : 'EnergyCostMin',
+"opt_config" :        {'problem'  : 'EnergyPlusDemandCostMin',
                      'power_var': 'J'},
 
 "weather_config" :    {'type': 'csv',

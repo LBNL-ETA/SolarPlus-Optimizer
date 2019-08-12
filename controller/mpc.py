@@ -466,6 +466,8 @@ class mpc(object):
             problem = optimization.EnergyMin
         elif objective is 'EnergyCostMin':
             problem = optimization.EnergyCostMin
+        elif objective is 'EnergyPlusDemandCostMin':
+            problem = optimization.EnergyPlusDemandCostMin
         else:
             raise ValueError('Objective "{0}" unknown or not available.'.format(objective))
         # Instantiate object
@@ -474,6 +476,7 @@ class mpc(object):
                                                optimization.JModelica,
                                                opt_config['power_var'],
                                                constraint_data = self.constraint.data,
+                                               demand_periods = 3,
                                                tz_name = self.weather.tz_name)
         # Set default options
         opt_options = opt_object.get_optimization_options()
