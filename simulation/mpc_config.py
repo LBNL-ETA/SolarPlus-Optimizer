@@ -91,8 +91,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                              'Trtu':('Trtu',units.degC),
                              'Tref':('Tref',units.degC),
                              'Tfre':('Tfre',units.degC),
-                             'Trtu_cool':('Trtu',units.degC),
-                             'Trtu_heat':('Trtu',units.degC)
+                             # 'Trtu_cool':('Trtu',units.degC),
+                             # 'Trtu_heat':('Trtu',units.degC)
                                }
                         },
 "data_manager_config": {
