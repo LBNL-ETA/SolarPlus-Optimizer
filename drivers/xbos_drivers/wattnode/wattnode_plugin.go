@@ -76,8 +76,8 @@ var device_lookup = map[string]func(msg xbospb.XBOS) (float64, bool){
 		return 0, false
 	},
 	"EnergyPosSum": func(msg xbospb.XBOS) (float64, bool) {
-		if has_device(msg) && msg.WattnodeState.EnergyPosSUm != nil {
-			return float64(msg.WattnodeState.EnergyPosSUm.Value), true
+		if has_device(msg) && msg.WattnodeState.EnergyPosSum != nil {
+			return float64(msg.WattnodeState.EnergyPosSum.Value), true
 		}
 		return 0, false
 	},
@@ -439,7 +439,7 @@ return types.ExtractedTimeseries{}
 }
 
 func Extract(uri types.SubscriptionURI, msg xbospb.XBOS, add func(types.ExtractedTimeseries) error) error {
-	if msg != nil {
+	if msg.WattnodeState != nil {
 		if has_device(msg) {
 			for name := range device_lookup {
 				extracted := build_device(uri, name, msg)

@@ -265,7 +265,7 @@ return types.ExtractedTimeseries{}
 }
 
 func Extract(uri types.SubscriptionURI, msg xbospb.XBOS, add func(types.ExtractedTimeseries) error) error {
-	if msg != nil {
+	if msg.FlexstatState != nil {
 		if has_device(msg) {
 			for name := range device_lookup {
 				extracted := build_device(uri, name, msg)

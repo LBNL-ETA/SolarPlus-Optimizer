@@ -4,14 +4,14 @@ xbos:
     base_resource: wattnode
     rate: 60
     entity: 
-    namespace: 
+    namespace:
     service_name_map: 
-        meter1: 0x2
-        meter2: 0x3
-        meter3: 0x4
-        meter4: 0x5
-        meter5: 0x6
-        meter6: 0x7
+        ref_evapfan: 0x2
+        ref_comp: 0x3
+        fre_comp_evapfan: 0x4
+        building_main: 0x5
+        hvac_west_comp: 0x6
+        hvac_east_comp: 0x7
     id: wattnode-driver
 
 modbus:
@@ -24,8 +24,8 @@ modbus:
     stopbits: 1
     bytesize: 8
     parity: N
-    serial_port: /dev/ttyUSB1
-    baudrate: 9600
+    serial_port: /dev/ttyUSB0
+    baudrate: 19200
     ip: 127.0.0.1
     tcp_port: 5020
     OFFSET_REGISTERS: 0
@@ -35,7 +35,7 @@ modbus:
     holding_registers: {
                         # Floating Energy Registers
                         EnergySum: [1000,32float],
-                        EnergyPosSUm: [1002,32float],
+                        EnergyPosSum: [1002,32float],
                         EnergySumNR: [1004,32float],
                         EnergyPosSumNr: [1006,32float],
                         # Floating Power Registers

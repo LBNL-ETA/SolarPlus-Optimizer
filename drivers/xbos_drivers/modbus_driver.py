@@ -69,7 +69,7 @@ class Modbus_Driver(object):
             #Start client logging for trouble shooting
             logging.basicConfig()
             log = logging.getLogger()
-            log.setLevel(logging.DEBUG)
+            log.setLevel(logging.ERROR)
 
         # Start appropriate client based on the type specified in the config
         if self.MODBUS_TYPE == 'serial':

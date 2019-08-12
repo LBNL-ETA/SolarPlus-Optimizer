@@ -12,7 +12,7 @@ class FlexstatDriver(Driver):
 		with open(config_file) as f:
 			driverConfig = yaml.safe_load(f)
 
-		self.service_name_map = cfg['xbos']['service_name_map']
+		self.service_name_map = cfg['service_name_map']
 		self.thermostat_config = driverConfig['thermostat_config']
 
 		bacnet_mask = self.thermostat_config.get('bacnet_network_mask')
@@ -101,7 +101,7 @@ if __name__ == '__main__':
 	driver_id = xbosConfig.get('id', 'wattnode-driver')
 
 	xbos_cfg = {
-		'waved': waved
+		'waved': waved,
 		'wavemq': wavemq,
 		'namespace': namespace,
 		'base_resource': base_resource,

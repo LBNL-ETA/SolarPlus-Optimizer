@@ -1,5 +1,6 @@
-from pyxbos import *
-from modbus_driver import Modbus_Driver
+from pyxbos import wattnode_pb2
+from pyxbos.driver import *
+from pyxbos.modbus_driver import Modbus_Driver
 import yaml
 import argparse
 import time
@@ -9,24 +10,22 @@ from inspect import getmembers
 class WattnodeDriver(Driver):
     def setup(self, cfg):
         config_file = cfg['config_file']
-        with open(config_file) as f:
-            driverConfig = yaml.safe_load(f)
 
         self.modbus_device = Modbus_Driver(config_file=config_file, config_section='modbus')
         self.modbus_device.initialize_modbus()
 
-        self.service_name_map = cfg['xbos']['service_name_map']
+        self.service_name_map = cfg['service_name_map']
 
     def read(self, requestid=None):
         for service_name in self.service_name_map:
-            unit_id = self.service_name_map[unit_id]
+            unit_id = self.service_name_map[service_name]
 
             output = self.modbus_device.get_data(unit=unit_id)
             msg = xbos_pb2.XBOS(
                 wattnode_state = wattnode_pb2.WattnodeState(
                     time = int(time.time()*1e9),
                     EnergySum  =   types.Double(value=output.get('EnergySum',None)),
-                    EnergyPosSUm  =   types.Double(value=output.get('EnergyPosSUm',None)),
+                    EnergyPosSum  =   types.Double(value=output.get('EnergyPosSUm',None)),
                     EnergySumNR  =   types.Double(value=output.get('EnergySumNR',None)),
                     EnergyPosSumNr  =   types.Double(value=output.get('EnergyPosSumNr',None)),
                     PowerSum  =   types.Double(value=output.get('PowerSum',None)),
@@ -85,7 +84,7 @@ class WattnodeDriver(Driver):
                     DemandC  =   types.Double(value=output.get('DemandC',None))
                 )
             )
-            print(self.report(self.service_name, msg))
+            print(self.report(service_name, msg))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -107,7 +106,7 @@ if __name__ == '__main__':
     driver_id = xbosConfig.get('id', 'wattnode-driver')
 
     xbos_cfg = {
-        'waved': waved
+        'waved': waved,
         'wavemq': wavemq,
         'namespace': namespace,
         'base_resource': base_resource,
@@ -118,7 +117,6 @@ if __name__ == '__main__':
         'config_file': config_file
     }
 
-    print(getmembers(iot_pb2))
     logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
     e = WattnodeDriver(xbos_cfg)
     e.begin()

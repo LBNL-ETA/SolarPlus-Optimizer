@@ -84,22 +84,22 @@ if __name__ == '__main__':
     coordinates = darkskyConfig.get('latlong')
 
     xbos_cfg = {
-        'waved': waved
+        'waved': waved,
         'wavemq': wavemq,
         'namespace': namespace,
         'base_resource': base_resource,
         'entity': entity,
         'id': driver_id,
         'rate': rate, 
-        'service_name_map': service_name_map,
+        'service_name': service_name,
         
         'darksky': {
             'apikey': api,
             'url': url,
-            'coordinates': latlong
+            'coordinates': coordinates
         }
     }
 
     logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
-    current_driver = WeatherCurrentDriver(cfg)
+    current_driver = WeatherCurrentDriver(xbos_cfg)
     current_driver.begin()
