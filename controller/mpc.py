@@ -158,8 +158,9 @@ class mpc(object):
                 raise ValueError("{0} is not in control or measurements".format(key))
         setpoints = pd.concat(setpoints_list,axis=1)
         if 'Trtu' in setpoints.columns:
-            setpoints['Trtu_cool'] = setpoints['Trtu']
-            setpoints['Trtu_heat'] = setpoints['Trtu']
+            # Considering 2 F deadband (between heating and cooling setpoint) in the thermostat
+            setpoints['Trtu_cool'] = setpoints['Trtu'] + 1
+            setpoints['Trtu_heat'] = setpoints['Trtu'] - 1
         self.data_manager.set_setpoints(setpoints)
 
         return setpoints
@@ -466,6 +467,8 @@ class mpc(object):
             problem = optimization.EnergyMin
         elif objective is 'EnergyCostMin':
             problem = optimization.EnergyCostMin
+        elif objective is 'EnergyPlusDemandCostMin':
+            problem = optimization.EnergyPlusDemandCostMin
         else:
             raise ValueError('Objective "{0}" unknown or not available.'.format(objective))
         # Instantiate object
@@ -474,6 +477,7 @@ class mpc(object):
                                                optimization.JModelica,
                                                opt_config['power_var'],
                                                constraint_data = self.constraint.data,
+                                               demand_periods = 3,
                                                tz_name = self.weather.tz_name)
         # Set default options
         opt_options = opt_object.get_optimization_options()
