@@ -775,8 +775,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       extends Building.BaseClasses.Whole_partial;
       parameter Modelica.SIunits.DimensionlessRatio uHeat_0 = 0.0 "Initial heating signal";
       parameter Modelica.SIunits.DimensionlessRatio uCool_0 = 0.0 "Initial cooling signal";
-      parameter Modelica.SIunits.DimensionlessRatio uBattery_0 = 0.0 "Initial charging signal";
-      //parameter Modelica.SIunits.DimensionlessRatio uDischarge_0 = 0.0 "Initial discharging signal";
+      parameter Modelica.SIunits.DimensionlessRatio uBattery_0 = 0.0 "Initial battery control signal";
       Modelica.Blocks.Interfaces.RealInput duHeat
         "Derivative of heating signal input"
         annotation (Placement(transformation(extent={{-140,-40},{-100,0}}),
@@ -1611,6 +1610,10 @@ package SolarPlus "This package contains models for MPC control optimization."
           annotation (Placement(transformation(extent={{-50,40},{-30,60}})));
       Modelica.Blocks.Interfaces.RealInput uFreDef "Defrost signal for freezer"
           annotation (Placement(transformation(extent={{-140,-200},{-100,-160}})));
+        Modelica.Blocks.Interfaces.RealOutput Grtu
+          "Roof top unit heating power output" annotation (Placement(
+              transformation(extent={{100,-10},{120,10}}), iconTransformation(
+                extent={{100,10},{120,30}})));
       equation
         connect(const.y, singleStageHeatingController.Tset) annotation (Line(
               points={{-99,0},{-88,0},{-88,56},{-52,56}},   color={0,0,127}));
@@ -1628,6 +1631,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         connect(singleStageHeatingController.y, squareHeat.u1) annotation (Line(
               points={{-29,54},{-22,54},{-22,-152},{20,-152},{20,-151.2},{41.4,
                 -151.2}}, color={0,0,127}));
+        connect(store.Grtu, Grtu) annotation (Line(points={{11,8},{80,8},{80,0},
+                {110,0}}, color={0,0,127}));
       end StoreSim;
     end Optimization;
 
