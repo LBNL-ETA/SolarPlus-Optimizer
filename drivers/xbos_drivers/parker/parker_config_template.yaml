@@ -20,7 +20,7 @@ modbus:
     bytesize: 8
     parity: E
     baudrate: 9600
-    serial_port: /dev/ttyUSB0
+    serial_port: /dev/ttyUSB1
     OFFSET_REGISTERS: 0
     coil_registers: {}
     discrete_registers: {}

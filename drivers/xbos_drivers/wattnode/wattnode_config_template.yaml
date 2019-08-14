@@ -4,7 +4,7 @@ xbos:
     base_resource: wattnode
     rate: 60
     entity: 
-    namespace:
+    namespace: 
     service_name_map: 
         ref_evapfan: 0x2
         ref_comp: 0x3
