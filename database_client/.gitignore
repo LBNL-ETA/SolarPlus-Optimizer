@@ -2,3 +2,4 @@ uuid_map.json
 config.yaml
 !config_template.yaml
 __pycache__/*
+*.csv

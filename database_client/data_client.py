@@ -66,7 +66,7 @@ class Data_Client():
         return df
 
     
-    def get_device_data(self, device_type, start_time, end_time, variables):
+    def get_device_data(self, device_type, start_time, end_time, variables, resample_window='5T', agg_fn='mean'):
         if device_type == 'meters':
             device_list = self.meters
         elif device_type == 'parker_controllers':
@@ -77,9 +77,9 @@ class Data_Client():
         df_list = []
         for device in device_list:
             for variable in variables:
-                uuid = client.get_uuid(device_name = device, variable=variable)
-                df = client.get_data(uuid=uuid, start_time = start_time, end_time = end_time)
-                df = df.resample('5T').mean()
+                uuid = self.get_uuid(device_name = device, variable=variable)
+                df = self.get_data(uuid=uuid, start_time = start_time, end_time = end_time)
+                df = df.resample(resample_window).agg(agg_fn)
                 df.columns = ['{0}'.format(device+"_"+variable)]
                 df_list.append(df)
         final_df = pd.concat(df_list, axis=1)
