@@ -3,11 +3,9 @@
 
 package xbospb
 
-import (
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	math "math"
-)
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -18,180 +16,180 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type WattnodeState struct {
-	//total net (bidirectional) energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// total net (bidirectional) energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergySum *Double `protobuf:"bytes,1,opt,name=EnergySum,proto3" json:"EnergySum,omitempty"`
-	//total positive energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// total positive energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyPosSum *Double `protobuf:"bytes,2,opt,name=EnergyPosSum,proto3" json:"EnergyPosSum,omitempty"`
-	//total net (bidirectional) energy - non resettable and preserved across power failures
-	//unit: kWh
+	// total net (bidirectional) energy - non resettable and preserved across power failures
+	// unit: kWh
 	EnergySumNR *Double `protobuf:"bytes,3,opt,name=EnergySumNR,proto3" json:"EnergySumNR,omitempty"`
-	//total positive energy - non resettable and preserverd across power failures
-	//unit: kWh
+	// total positive energy - non resettable and preserverd across power failures
+	// unit: kWh
 	EnergyPosSumNr *Double `protobuf:"bytes,4,opt,name=EnergyPosSumNr,proto3" json:"EnergyPosSumNr,omitempty"`
-	//real power; sum of active phases
-	//unit: W
+	// real power; sum of active phases
+	// unit: W
 	PowerSum *Double `protobuf:"bytes,5,opt,name=PowerSum,proto3" json:"PowerSum,omitempty"`
-	//real power; phase A
-	//unit: W
+	// real power; phase A
+	// unit: W
 	PowerA *Double `protobuf:"bytes,6,opt,name=PowerA,proto3" json:"PowerA,omitempty"`
-	//real power; phase B
-	//unit: W
+	// real power; phase B
+	// unit: W
 	PowerB *Double `protobuf:"bytes,7,opt,name=PowerB,proto3" json:"PowerB,omitempty"`
-	//real power; phase C
-	//unit: W
+	// real power; phase C
+	// unit: W
 	PowerC *Double `protobuf:"bytes,8,opt,name=PowerC,proto3" json:"PowerC,omitempty"`
-	//average line-to-neutral voltage
-	//unit: V
+	// average line-to-neutral voltage
+	// unit: V
 	VoltAvgLN *Double `protobuf:"bytes,9,opt,name=VoltAvgLN,proto3" json:"VoltAvgLN,omitempty"`
-	//RMS voltage; phase A to neutral
-	//unit: V
+	// RMS voltage; phase A to neutral
+	// unit: V
 	VoltA *Double `protobuf:"bytes,10,opt,name=VoltA,proto3" json:"VoltA,omitempty"`
-	//RMS voltage; phase B to neutral
-	//unit: V
+	// RMS voltage; phase B to neutral
+	// unit: V
 	VoltB *Double `protobuf:"bytes,11,opt,name=VoltB,proto3" json:"VoltB,omitempty"`
-	//RMS voltage; phase C to neutral
-	//unit: V
+	// RMS voltage; phase C to neutral
+	// unit: V
 	VoltC *Double `protobuf:"bytes,12,opt,name=VoltC,proto3" json:"VoltC,omitempty"`
-	//average line-to-line voltage
-	//unit: V
+	// average line-to-line voltage
+	// unit: V
 	VoltAvgLL *Double `protobuf:"bytes,13,opt,name=VoltAvgLL,proto3" json:"VoltAvgLL,omitempty"`
-	//RMS voltage; line-to-line; phase A to B
-	//unit: V
+	// RMS voltage; line-to-line; phase A to B
+	// unit: V
 	VoltAB *Double `protobuf:"bytes,14,opt,name=VoltAB,proto3" json:"VoltAB,omitempty"`
-	//RMS voltage; line-to-line; phase B to C
-	//unit: V
+	// RMS voltage; line-to-line; phase B to C
+	// unit: V
 	VoltBC *Double `protobuf:"bytes,15,opt,name=VoltBC,proto3" json:"VoltBC,omitempty"`
-	//RMS voltage; line-to-line; phase A to C
-	//unit: V
+	// RMS voltage; line-to-line; phase A to C
+	// unit: V
 	VoltAC *Double `protobuf:"bytes,16,opt,name=VoltAC,proto3" json:"VoltAC,omitempty"`
-	//power line frequency
-	//unit: Hz
+	// power line frequency
+	// unit: Hz
 	Freq *Double `protobuf:"bytes,17,opt,name=Freq,proto3" json:"Freq,omitempty"`
-	//phase A net (bidirectional) energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// phase A net (bidirectional) energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyA *Double `protobuf:"bytes,18,opt,name=EnergyA,proto3" json:"EnergyA,omitempty"`
-	//phase B net (bidirectional) energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// phase B net (bidirectional) energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyB *Double `protobuf:"bytes,19,opt,name=EnergyB,proto3" json:"EnergyB,omitempty"`
-	//phase C net (bidirectional) energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// phase C net (bidirectional) energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyC *Double `protobuf:"bytes,20,opt,name=EnergyC,proto3" json:"EnergyC,omitempty"`
-	//phase A positive energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// phase A positive energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyPosA *Double `protobuf:"bytes,21,opt,name=EnergyPosA,proto3" json:"EnergyPosA,omitempty"`
-	//phase B positive energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// phase B positive energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyPosB *Double `protobuf:"bytes,22,opt,name=EnergyPosB,proto3" json:"EnergyPosB,omitempty"`
-	//phase C positive energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// phase C positive energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyPosC *Double `protobuf:"bytes,23,opt,name=EnergyPosC,proto3" json:"EnergyPosC,omitempty"`
-	//total negative energy; sum of active phases - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// total negative energy; sum of active phases - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyNegSum *Double `protobuf:"bytes,24,opt,name=EnergyNegSum,proto3" json:"EnergyNegSum,omitempty"`
-	//total negative energy; sum of active phases - non resettable and preserved across power failures
-	//unit: kWh
+	// total negative energy; sum of active phases - non resettable and preserved across power failures
+	// unit: kWh
 	EnergyNegSumNR *Double `protobuf:"bytes,25,opt,name=EnergyNegSumNR,proto3" json:"EnergyNegSumNR,omitempty"`
-	//phase A negative energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// phase A negative energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyNegA *Double `protobuf:"bytes,26,opt,name=EnergyNegA,proto3" json:"EnergyNegA,omitempty"`
-	//phase B negative energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// phase B negative energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyNegB *Double `protobuf:"bytes,27,opt,name=EnergyNegB,proto3" json:"EnergyNegB,omitempty"`
-	//phase C negative energy - preserved across power failures; can be reset or preset
-	//unit: kWh
+	// phase C negative energy - preserved across power failures; can be reset or preset
+	// unit: kWh
 	EnergyNegC *Double `protobuf:"bytes,28,opt,name=EnergyNegC,proto3" json:"EnergyNegC,omitempty"`
-	//reactive energy; sum of active phases - preserved across power failures; can be reset or preset
-	//unit: kVARh
+	// reactive energy; sum of active phases - preserved across power failures; can be reset or preset
+	// unit: kVARh
 	EnergyReacSum *Double `protobuf:"bytes,29,opt,name=EnergyReacSum,proto3" json:"EnergyReacSum,omitempty"`
-	//phase A net reactive energy - preserved across power failures; can be reset or preset
-	//unit: kVARh
+	// phase A net reactive energy - preserved across power failures; can be reset or preset
+	// unit: kVARh
 	EnergyReacA *Double `protobuf:"bytes,30,opt,name=EnergyReacA,proto3" json:"EnergyReacA,omitempty"`
-	//phase B net reactive energy - preserved across power failures; can be reset or preset
-	//unit: kVARh
+	// phase B net reactive energy - preserved across power failures; can be reset or preset
+	// unit: kVARh
 	EnergyReacB *Double `protobuf:"bytes,31,opt,name=EnergyReacB,proto3" json:"EnergyReacB,omitempty"`
-	//phase C net reactive energy - preserved across power failures; can be reset or preset
-	//unit: kVARh
+	// phase C net reactive energy - preserved across power failures; can be reset or preset
+	// unit: kVARh
 	EnergyReacC *Double `protobuf:"bytes,32,opt,name=EnergyReacC,proto3" json:"EnergyReacC,omitempty"`
-	//total apparent energy; sum of active phases - preserved across power failures; can be reset or preset
-	//unit: kVAh
+	// total apparent energy; sum of active phases - preserved across power failures; can be reset or preset
+	// unit: kVAh
 	EnergyAppSum *Double `protobuf:"bytes,33,opt,name=EnergyAppSum,proto3" json:"EnergyAppSum,omitempty"`
-	//phase A apparent energy - preserved across power failures; can be reset or preset
-	//unit: kVAh
+	// phase A apparent energy - preserved across power failures; can be reset or preset
+	// unit: kVAh
 	EnergyAppA *Double `protobuf:"bytes,34,opt,name=EnergyAppA,proto3" json:"EnergyAppA,omitempty"`
-	//phase B apparent energy - preserved across power failures; can be reset or preset
-	//unit: kVAh
+	// phase B apparent energy - preserved across power failures; can be reset or preset
+	// unit: kVAh
 	EnergyAppB *Double `protobuf:"bytes,35,opt,name=EnergyAppB,proto3" json:"EnergyAppB,omitempty"`
-	//phase C apparent energy - preserved across power failures; can be reset or preset
-	//unit: kVAh
+	// phase C apparent energy - preserved across power failures; can be reset or preset
+	// unit: kVAh
 	EnergyAppC *Double `protobuf:"bytes,36,opt,name=EnergyAppC,proto3" json:"EnergyAppC,omitempty"`
-	//average power factor
+	// average power factor
 	PowerFactorAvg *Double `protobuf:"bytes,37,opt,name=PowerFactorAvg,proto3" json:"PowerFactorAvg,omitempty"`
-	//phase A power factor
+	// phase A power factor
 	PowerFactorA *Double `protobuf:"bytes,38,opt,name=PowerFactorA,proto3" json:"PowerFactorA,omitempty"`
-	//phase B power factor
+	// phase B power factor
 	PowerFactorB *Double `protobuf:"bytes,39,opt,name=PowerFactorB,proto3" json:"PowerFactorB,omitempty"`
-	//phase C power factor
+	// phase C power factor
 	PowerFactorC *Double `protobuf:"bytes,40,opt,name=PowerFactorC,proto3" json:"PowerFactorC,omitempty"`
-	//total reactive power; sum of active phases
-	//unit: VAR
+	// total reactive power; sum of active phases
+	// unit: VAR
 	PowerReacSum *Double `protobuf:"bytes,41,opt,name=PowerReacSum,proto3" json:"PowerReacSum,omitempty"`
-	//phase A reactive power
-	//unit: VAR
+	// phase A reactive power
+	// unit: VAR
 	PowerReacA *Double `protobuf:"bytes,42,opt,name=PowerReacA,proto3" json:"PowerReacA,omitempty"`
-	//phase B reactive power
-	//unit: VAR
+	// phase B reactive power
+	// unit: VAR
 	PowerReacB *Double `protobuf:"bytes,43,opt,name=PowerReacB,proto3" json:"PowerReacB,omitempty"`
-	//phase C reactive power
-	//unit: VAR
+	// phase C reactive power
+	// unit: VAR
 	PowerReacC *Double `protobuf:"bytes,44,opt,name=PowerReacC,proto3" json:"PowerReacC,omitempty"`
-	//total apparent power; sum of active phases
-	//unit: VA
+	// total apparent power; sum of active phases
+	// unit: VA
 	PowerAppSum *Double `protobuf:"bytes,45,opt,name=PowerAppSum,proto3" json:"PowerAppSum,omitempty"`
-	//phase A apparent power
-	//unit: VA
+	// phase A apparent power
+	// unit: VA
 	PowerAppA *Double `protobuf:"bytes,46,opt,name=PowerAppA,proto3" json:"PowerAppA,omitempty"`
-	//phase B apparent power
-	//unit: VA
+	// phase B apparent power
+	// unit: VA
 	PowerAppB *Double `protobuf:"bytes,47,opt,name=PowerAppB,proto3" json:"PowerAppB,omitempty"`
-	//phase C apparent power
-	//unit: VA
+	// phase C apparent power
+	// unit: VA
 	PowerAppC *Double `protobuf:"bytes,48,opt,name=PowerAppC,proto3" json:"PowerAppC,omitempty"`
-	//RMS current; phase A
-	//unit: A
+	// RMS current; phase A
+	// unit: A
 	CurrentA *Double `protobuf:"bytes,49,opt,name=CurrentA,proto3" json:"CurrentA,omitempty"`
-	//RMS current; phase B
-	//unit: A
+	// RMS current; phase B
+	// unit: A
 	CurrentB *Double `protobuf:"bytes,50,opt,name=CurrentB,proto3" json:"CurrentB,omitempty"`
-	//RMS current; phase C
-	//unit: A
+	// RMS current; phase C
+	// unit: A
 	CurrentC *Double `protobuf:"bytes,51,opt,name=CurrentC,proto3" json:"CurrentC,omitempty"`
-	//real power demand average over demand period
-	//unit: W
+	// real power demand average over demand period
+	// unit: W
 	Demand *Double `protobuf:"bytes,52,opt,name=Demand,proto3" json:"Demand,omitempty"`
-	//minimum power demand
-	//unit: W
+	// minimum power demand
+	// unit: W
 	DemandMin *Double `protobuf:"bytes,53,opt,name=DemandMin,proto3" json:"DemandMin,omitempty"`
-	//maximum power demand
-	//unit: W
+	// maximum power demand
+	// unit: W
 	DemandMax *Double `protobuf:"bytes,54,opt,name=DemandMax,proto3" json:"DemandMax,omitempty"`
-	//apparent power demand
-	//unit: W
+	// apparent power demand
+	// unit: W
 	DemandApp *Double `protobuf:"bytes,55,opt,name=DemandApp,proto3" json:"DemandApp,omitempty"`
-	//phase A real power demand
-	//unit: W
+	// phase A real power demand
+	// unit: W
 	DemandA *Double `protobuf:"bytes,56,opt,name=DemandA,proto3" json:"DemandA,omitempty"`
-	//phase B real power demand
-	//unit: W
+	// phase B real power demand
+	// unit: W
 	DemandB *Double `protobuf:"bytes,57,opt,name=DemandB,proto3" json:"DemandB,omitempty"`
-	//phase C real power demand
-	//unit: W
+	// phase C real power demand
+	// unit: W
 	DemandC *Double `protobuf:"bytes,58,opt,name=DemandC,proto3" json:"DemandC,omitempty"`
-	//epoch time
+	// epoch time
 	Time                 uint64   `protobuf:"varint,59,opt,name=time,proto3" json:"time,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -202,17 +200,16 @@ func (m *WattnodeState) Reset()         { *m = WattnodeState{} }
 func (m *WattnodeState) String() string { return proto.CompactTextString(m) }
 func (*WattnodeState) ProtoMessage()    {}
 func (*WattnodeState) Descriptor() ([]byte, []int) {
-	return fileDescriptor_73d9fd4fa3213993, []int{0}
+	return fileDescriptor_wattnode_f91545a398d68ca2, []int{0}
 }
-
 func (m *WattnodeState) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WattnodeState.Unmarshal(m, b)
 }
 func (m *WattnodeState) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_WattnodeState.Marshal(b, m, deterministic)
 }
-func (m *WattnodeState) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WattnodeState.Merge(m, src)
+func (dst *WattnodeState) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WattnodeState.Merge(dst, src)
 }
 func (m *WattnodeState) XXX_Size() int {
 	return xxx_messageInfo_WattnodeState.Size(m)
@@ -640,9 +637,9 @@ func init() {
 	proto.RegisterType((*WattnodeState)(nil), "xbospb.WattnodeState")
 }
 
-func init() { proto.RegisterFile("wattnode.proto", fileDescriptor_73d9fd4fa3213993) }
+func init() { proto.RegisterFile("wattnode.proto", fileDescriptor_wattnode_f91545a398d68ca2) }
 
-var fileDescriptor_73d9fd4fa3213993 = []byte{
+var fileDescriptor_wattnode_f91545a398d68ca2 = []byte{
 	// 673 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0xd6, 0x5b, 0x53, 0x13, 0x31,
 	0x14, 0x07, 0xf0, 0x41, 0x4b, 0x81, 0x00, 0x55, 0x83, 0xe8, 0x5f, 0xbc, 0x21, 0x22, 0x56, 0xc4,

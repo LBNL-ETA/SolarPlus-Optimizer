@@ -242,9 +242,11 @@ class Modbus_Driver(object):
         '''
 
 
-
-
-
+    def reconnect(self):
+        try:
+            self.client.close()
+        finally:
+            self.initialize_modbus()
 
     def write_single_register(self,register,value, unit=None):
         """

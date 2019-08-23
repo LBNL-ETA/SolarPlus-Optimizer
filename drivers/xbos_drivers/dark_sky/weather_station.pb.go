@@ -3,11 +3,9 @@
 
 package xbospb
 
-import (
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	math "math"
-)
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -18,61 +16,61 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type WeatherStation struct {
-	//epoch time
-	//unit: seconds
+	// epoch time
+	// unit: seconds
 	Time *Int64 `protobuf:"bytes,1,opt,name=time,proto3" json:"time,omitempty"` // Deprecated: Do not use.
-	//clear-day/clear-night/rain/snow/sleet/wind/fog/cloudy/partly-cloudy-day/partly-cloudy-night
+	// clear-day/clear-night/rain/snow/sleet/wind/fog/cloudy/partly-cloudy-day/partly-cloudy-night
 	Icon string `protobuf:"bytes,2,opt,name=icon,proto3" json:"icon,omitempty"`
-	//the approximate distance to the nearest storm
-	//unit: miles
+	// the approximate distance to the nearest storm
+	// unit: miles
 	NearestStormDistance *Double `protobuf:"bytes,3,opt,name=nearestStormDistance,proto3" json:"nearestStormDistance,omitempty"`
-	//direction of the nearest storm with true north at 0 and progressing clockwise; if nearestStormDistance=0 then this value will not be defined
-	//unit: degrees
+	// direction of the nearest storm with true north at 0 and progressing clockwise; if nearestStormDistance=0 then this value will not be defined
+	// unit: degrees
 	NearestStormBearing *Double `protobuf:"bytes,4,opt,name=nearestStormBearing,proto3" json:"nearestStormBearing,omitempty"`
-	//intensity of precipitation occurring at the given time; this value is conditional on probability
-	//unit: inches per hour
+	// intensity of precipitation occurring at the given time; this value is conditional on probability
+	// unit: inches per hour
 	PrecipIntensity *Double `protobuf:"bytes,5,opt,name=precipIntensity,proto3" json:"precipIntensity,omitempty"`
-	//the standard deviation of the distribution of precipIntensity
+	// the standard deviation of the distribution of precipIntensity
 	PrecipIntensityError *Double `protobuf:"bytes,6,opt,name=precipIntensityError,proto3" json:"precipIntensityError,omitempty"`
-	//the probability of precipitation occurring; 0-1
+	// the probability of precipitation occurring; 0-1
 	PrecipProbability *Double `protobuf:"bytes,7,opt,name=precipProbability,proto3" json:"precipProbability,omitempty"`
-	//rain/snow/sleet; if precipIntensity is zero then this property will not be defined; due to the lack of data historical precipType information is usually estimated rather than observed
+	// rain/snow/sleet; if precipIntensity is zero then this property will not be defined; due to the lack of data historical precipType information is usually estimated rather than observed
 	PrecipType string `protobuf:"bytes,8,opt,name=precipType,proto3" json:"precipType,omitempty"`
-	//air temperature
-	//unit: F
+	// air temperature
+	// unit: F
 	Temperature *Double `protobuf:"bytes,9,opt,name=temperature,proto3" json:"temperature,omitempty"`
-	//feels-like temperature
-	//unit: F
+	// feels-like temperature
+	// unit: F
 	ApparentTemperature *Double `protobuf:"bytes,10,opt,name=apparentTemperature,proto3" json:"apparentTemperature,omitempty"`
-	//dew point temperature
-	//unit: F
+	// dew point temperature
+	// unit: F
 	DewPoint *Double `protobuf:"bytes,11,opt,name=dewPoint,proto3" json:"dewPoint,omitempty"`
-	//relative humidity; 0-1
+	// relative humidity; 0-1
 	Humidity *Double `protobuf:"bytes,12,opt,name=humidity,proto3" json:"humidity,omitempty"`
-	//sea-level air pressure
-	//unit: millibars
+	// sea-level air pressure
+	// unit: millibars
 	Pressure *Double `protobuf:"bytes,13,opt,name=pressure,proto3" json:"pressure,omitempty"`
-	//wind speed
-	//unit: miles per hour
+	// wind speed
+	// unit: miles per hour
 	WindSpeed *Double `protobuf:"bytes,14,opt,name=windSpeed,proto3" json:"windSpeed,omitempty"`
-	//wind gust speed
-	//unit: miles per hour
+	// wind gust speed
+	// unit: miles per hour
 	WindGust *Double `protobuf:"bytes,15,opt,name=windGust,proto3" json:"windGust,omitempty"`
-	//the direction that the wind is coming from with true north at 0 and progressing clockwise; if windSpeed=0 then this value will not be defined
-	//unit: degree
+	// the direction that the wind is coming from with true north at 0 and progressing clockwise; if windSpeed=0 then this value will not be defined
+	// unit: degree
 	WindBearing *Double `protobuf:"bytes,16,opt,name=windBearing,proto3" json:"windBearing,omitempty"`
-	//the percentage of sky occluded by clouds; 0-1
+	// the percentage of sky occluded by clouds; 0-1
 	CloudCover *Double `protobuf:"bytes,17,opt,name=cloudCover,proto3" json:"cloudCover,omitempty"`
-	//uv index
-	//unit: miles
+	// uv index
+	// unit: miles
 	UvIndex *Double `protobuf:"bytes,18,opt,name=uvIndex,proto3" json:"uvIndex,omitempty"`
-	//average visibility capped at 10 miles
+	// average visibility capped at 10 miles
 	Visibility *Double `protobuf:"bytes,19,opt,name=visibility,proto3" json:"visibility,omitempty"`
-	//the columnar density of total atmospheric ozone
-	//unit: Dobson
+	// the columnar density of total atmospheric ozone
+	// unit: Dobson
 	Ozone                *Double  `protobuf:"bytes,20,opt,name=ozone,proto3" json:"ozone,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -83,17 +81,16 @@ func (m *WeatherStation) Reset()         { *m = WeatherStation{} }
 func (m *WeatherStation) String() string { return proto.CompactTextString(m) }
 func (*WeatherStation) ProtoMessage()    {}
 func (*WeatherStation) Descriptor() ([]byte, []int) {
-	return fileDescriptor_70ac320ce21dbe32, []int{0}
+	return fileDescriptor_weather_station_ebc3cca4821b1ba4, []int{0}
 }
-
 func (m *WeatherStation) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WeatherStation.Unmarshal(m, b)
 }
 func (m *WeatherStation) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_WeatherStation.Marshal(b, m, deterministic)
 }
-func (m *WeatherStation) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WeatherStation.Merge(m, src)
+func (dst *WeatherStation) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WeatherStation.Merge(dst, src)
 }
 func (m *WeatherStation) XXX_Size() int {
 	return xxx_messageInfo_WeatherStation.Size(m)
@@ -256,17 +253,16 @@ func (m *WeatherStationPrediction) Reset()         { *m = WeatherStationPredicti
 func (m *WeatherStationPrediction) String() string { return proto.CompactTextString(m) }
 func (*WeatherStationPrediction) ProtoMessage()    {}
 func (*WeatherStationPrediction) Descriptor() ([]byte, []int) {
-	return fileDescriptor_70ac320ce21dbe32, []int{1}
+	return fileDescriptor_weather_station_ebc3cca4821b1ba4, []int{1}
 }
-
 func (m *WeatherStationPrediction) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WeatherStationPrediction.Unmarshal(m, b)
 }
 func (m *WeatherStationPrediction) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_WeatherStationPrediction.Marshal(b, m, deterministic)
 }
-func (m *WeatherStationPrediction) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WeatherStationPrediction.Merge(m, src)
+func (dst *WeatherStationPrediction) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WeatherStationPrediction.Merge(dst, src)
 }
 func (m *WeatherStationPrediction) XXX_Size() int {
 	return xxx_messageInfo_WeatherStationPrediction.Size(m)
@@ -296,17 +292,16 @@ func (m *WeatherStationPrediction_Prediction) Reset()         { *m = WeatherStat
 func (m *WeatherStationPrediction_Prediction) String() string { return proto.CompactTextString(m) }
 func (*WeatherStationPrediction_Prediction) ProtoMessage()    {}
 func (*WeatherStationPrediction_Prediction) Descriptor() ([]byte, []int) {
-	return fileDescriptor_70ac320ce21dbe32, []int{1, 0}
+	return fileDescriptor_weather_station_ebc3cca4821b1ba4, []int{1, 0}
 }
-
 func (m *WeatherStationPrediction_Prediction) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WeatherStationPrediction_Prediction.Unmarshal(m, b)
 }
 func (m *WeatherStationPrediction_Prediction) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_WeatherStationPrediction_Prediction.Marshal(b, m, deterministic)
 }
-func (m *WeatherStationPrediction_Prediction) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WeatherStationPrediction_Prediction.Merge(m, src)
+func (dst *WeatherStationPrediction_Prediction) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WeatherStationPrediction_Prediction.Merge(dst, src)
 }
 func (m *WeatherStationPrediction_Prediction) XXX_Size() int {
 	return xxx_messageInfo_WeatherStationPrediction_Prediction.Size(m)
@@ -337,9 +332,11 @@ func init() {
 	proto.RegisterType((*WeatherStationPrediction_Prediction)(nil), "xbospb.WeatherStationPrediction.Prediction")
 }
 
-func init() { proto.RegisterFile("weather_station.proto", fileDescriptor_70ac320ce21dbe32) }
+func init() {
+	proto.RegisterFile("weather_station.proto", fileDescriptor_weather_station_ebc3cca4821b1ba4)
+}
 
-var fileDescriptor_70ac320ce21dbe32 = []byte{
+var fileDescriptor_weather_station_ebc3cca4821b1ba4 = []byte{
 	// 663 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x55, 0xcd, 0x6e, 0x13, 0x3d,
 	0x14, 0xd5, 0xb4, 0xe9, 0x9f, 0xe7, 0x6b, 0xfa, 0xd5, 0x2d, 0xc8, 0x14, 0x51, 0xa2, 0x02, 0x22,
