@@ -7,15 +7,6 @@ import numpy as np
 import pandas as pd
 from pvlib import solarposition, irradiance
 
-# Add influx driver to path
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-influx_folder='influx_dataframe_client'
-sys.path.append(os.path.join(parent_dir, influx_folder))
-from Influx_Dataframe_Client import Influx_Dataframe_Client
-# DarkSky API documentation https://darksky.net/dev/docs#forecast-request
-
-
-
 class API_Collection_Layer:
     '''
     Weather API to query and calculate the following parameters to be used in MPC;
@@ -56,8 +47,6 @@ class API_Collection_Layer:
         self.lat = skyConfig[weather_section]['lat']
         self.lng = skyConfig[weather_section]['lng']
         self.COORDINATES = "%f,%f"%(self.lat, self.lng)
-
-        self.test_client = Influx_Dataframe_Client(config_file,db_section)
 
     def solar_model_ZhHu(self, forecast_df, sin_alt, zh_solar_const):
         '''
@@ -160,12 +149,12 @@ class API_Collection_Layer:
             print("Error in retrieving data from DarkSky!")
             return None
         else:
-            hourly_df = df = pd.DataFrame.from_dict(json_data['hourly']['data'])
+            hourly_df = pd.DataFrame.from_dict(json_data['hourly']['data'])
             hourly_df.time = pd.to_datetime(hourly_df.time, unit='s', utc=True)
             hourly_df = hourly_df.set_index('time')
 
             hourly_df = self.Perez_split(forecast_df=hourly_df)
-            hourly_df = self.plane_of_array(forecast_df=hourly_df)
+            hourly_df = self.plane_of_array(df=hourly_df)
             hourly_df = hourly_df.reset_index()
             hourly_df['time'] = hourly_df['time'].astype(int)
             hourly_dict = hourly_df.drop(columns=['precipType']).to_dict('records')

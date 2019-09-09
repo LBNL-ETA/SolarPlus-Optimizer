@@ -1,17 +1,22 @@
 from pyxbos.driver import *
 from pyxbos import weather_station_pb2
+import pandas as pd
+from pvlib import solarposition, irradiance
 import os,sys
 import json
 import requests
 import yaml
 import argparse
 import logging
+import numpy as np
 
 class WeatherDriver(Driver):
     def setup(self, cfg):
         self.baseurl = cfg['darksky']['url']
         self.apikey = cfg['darksky']['apikey']
         self.coords = cfg['darksky']['coordinates']
+        self.lat = float(self.coords.split(',')[0])
+        self.lng = float(self.coords.split(',')[1])
         self.url = self.baseurl + self.apikey + '/' + self.coords
         self.service_name = cfg['service_name']
 
@@ -40,12 +45,12 @@ class WeatherDriver(Driver):
 
         shift_temp = pd.Series(data=np.roll(forecast_df.temperature, 3), index=forecast_df.index)
         forecast_df['deltaT'] = forecast_df['temperature'] - shift_temp
-        forecast_df['estimated_ghi'] = (zh_solar_const * sin_alt * (c0 + c1 * forecast_df['cloudCover']
+        forecast_df['estimatedGhi'] = (zh_solar_const * sin_alt * (c0 + c1 * forecast_df['cloudCover']
                                                                     + c2 * forecast_df['cloudCover'] ** 2 + c3 *
                                                                     forecast_df['deltaT'] + c4 * forecast_df[
                                                                         'humidity'] * 100
                                                                     + c5 * forecast_df['windSpeed']) + d) / k
-        forecast_df.loc[forecast_df.loc[forecast_df.estimated_ghi <= 0].index, 'estimated_ghi'] = 0
+        forecast_df.loc[forecast_df.loc[forecast_df.estimatedGhi <= 0].index, 'estimatedGhi'] = 0
 
         return forecast_df
 
@@ -65,7 +70,7 @@ class WeatherDriver(Driver):
 
         df = self.solar_model_ZhHu(forecast_df=forecast_df, sin_alt=sin_alt, zh_solar_const=zh_solar_const)
 
-        clear_index_kt = df['estimated_ghi'] / (solar_const * sin_alt)
+        clear_index_kt = df['estimatedGhi'] / (solar_const * sin_alt)
         clear_index_ktc = 0.4268 + 0.1934 * sin_alt
 
         diff = (clear_index_kt < clear_index_ktc) * 1  # *1 converts boolean to integer
@@ -74,14 +79,14 @@ class WeatherDriver(Driver):
                     1.0 - clear_index_kt) ** 3)
 
         # Calculate direct normal radiation, W/m2
-        df['beam_rad'] = zh_solar_const * sin_alt * clear_index_kds * (1.0 - clear_index_kt) / (1.0 - clear_index_kds)
+        df['beamRadiation'] = zh_solar_const * sin_alt * clear_index_kds * (1.0 - clear_index_kt) / (1.0 - clear_index_kds)
         # Calculate diffuse horizontal radiation, W/m2
-        df['diff_rad'] = zh_solar_const * sin_alt * (clear_index_kt - clear_index_kds) / (1.0 - clear_index_kds)
+        df['diffuseRadiation'] = zh_solar_const * sin_alt * (clear_index_kt - clear_index_kds) / (1.0 - clear_index_kds)
         return df
 
     def plane_of_array(self, df):
         """
-        :param df: data frame includes GHI, beam_rad, diff_rad
+        :param df: data frame includes GHI, beamRadiation, diffRadiation
         :return: df with plane of array solar radiation on pv and windows
         """
         pv_tilt = 8
@@ -92,10 +97,10 @@ class WeatherDriver(Driver):
         datetime = df.index
         alt_ang = solarposition.get_solarposition(datetime, self.lat, self.lng)['elevation']
         azi_ang = solarposition.get_solarposition(datetime, self.lat, self.lng)['azimuth']
-        df['poa_pv'] = irradiance.get_total_irradiance(pv_tilt, pv_azimuth, alt_ang, azi_ang, df['beam_rad'],
-                                                       df['estimated_ghi'], df['diff_rad'], albedo)['poa_global']
-        df['poa_win'] = irradiance.get_total_irradiance(win_tilt, win_azimuth, alt_ang, azi_ang, df['beam_rad'],
-                                                        df['estimated_ghi'], df['diff_rad'], albedo)['poa_global']
+        df['poaSrOnPV'] = irradiance.get_total_irradiance(pv_tilt, pv_azimuth, alt_ang, azi_ang, df['beamRadiation'],
+                                                       df['estimatedGhi'], df['diffuseRadiation'], albedo)['poa_global']
+        df['poaSrOnWindows'] = irradiance.get_total_irradiance(win_tilt, win_azimuth, alt_ang, azi_ang, df['beamRadiation'],
+                                                        df['estimatedGhi'], df['diffuseRadiation'], albedo)['poa_global']
         return df
 
     def read(self, requestid=None):
@@ -127,11 +132,11 @@ class WeatherDriver(Driver):
             if 'humidity' in hourly_output:
                 hourly_output['humidity'] *= 100
 
-            timestamp = int(hour.get('time') * 1e9) # nanoseconds
+            timestamp = int(hourly_output.get('time',None))
             predictions.append(weather_station_pb2.WeatherStationPrediction.Prediction(
                 prediction_time=timestamp,
                 prediction=weather_station_pb2.WeatherStation(
-                    time  =   types.Int64(value=hourly_output.get('time',None)),
+                    time  =   types.Int64(value=timestamp),
                     icon  =  hourly_output.get('icon',None),
                     nearestStormDistance  =   types.Double(value=hourly_output.get('nearestStormDistance',None)),
                     nearestStormBearing  =   types.Double(value=hourly_output.get('nearestStormBearing',None)),
@@ -151,12 +156,19 @@ class WeatherDriver(Driver):
                     uvIndex  =   types.Double(value=hourly_output.get('uvIndex',None)),
                     visibility  =   types.Double(value=hourly_output.get('visibility',None)),
                     ozone  =   types.Double(value=hourly_output.get('ozone',None)),
+                    estimatedGhi  =   types.Double(value=hourly_output.get('estimatedGhi',None)),
+                    beamRadiation  =   types.Double(value=hourly_output.get('beamRadiation',None)),
+                    diffuseRadiation  =   types.Double(value=hourly_output.get('diffuseRadiation',None)),
+                    poaSrOnPV =   types.Double(value=hourly_output.get('poaSrOnPV',None)),
+                    poaSrOnWindows  =   types.Double(value=hourly_output.get('poaSrOnWindows',None)),
                 )
             ))
 
+        time_now = int(time.time() * 1e9)
+
         hourly_msg = xbos_pb2.XBOS(
             XBOSIoTDeviceState=iot_pb2.XBOSIoTDeviceState(
-                time=int(time.time() * 1e9),
+                time=time_now,
                 weather_station_prediction=weather_station_pb2.WeatherStationPrediction(
                     predictions=predictions
                 )
@@ -174,7 +186,7 @@ class WeatherDriver(Driver):
 
         currently_msg = xbos_pb2.XBOS(
             XBOSIoTDeviceState = iot_pb2.XBOSIoTDeviceState(
-                time = int(time.time()*1e9),
+                time = time_now,
                 weather_station = weather_station_pb2.WeatherStation(
                     time  =   types.Int64(value=currently_output.get('time',None)),
                     icon  =  currently_output.get('icon',None),
@@ -200,9 +212,6 @@ class WeatherDriver(Driver):
             )
         )
         self.report(self.service_name, currently_msg)
-
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
