@@ -2,34 +2,34 @@
 """
 This script runs the MPC controller in real time.
 
+Since it relies on data manager that gives data at 5 minute intervals, 
+it can only be run at xx:x5:00 successfully.
+
 """
 
 import os
 import datetime
 import time
 import pandas as pd
-import numpy as np
 import mpc_config_control as mpc_config
 from mpc import mpc
 
-tz_computer = 'America/New_York'
-control_start = True
-init = True
-i = 1
-while control_start:
+def run():
+    tz_computer = 'America/New_York'
+    
     # Setup
     # ==============================================================================
     controller = 'mpc'
     start = datetime.datetime.now()
-    start_time = start.strftime("%Y-%m-%d %H:00:00")
+    start_time = start.strftime("%Y-%m-%d %H:%M:00")
     start_time_utc = pd.to_datetime(start_time).tz_localize(tz_computer).tz_convert('UTC')
     mpc_horizon = 24*3600
     mpc_step = 3600
     print('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-    print("The Solar+ Optimizer has begun its operation...")
+    print("The Solar+ Optimizer has begun its operation at {0} UTC...".format(start_time_utc))
     print("The prediction horizon is {} hours.".format(mpc_horizon/3600))
     print('\n')
-
+    
     # Initialize
     # ==============================================================================
     # Create output folder under the current directory
@@ -37,11 +37,11 @@ while control_start:
     if not os.path.exists(outdir):
         os.mkdir(outdir)
     # Save setup: UTC time
-    with open(outdir+'/mpc_setup.txt', 'w') as f:
+    with open(outdir+'/mpc_setup_{0}.txt'.format(start_time), 'w') as f:
         f.write(str(start_time_utc) +'\n')
         f.write(str(mpc_step) +'\n')
         f.write(str(mpc_horizon) +'\n')
-
+    
     # Instantiate controller
     if controller is 'mpc':
         config = mpc_config.get_config()
@@ -55,30 +55,34 @@ while control_start:
                          data_manager_config = config['data_manager_config'],
                          price_config = config['price_config'])
         print('The controller is instantiating...')
-
+    
     # Control Loop
     # ==============================================================================
     # Solve optimal control problem
     final_time_utc = start_time_utc + datetime.timedelta(seconds=mpc_horizon)
-    control, measurements, other_outputs, statistics = controller.optimize(start_time_utc, final_time_utc, init=init)
+    control, measurements, other_outputs, statistics = controller.optimize(start_time_utc, final_time_utc)
     # Save optimization result data
-    control.to_csv(outdir+'/control_{0}.csv'.format(i))
-    measurements.to_csv(outdir+'/measurements_{0}.csv'.format(i))
-    other_outputs.to_csv(outdir+'/other_outputs_{0}.csv'.format(i))
-    if init == True:
-        open_as = 'w'
-    else:
-        open_as = 'a'
-    with open(outdir+'/optimal_statistics_{0}.txt'.format(i), open_as) as f:
-        f.write(str(statistics) + '\n')
+    control.to_csv(outdir+'/control_{0}.csv'.format(start_time))
+    measurements.to_csv(outdir+'/measurements_{0}.csv'.format(start_time))
+    other_outputs.to_csv(outdir+'/other_outputs_{0}.csv'.format(start_time))
     # Push setpoints
     setpoints = controller.set_setpoints(control, measurements)
-    setpoints.to_csv(outdir+'/setpoints_{0}.txt'.format(i))
-    # check if setpoints have been pushed successefully; then wait for the next control loop
+    setpoints.to_csv(outdir+'/setpoints_{0}.txt'.format(start_time))
+    # check if setpoints have been pushed successefully
     end_time = datetime.datetime.now()
     control_loop_time = (end_time - start).total_seconds()
     print('This control loop has taken {} min'.format(control_loop_time/60))
-    # if the optimization takes reasonable time; continue the process
-    i = i + 1
-    print('Sleeping {0} seconds...'.format(10))
-    time.sleep(10)
+    
+if __name__ == '__main__':
+    minute = -1
+    while True:
+        time.sleep(1)
+        t = datetime.datetime.now()
+        print(t)
+        if (t.minute in [0,5,10,15,20,25,30,35,40,45,50,55]) and (t.minute != minute):
+            minute = t.minute
+            try:
+                run()
+                print('Run ended ok.')
+            except:
+                print('Run ended in error.')

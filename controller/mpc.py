@@ -109,10 +109,9 @@ class mpc(object):
         # Update system measurements with recent data
         historic_period = 30*60
         previous_time = start_time - datetime.timedelta(seconds=historic_period)
-        end_time = start_time - datetime.timedelta(minutes=start_time.minute % 5)
-        self._update_system(previous_time, end_time)
+        self._update_system(previous_time, start_time)
         # Estimate state
-        self._estimate_state(end_time)
+        self._estimate_state()
         # Update exodata
         for exo in [self.weather,
                     self.other_input,
@@ -215,13 +214,8 @@ class mpc(object):
         return measurements, other_outputs
 
 
-    def _estimate_state(self, time):
-        '''Estimate the states of the model.
-
-        Parameters
-        ----------
-        time : pandas datetime
-            Time at which to estimate state.
+    def _estimate_state(self):
+        '''Estimate the states of the model using the most recent system data.
 
         Returns
         -------
@@ -233,7 +227,9 @@ class mpc(object):
         for par in self.init_vm:
             # Get the estimated value
             if par != 'SOC_0':
-                value = self.model.display_measurements('Measured').loc[time,self.init_vm[par]]
+                value = self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1]
+                time = self.model.display_measurements('Measured')[self.init_vm[par]].index[-1]
+                print('State {0} set to value {1} from measurement at time {2}.'.format(self.init_vm[par], value, time))
             else:
                 value = 0.5
             # Set the value in the model
