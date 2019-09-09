@@ -6,20 +6,23 @@ This script runs the MPC controller in real time.
 
 import os
 import datetime
+import time
 import pandas as pd
 import numpy as np
 import mpc_config_control as mpc_config
 from mpc import mpc
-from database_client.data_client import Data_Client
 
+tz_computer = 'America/New_York'
 control_start = True
 init = True
+i = 1
 while control_start:
     # Setup
     # ==============================================================================
     controller = 'mpc'
-    start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:00")
-    start_time = pd.to_datetime(start_time)
+    start = datetime.datetime.now()
+    start_time = start.strftime("%Y-%m-%d %H:00:00")
+    start_time_utc = pd.to_datetime(start_time).tz_localize(tz_computer).tz_convert('UTC')
     mpc_horizon = 24*3600
     mpc_step = 3600
     print('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
@@ -35,7 +38,7 @@ while control_start:
         os.mkdir(outdir)
     # Save setup: UTC time
     with open(outdir+'/mpc_setup.txt', 'w') as f:
-        f.write(str(start_time) +'\n')
+        f.write(str(start_time_utc) +'\n')
         f.write(str(mpc_step) +'\n')
         f.write(str(mpc_horizon) +'\n')
 
@@ -53,38 +56,11 @@ while control_start:
                          price_config = config['price_config'])
         print('The controller is instantiating...')
 
-    # Get system states from measurements of last time step
-    # sampling rate is 5 minutes
-    # get states from thermostats, refrigerator and freezer controllers
-    client = Data_Client()
-    parker_controller_variables = ['CabinetTemperature']
-    thermostat_variables = ['space_temp']
-    previous_time = start_time - datetime.timedelta(minutes=30)
-    end_time = start_time - datetime.timedelta(minutes=start_time.minute % 5)
-    parker_df = client.get_device_data(device_type='parker_controllers', start_time=previous_time, end_time=end_time, variables=parker_controller_variables, resample_window='5T')
-    thermostat_df = client.get_device_data(device_type='thermostats', start_time=previous_time, end_time=end_time, variables=thermostat_variables, resample_window='5T')
-    # Save per configuration
-    states_time = end_time
-    df_last_states = pd.DataFrame({'Time':[states_time]})
-    df_last_states.set_index('Time', inplace=True)
-    df_last_states.to_csv(outdir+'/initial_states.csv')
-    for state in config['model_config']['init_vm']:
-        value = controller.parameter.display_data().loc[state,'Value']
-        df_last_states[config['model_config']['init_vm'][state]] = value
-    df_last_states[config['model_config']['init_vm']['Tref_0']] = parker_df['refrigerator_CabinetTemperature'][-1]
-    df_last_states[config['model_config']['init_vm']['Tfre_0']] = parker_df['freezer_CabinetTemperature'][-1]
-    df_last_states[config['model_config']['init_vm']['Trtu_0']] = thermostat_df['thermostat_west_space_temp'][-1]
-
-    # df_last_states.to_csv(os.path.abspath(os.path.join(__file__,'..','..','data','emulation_states.csv')))
-    print("The last system states measurements sent to the controller are:")
-    print(df_last_states)
-    print('\n')
-
     # Control Loop
     # ==============================================================================
     # Solve optimal control problem
-    final_time = start_time + datetime.timedelta(seconds=mpc_step)
-    control, measurements, other_outputs, statistics = controller.optimize(start_time, final_time, init=init)
+    final_time_utc = start_time_utc + datetime.timedelta(seconds=mpc_horizon)
+    control, measurements, other_outputs, statistics = controller.optimize(start_time_utc, final_time_utc, init=init)
     # Save optimization result data
     control.to_csv(outdir+'/control_{0}.csv'.format(i))
     measurements.to_csv(outdir+'/measurements_{0}.csv'.format(i))
@@ -94,15 +70,15 @@ while control_start:
     else:
         open_as = 'a'
     with open(outdir+'/optimal_statistics_{0}.txt'.format(i), open_as) as f:
-        f.write(str(sim_steps[i]) + ': ' +  str(statistics) + '\n')
+        f.write(str(statistics) + '\n')
     # Push setpoints
     setpoints = controller.set_setpoints(control, measurements)
     setpoints.to_csv(outdir+'/setpoints_{0}.txt'.format(i))
     # check if setpoints have been pushed successefully; then wait for the next control loop
     end_time = datetime.datetime.now()
-    control_loop_time = (end_time - start_time).total_seconds()
+    control_loop_time = (end_time - start).total_seconds()
     print('This control loop has taken {} min'.format(control_loop_time/60))
     # if the optimization takes reasonable time; continue the process
-    init = False
-    if control_loop_time > mpc_step:
-        break
+    i = i + 1
+    print('Sleeping {0} seconds...'.format(10))
+    time.sleep(10)
