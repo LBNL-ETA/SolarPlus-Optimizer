@@ -165,6 +165,7 @@ class API_Collection_Layer:
             hourly_df = hourly_df.set_index('time')
 
             hourly_df = self.Perez_split(forecast_df=hourly_df)
+            hourly_df = self.plane_of_array(forecast_df=hourly_df)
             hourly_df = hourly_df.reset_index()
             hourly_df['time'] = hourly_df['time'].astype(int)
             hourly_dict = hourly_df.drop(columns=['precipType']).to_dict('records')
