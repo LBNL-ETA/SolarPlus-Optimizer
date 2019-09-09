@@ -17,6 +17,23 @@ from Influx_Dataframe_Client import Influx_Dataframe_Client
 
 
 class API_Collection_Layer:
+    '''
+    Weather API to query and calculate the following parameters to be used in MPC;
+    queried parameters:
+        cloudCover: total cloud cover, unit: [0,1];
+        temperature: outdoor dry bulb, unit: degC;
+        humidity: relative humidity, unit: %;
+        windSpeed: wind speed, unit: m/s;
+    calculated parameters:
+        sin_alt, sine of solar altitude, unit: [-1, 1];
+        deltaT: temperature difference, unit: degC;
+        estimated_ghi: estimated global horizontal irradiance, unit: W/m2;
+        beam_rad, beam radiation, W/m2;
+        diff_rad, diffuse radiation, W/m2;
+        poa_pv: plane of array solar radiation on photovoltaic panels, unit: W/m2
+        poa_win: plane of array solar radiation on windows, unit: W/m2
+
+    '''
 
     def __init__(self,config_file,weather_section=None,db_section=None):
         '''
@@ -45,13 +62,14 @@ class API_Collection_Layer:
     def solar_model_ZhHu(self, forecast_df, sin_alt, zh_solar_const):
         '''
         Estimate Global Horizontal Irradiance (GHI) from Zhang-Huang solar forecast model
-        Params: sin_alt, sine of solar altitude
+        Params: sin_alt, sine of solar altitude, unit: [-1, 1]
                 forecast_df should include the following columns:
-                cloudCover: [0,1];
-                temperature: degC;
-                relative humidity: %;
-                windSpeed: m/s;
-        Returns: estimated GHI
+                cloudCover: total cloud cover, unit: [0,1];
+                temperature: outdoor dry bulb, unit: degC;
+                humidity: relative humidity, unit: %;
+                windSpeed: wind speed, unit: m/s;
+        Returns: deltaT: temperature difference, unit: degC
+                 estimated_ghi: estimated global horizontal irradiance, unit: W/m2;
         '''
 
         # df = forecast_df.copy()
@@ -107,6 +125,8 @@ class API_Collection_Layer:
         """
         :param df: data frame includes GHI, beam_rad, diff_rad
         :return: df with plane of array solar radiation on pv and windows
+                poa_pv: plane of array solar radiation on photovoltaic panels, unit: W/m2
+                poa_win: plane of array solar radiation on windows, unit: W/m2
         """
         pv_tilt = 8
         pv_azimuth = 37
