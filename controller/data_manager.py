@@ -287,7 +287,7 @@ class Data_Manager():
                 df = self.influx_client.query(q)[measurement]
                 df = df[['prediction_time', 'value']]
                 df.prediction_time = pd.to_datetime(df.prediction_time.astype(int) * 1e9)
-                df = df.sort_values(by='prediction_time').set_index('prediction_time').tz_localize("UTC")
+                df = df.sort_values(by='prediction_time').set_index('prediction_time').tz_localize(self.tz_utc)
                 df.index.name = 'time'
                 if start_time != None and end_time != None:
                     df = df[start_time: end_time]
