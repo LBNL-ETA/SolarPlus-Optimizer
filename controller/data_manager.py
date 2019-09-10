@@ -273,9 +273,6 @@ class Data_Manager():
         if end_time != None:
             et = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        if forecast:
-            latest_ts = self.get_last_ts_influx(uuid=uuid)
-
         for variable in variables:
             variable_cfg = variables[variable]
             uuid = variable_cfg.get('uuid')
@@ -284,18 +281,24 @@ class Data_Manager():
             measurement = variable_cfg.get('measurement', 'timeseries')
 
             if forecast:
-                q = "select value from %s where \"uuid\"=\'%s\'" % (measurement, uuid)
+                latest_ts = self.get_last_ts_influx(uuid=uuid)
+                q = "select prediction_time, value from %s where \"uuid\"=\'%s\'" % (measurement, uuid)
                 q += " and time= "+(str(latest_ts))
                 df = self.influx_client.query(q)[measurement]
                 df = df[['prediction_time', 'value']]
                 df.prediction_time = pd.to_datetime(df.prediction_time.astype(int) * 1e9)
                 df = df.sort_values(by='prediction_time').set_index('prediction_time').tz_localize("UTC")
+                df.index.name = 'time'
                 if start_time != None and end_time != None:
                     df = df[start_time: end_time]
                 elif start_time != None:
                     df = df[start_time:]
                 elif end_time != None:
                     df = df[:end_time]
+
+                if agg != 'raw':
+                    window = window.replace("m", "T")
+                    df = df.resample(window).agg(agg)
             else:
                 if agg != 'raw':
                     q = "select %s(value) as value from %s where \"uuid\"=\'%s\'" %(agg, measurement, uuid)

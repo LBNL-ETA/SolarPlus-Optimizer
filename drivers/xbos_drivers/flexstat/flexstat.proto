@@ -2,6 +2,16 @@ syntax = "proto3";
 package xbospb;
 import "nullabletypes.proto";
 
+message FlexstateActuationMessage {
+	FlexstatSetpoints setpoints = 1;
+}
+
+message FlexstatSetpoints {
+	uint64 time = 1;
+	Double heating_setpoint = 2;
+	Double cooling_setpoint = 3;
+}
+
 message FlexstatState {
 	//space temperature reading
 	//unit: F
