@@ -238,7 +238,7 @@ class Data_Manager():
             ts: int
                 latest timestamp when the forecasts came in
         '''
-        return influx.query(
+        return self.influx_client.query(
             "select last(value), time from timeseries where \"uuid\"=\'%s\' "%uuid)[measurement].index.values[0].astype('uint64')
 
 
