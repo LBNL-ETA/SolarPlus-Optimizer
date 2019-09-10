@@ -298,7 +298,7 @@ class Data_Manager():
 
                 if agg != 'raw':
                     window = window.replace("m", "T")
-                    df = df.resample(window).agg(agg)
+                    df = df.resample(window).agg(agg).interpolate(method='linear')
             else:
                 if agg != 'raw':
                     q = "select %s(value) as value from %s where \"uuid\"=\'%s\'" %(agg, measurement, uuid)
