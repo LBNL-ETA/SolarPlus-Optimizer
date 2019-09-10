@@ -88,12 +88,20 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         "influxdb": {"config_filename":"database_client/config.yaml",
                      "section": "database"}
     },
+    # "weather": {
+    #     "type": "csv",
+    #     "variables": {
+    #         "Outdoor": {"filename": "Shadow/Weather_Forecast.csv", "column": "Outdoor", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+    #         "poa_pv": {"filename": "Shadow/Weather_Forecast.csv", "column": "poa_pv", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+    #         "poa_win": {"filename": "Shadow/Weather_Forecast.csv", "column": "poa_win", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
+    #     }
+    # },
     "weather": {
-        "type": "csv",
+        "type": "influxdb",
         "variables": {
-            "Outdoor": {"filename": "Shadow/Weather_Forecast.csv", "column": "Outdoor", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "poa_pv": {"filename": "Shadow/Weather_Forecast.csv", "column": "poa_pv", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "poa_win": {"filename": "Shadow/Weather_Forecast.csv", "column": "poa_win", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
+            "Outdoor": {"uuid": "69be4db0-48f5-592f-b5a1-e2e695f28ad1", "window": "5m", "agg": "mean", "measurement": "timeseries"},
+            "poa_pv": {"uuid": "a8357adb-c59d-5316-a0e8-51d2b2948c75", "window": "5m", "agg": "mean", "measurement": "timeseries"},
+            "poa_win": {"uuid": "d1746bb1-7b20-5d20-92b6-60acef287662", "window": "5m", "agg": "mean", "measurement": "timeseries"}
         }
     },
     "control": {
