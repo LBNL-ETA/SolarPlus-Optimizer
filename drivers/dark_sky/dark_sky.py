@@ -7,16 +7,24 @@ import numpy as np
 import pandas as pd
 from pvlib import solarposition, irradiance
 
-# Add influx driver to path
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-influx_folder='influx_dataframe_client'
-sys.path.append(os.path.join(parent_dir, influx_folder))
-from Influx_Dataframe_Client import Influx_Dataframe_Client
-# DarkSky API documentation https://darksky.net/dev/docs#forecast-request
-
-
-
 class API_Collection_Layer:
+    '''
+    Weather API to query and calculate the following parameters to be used in MPC;
+    queried parameters:
+        cloudCover: total cloud cover, unit: [0,1];
+        temperature: outdoor dry bulb, unit: degC;
+        humidity: relative humidity, unit: %;
+        windSpeed: wind speed, unit: m/s;
+    calculated parameters:
+        sin_alt, sine of solar altitude, unit: [-1, 1];
+        deltaT: temperature difference, unit: degC;
+        estimated_ghi: estimated global horizontal irradiance, unit: W/m2;
+        beam_rad, beam radiation, W/m2;
+        diff_rad, diffuse radiation, W/m2;
+        poa_pv: plane of array solar radiation on photovoltaic panels, unit: W/m2
+        poa_win: plane of array solar radiation on windows, unit: W/m2
+
+    '''
 
     def __init__(self,config_file,weather_section=None,db_section=None):
         '''
@@ -40,18 +48,17 @@ class API_Collection_Layer:
         self.lng = skyConfig[weather_section]['lng']
         self.COORDINATES = "%f,%f"%(self.lat, self.lng)
 
-        self.test_client = Influx_Dataframe_Client(config_file,db_section)
-
     def solar_model_ZhHu(self, forecast_df, sin_alt, zh_solar_const):
         '''
         Estimate Global Horizontal Irradiance (GHI) from Zhang-Huang solar forecast model
-        Params: sin_alt, sine of solar altitude
+        Params: sin_alt, sine of solar altitude, unit: [-1, 1]
                 forecast_df should include the following columns:
-                cloudCover: [0,1];
-                temperature: degC;
-                relative humidity: %;
-                windSpeed: m/s;
-        Returns: estimated GHI
+                cloudCover: total cloud cover, unit: [0,1];
+                temperature: outdoor dry bulb, unit: degC;
+                humidity: relative humidity, unit: %;
+                windSpeed: wind speed, unit: m/s;
+        Returns: deltaT: temperature difference, unit: degC
+                 estimated_ghi: estimated global horizontal irradiance, unit: W/m2;
         '''
 
         # df = forecast_df.copy()
@@ -107,6 +114,8 @@ class API_Collection_Layer:
         """
         :param df: data frame includes GHI, beam_rad, diff_rad
         :return: df with plane of array solar radiation on pv and windows
+                poa_pv: plane of array solar radiation on photovoltaic panels, unit: W/m2
+                poa_win: plane of array solar radiation on windows, unit: W/m2
         """
         pv_tilt = 8
         pv_azimuth = 37
@@ -140,11 +149,12 @@ class API_Collection_Layer:
             print("Error in retrieving data from DarkSky!")
             return None
         else:
-            hourly_df = df = pd.DataFrame.from_dict(json_data['hourly']['data'])
+            hourly_df = pd.DataFrame.from_dict(json_data['hourly']['data'])
             hourly_df.time = pd.to_datetime(hourly_df.time, unit='s', utc=True)
             hourly_df = hourly_df.set_index('time')
 
             hourly_df = self.Perez_split(forecast_df=hourly_df)
+            hourly_df = self.plane_of_array(df=hourly_df)
             hourly_df = hourly_df.reset_index()
             hourly_df['time'] = hourly_df['time'].astype(int)
             hourly_dict = hourly_df.drop(columns=['precipType']).to_dict('records')

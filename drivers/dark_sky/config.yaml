@@ -1,5 +1,5 @@
 dark_sky:
-    api: 763827c188fa2c8c4cca914f16caf2d0
-    url: https://api.darksky.net/forecast
+    api:
+    url: https://api.darksky.net/forecast/
     lat: 40.884062
     lng: -124.0003142
