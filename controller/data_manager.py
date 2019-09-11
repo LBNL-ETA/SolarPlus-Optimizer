@@ -188,6 +188,9 @@ class Data_Manager():
         df_list = []
         column_names = []
 
+        if start_time != None:
+            st_hour = datetime.datetime.combine(start_time.date(), datetime.time(start_time.hour, 0, 0, tzinfo=start_time.tzinfo))
+
         for variable in variables:
             variable_cfg = variables[variable]
             filename = variable_cfg.get('filename')
@@ -202,10 +205,10 @@ class Data_Manager():
             df.index = pd.to_datetime(df.index)
 
             if start_time != None and end_time != None:
-                idx = df.loc[start_time: end_time].index
+                idx = df.loc[st_hour: end_time].index
                 df = df.loc[idx, column_name]
             elif start_time != None:
-                idx = df.loc[start_time:].index
+                idx = df.loc[st_hour:].index
                 df = df.loc[idx, column_name]
             elif end_time != None:
                 idx = df.loc[:end_time].index
@@ -214,7 +217,7 @@ class Data_Manager():
                 df = df.loc[:, column_name]
 
             if agg_fn != 'raw':
-                df = df.resample(window).agg(agg_fn)
+                df = df.resample(window).agg(agg_fn).interpolate(method='linear')[start_time:end_time]
             df = df.dropna()
 
             df_list.append(df)
@@ -269,6 +272,7 @@ class Data_Manager():
         column_names = []
         if start_time != None:
             st = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+            st_hour = datetime.datetime.combine(start_time.date(), datetime.time(start_time.hour, 0, 0, tzinfo=start_time.tzinfo))
 
         if end_time != None:
             et = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -290,15 +294,15 @@ class Data_Manager():
                 df = df.sort_values(by='prediction_time').set_index('prediction_time').tz_localize(self.tz_utc)
                 df.index.name = 'time'
                 if start_time != None and end_time != None:
-                    df = df[start_time: end_time]
+                    df = df[st_hour: end_time]
                 elif start_time != None:
-                    df = df[start_time:]
+                    df = df[st_hour:]
                 elif end_time != None:
                     df = df[:end_time]
 
                 if agg != 'raw':
                     window = window.replace("m", "T")
-                    df = df.resample(window).agg(agg).interpolate(method='linear')
+                    df = df.resample(window).agg(agg).interpolate(method='linear')[start_time:end_time]
             else:
                 if agg != 'raw':
                     q = "select %s(value) as value from %s where \"uuid\"=\'%s\'" %(agg, measurement, uuid)
