@@ -12,7 +12,7 @@ class API_Collection_Layer:
     Weather API to query and calculate the following parameters to be used in MPC;
     queried parameters:
         cloudCover: total cloud cover, unit: [0,1];
-        temperature: outdoor dry bulb, unit: degC;
+        temperature: outdoor dry bulb, unit: degF;
         humidity: relative humidity, unit: %;
         windSpeed: wind speed, unit: m/s;
     calculated parameters:
@@ -54,7 +54,7 @@ class API_Collection_Layer:
         Params: sin_alt, sine of solar altitude, unit: [-1, 1]
                 forecast_df should include the following columns:
                 cloudCover: total cloud cover, unit: [0,1];
-                temperature: outdoor dry bulb, unit: degC;
+                temperature: outdoor dry bulb, unit: degF;
                 humidity: relative humidity, unit: %;
                 windSpeed: wind speed, unit: m/s;
         Returns: deltaT: temperature difference, unit: degC
@@ -71,9 +71,9 @@ class API_Collection_Layer:
         c5 = 0.014
         d = -17.853
         k = 0.843
-
-        shift_temp = pd.Series(data=np.roll(forecast_df.temperature, 3), index=forecast_df.index)
-        forecast_df['deltaT'] = forecast_df['temperature'] - shift_temp
+        forecast_df['temperature_c'] = (forecast_df['temperature'] - 32) * 5.0/9.0
+        shift_temp = pd.Series(data=np.roll(forecast_df.temperature_c, 3), index=forecast_df.index)
+        forecast_df['deltaT'] = forecast_df['temperature_c'] - shift_temp
         forecast_df['estimated_ghi'] = (zh_solar_const * sin_alt * (c0 + c1 * forecast_df['cloudCover']
                                         + c2 * forecast_df['cloudCover']**2 + c3 * forecast_df['deltaT'] + c4 * forecast_df['humidity'] * 100
                                         + c5 * forecast_df['windSpeed'])+d)/k

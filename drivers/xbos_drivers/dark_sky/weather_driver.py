@@ -43,8 +43,9 @@ class WeatherDriver(Driver):
         d = -17.853
         k = 0.843
 
-        shift_temp = pd.Series(data=np.roll(forecast_df.temperature, 3), index=forecast_df.index)
-        forecast_df['deltaT'] = forecast_df['temperature'] - shift_temp
+        forecast_df['temperature_c'] = (forecast_df['temperature'] - 32) * 5.0/9.0
+        shift_temp = pd.Series(data=np.roll(forecast_df.temperature_c, 3), index=forecast_df.index)
+        forecast_df['deltaT'] = forecast_df['temperature_c'] - shift_temp
         forecast_df['estimatedGhi'] = (zh_solar_const * sin_alt * (c0 + c1 * forecast_df['cloudCover']
                                                                     + c2 * forecast_df['cloudCover'] ** 2 + c3 *
                                                                     forecast_df['deltaT'] + c4 * forecast_df[
