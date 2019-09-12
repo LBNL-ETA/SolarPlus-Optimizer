@@ -2,7 +2,7 @@
 """
 This script runs the MPC controller in real time.
 
-Since it relies on data manager that gives data at 5 minute intervals, 
+Since it relies on data manager that gives data at 5 minute intervals,
 it can only be run at xx:x5:00 successfully.
 
 """
@@ -15,8 +15,8 @@ import mpc_config_control as mpc_config
 from mpc import mpc
 
 def run():
-    tz_computer = 'America/New_York'
-    
+    tz_computer = 'America/Los_Angeles'
+
     # Setup
     # ==============================================================================
     controller = 'mpc'
@@ -29,7 +29,7 @@ def run():
     print("The Solar+ Optimizer has begun its operation at {0} UTC...".format(start_time_utc))
     print("The prediction horizon is {} hours.".format(mpc_horizon/3600))
     print('\n')
-    
+
     # Initialize
     # ==============================================================================
     # Create output folder under the current directory
@@ -41,7 +41,7 @@ def run():
         f.write(str(start_time_utc) +'\n')
         f.write(str(mpc_step) +'\n')
         f.write(str(mpc_horizon) +'\n')
-    
+
     # Instantiate controller
     if controller is 'mpc':
         config = mpc_config.get_config()
@@ -55,7 +55,7 @@ def run():
                          data_manager_config = config['data_manager_config'],
                          price_config = config['price_config'])
         print('The controller is instantiating...')
-    
+
     # Control Loop
     # ==============================================================================
     # Solve optimal control problem
@@ -72,7 +72,7 @@ def run():
     end_time = datetime.datetime.now()
     control_loop_time = (end_time - start).total_seconds()
     print('This control loop has taken {} min'.format(control_loop_time/60))
-    
+
 if __name__ == '__main__':
     minute = -1
     while True:

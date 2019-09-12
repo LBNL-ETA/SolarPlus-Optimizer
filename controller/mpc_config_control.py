@@ -24,7 +24,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 "opt_config" :        {'problem'  : 'EnergyPlusDemandCostMin',
                      'power_var': 'J'},
 
-"weather_config" :    {'vm'  : {'Outdoor':('weaTDryBul', units.degC),
+"weather_config" :    {'vm'  : {'Outdoor':('weaTDryBul', units.degF),
                               'poa_pv':('weaPoaPv', units.W_m2),
                               'poa_win': ('weaPoaWin', units.W_m2)},
                      'geo' : (40.88,-124.0)},
@@ -72,9 +72,9 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                        },
 "setpoints_config" :   {'vm': {'uBattery':('uBattery',units.unit1),
                              'Pbattery':('Pbattery',units.W),
-                             'Trtu':('Trtu',units.degC),
-                             'Tref':('Tref',units.degC),
-                             'Tfre':('Tfre',units.degC)
+                             'Trtu':('Trtu',units.degF),
+                             'Tref':('Tref',units.degF),
+                             'Tfre':('Tfre',units.degF)
                                }
                         },
 "data_manager_config": {
@@ -99,19 +99,19 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
     "weather": {
         "type": "influxdb",
         "variables": {
-            "Outdoor": {"uuid": "69be4db0-48f5-592f-b5a1-e2e695f28ad1", "window": "5m", "agg": "mean", "measurement": "timeseries"},
-            "poa_pv": {"uuid": "a8357adb-c59d-5316-a0e8-51d2b2948c75", "window": "5m", "agg": "mean", "measurement": "timeseries"},
-            "poa_win": {"uuid": "d1746bb1-7b20-5d20-92b6-60acef287662", "window": "5m", "agg": "mean", "measurement": "timeseries"}
+            "Outdoor": {"uuid": "69be4db0-48f5-592f-b5a1-e2e695f28ad1", "window": "1m", "agg": "mean", "measurement": "timeseries"},
+            "poa_pv": {"uuid": "a8357adb-c59d-5316-a0e8-51d2b2948c75", "window": "1m", "agg": "mean", "measurement": "timeseries"},
+            "poa_win": {"uuid": "d1746bb1-7b20-5d20-92b6-60acef287662", "window": "1m", "agg": "mean", "measurement": "timeseries"}
         }
     },
     "control": {
         "type": "csv",
         "variables": {
-            "FreComp_Split_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "FreComp_Split_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "RefComp_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "RefComp_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "HVAC1_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "HVAC1_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uHeat": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uHeat", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uBattery": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uBattery", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
+            "FreComp_Split_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "FreComp_Split_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "RefComp_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "RefComp_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "HVAC1_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "HVAC1_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uHeat": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uHeat", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uBattery": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uBattery", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
         }
     },
     "constraint": {
@@ -123,28 +123,28 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 #            "Tref_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "Tref_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
 #            "Tfre_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "Tfre_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
 #            "Tfre_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "Tfre_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "SOC_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "SOC_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "SOC_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "SOC_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uCool_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uCool_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uCool_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uCool_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uHeat_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uHeat_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uHeat_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uHeat_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uBattery_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uBattery_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uBattery_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uBattery_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uRef_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uRef_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uRef_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uRef_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uFreCool_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uFreCool_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "uFreCool_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uFreCool_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "Pmin":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "Pmin", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "Pmax":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "Pmax", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
+            "SOC_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "SOC_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "SOC_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "SOC_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uCool_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uCool_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uCool_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uCool_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uHeat_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uHeat_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uHeat_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uHeat_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uBattery_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uBattery_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uBattery_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uBattery_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uRef_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uRef_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uRef_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uRef_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uFreCool_min":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uFreCool_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uFreCool_max":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "uFreCool_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "Pmin":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "Pmin", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "Pmax":  {"filename": "Shadow/Constraint_Forecast.csv", "column": "Pmax", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
         }
     },
     "price": {
         "type": "csv",
         "variables": {
-            "pi_e":  {"filename": "Shadow/Price_Forecast.csv", "column": "pi_e", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "pi_d":  {"filename": "Shadow/Price_Forecast.csv", "column": "pi_d", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "P_est":  {"filename": "Shadow/Price_Forecast.csv", "column": "P_est", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
+            "pi_e":  {"filename": "Shadow/Price_Forecast.csv", "column": "pi_e", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "pi_d":  {"filename": "Shadow/Price_Forecast.csv", "column": "pi_d", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "P_est":  {"filename": "Shadow/Price_Forecast.csv", "column": "P_est", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
         }
     },
     "system": {
