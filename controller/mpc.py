@@ -12,6 +12,7 @@ from mpcpy import exodata, models, optimization, variables, units, systems
 import pandas as pd
 from data_manager import Data_Manager
 import process_data
+import datetime
 
 class mpc(object):
     '''MPC controller.
@@ -105,10 +106,12 @@ class mpc(object):
 
         '''
 
-        # Update system measurements
-        self._update_system(start_time, final_time)
+        # Update system measurements with recent data
+        historic_period = 30*60
+        previous_time = start_time - datetime.timedelta(seconds=historic_period)
+        self._update_system(previous_time, start_time)
         # Estimate state
-        self._estimate_state(start_time)
+        self._estimate_state()
         # Update exodata
         for exo in [self.weather,
                     self.other_input,
@@ -211,13 +214,8 @@ class mpc(object):
         return measurements, other_outputs
 
 
-    def _estimate_state(self, time):
-        '''Estimate the states of the model.
-
-        Parameters
-        ----------
-        time : pandas datetime
-            Time at which to estimate state.
+    def _estimate_state(self):
+        '''Estimate the states of the model using the most recent system data.
 
         Returns
         -------
@@ -228,9 +226,12 @@ class mpc(object):
         # For each initial state
         for par in self.init_vm:
             # Get the estimated value
-            # print(self.model.display_measurements('Measured'))
-            # print(time)
-            value = self.model.display_measurements('Measured').loc[time,self.init_vm[par]]
+            if par != 'SOC_0':
+                value = self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1]
+                time = self.model.display_measurements('Measured')[self.init_vm[par]].index[-1]
+                print('State {0} set to value {1} from measurement at time {2}.'.format(self.init_vm[par], value, time))
+            else:
+                value = 0.5
             # Set the value in the model
             self.model.parameter_data[par]['Value'].set_data(value)
 
@@ -438,7 +439,8 @@ class mpc(object):
                                      weather_data = self.weather.data,
                                      control_data = self.control.data,
                                      parameter_data = self.parameter.data,
-                                     tz_name = self.weather.tz_name)
+                                     tz_name = self.weather.tz_name,
+                                     save_parameter_input_data=True)
         # Check if other inputs present
         if self.other_input:
             model.other_inputs = self.other_input.data
@@ -526,10 +528,11 @@ class mpc(object):
             # Update data
             df = self.data_manager.get_data_from_config(config_section, start_time, final_time)
 
-            if config_section == "control":
-                df = process_data.process_control_df(df=df)
+#            if config_section == "control":
+#                df = process_data.process_control_df(df=df)
 
             exo_object._df = df
+            print('Updating {0}...'.format(exo_object.name))
             exo_object.collect_data(start_time, final_time)
 
         return None
@@ -555,6 +558,8 @@ class mpc(object):
         # Update exodata
         df = self.data_manager.get_data_from_config("system", start_time, final_time)
         self.system._df = df
+        for key in df.columns:
+            print('Updating system measurement for {0}...'.format(key))
         self.system.collect_measurements(start_time, final_time)
 
         return None

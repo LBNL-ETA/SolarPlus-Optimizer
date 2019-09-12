@@ -6,22 +6,24 @@ import yaml
 from influxdb import DataFrameClient
 import datetime
 import pytz
+import os
 
 class Data_Client():
     def __init__(self):
-        with open("config.yaml") as fp:
+        config_yaml = os.path.abspath(os.path.join(__file__,'..','config.yaml'))
+        with open(config_yaml) as fp:
             self.config = yaml.safe_load(fp)
 
         self.db_config = self.config.get("database")
-        self.uuid_map_filename = self.config.get('uuid_map_filename', 'uuid_map.json')
-        with open(self.uuid_map_filename) as fp:
+        # self.uuid_map_filename = self.config.get('uuid_map_filename', 'uuid_map.json')
+        uuid_map_dir = os.path.abspath(os.path.join(__file__,'..','uuid_map.json'))
+        with open(uuid_map_dir) as fp:
             self.uuid_map = json.load(fp)
 
         self.init_influx()
 
         self.tz_local = pytz.timezone("America/Los_Angeles")
         self.tz_utc = pytz.timezone("UTC")
-        
         self.meters = ['ref_evapfan', 'ref_comp', 'fre_comp_evapfan', 'building_main', 'hvac_west_comp', 'hvac_east_comp']
         self.thermostats = ['thermostat_east', 'thermostat_west']
         self.parker_controllers = ['refrigerator', 'freezer']
@@ -36,7 +38,6 @@ class Data_Client():
                    ssl = self.db_config.get('ssl'),
                    verify_ssl = self.db_config.get('verify_ssl'),
                 )
-        
     def get_uuid(self, device_name, variable):
         driver = None
         if device_name in self.parker_controllers:
@@ -45,12 +46,10 @@ class Data_Client():
             driver = "wattnode"
         elif device_name in self.thermostats:
             driver = "flexstat"
-            
         key = 'xbos/{0}/{1}/{2}'.format(driver, device_name, variable)
         uuid = self.uuid_map[key]
         return uuid
 
-    
     def get_data(self, uuid, start_time, end_time, measurement='timeseries'):
         st = pd.to_datetime(start_time).tz_localize(self.tz_local).tz_convert(self.tz_utc)
         et = pd.to_datetime(end_time).tz_localize(self.tz_local).tz_convert(self.tz_utc)
@@ -65,15 +64,13 @@ class Data_Client():
 
         return df
 
-    
     def get_device_data(self, device_type, start_time, end_time, variables, resample_window='5T', agg_fn='mean'):
         if device_type == 'meters':
             device_list = self.meters
         elif device_type == 'parker_controllers':
             device_list = self.parker_controllers
-        elif device_type == 'thermostats': 
+        elif device_type == 'thermostats':
             device_list = self.thermostats
-            
         df_list = []
         for device in device_list:
             for variable in variables:

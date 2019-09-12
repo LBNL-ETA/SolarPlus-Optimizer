@@ -162,7 +162,7 @@ class Data_Manager():
         else:
             return True
 
-    def get_section_data_from_csv(self, config, start_time=None, end_time=None):
+    def get_section_data_from_csv(self, config, start_time=None, end_time=None, forecast=False):
         '''From the configuration dictionary, get a DataFrame of all the variables from csv files
 
             Parameters
@@ -173,15 +173,23 @@ class Data_Manager():
                 Start time of timeseries
             end_time : datetime
                 End time of timeseries
+            forecast: bool
+                Is this section querying forecast data or historic data
 
             Returns
             -------
             df: pandas DataFrame
                 DataFrame where each column is a variable in the variables section in the configuration
         '''
+
+        # TODO: handle forecasts
+
         variables = config["variables"]
         df_list = []
         column_names = []
+
+        if start_time != None:
+            st_hour = datetime.datetime.combine(start_time.date(), datetime.time(start_time.hour, 0, 0, tzinfo=start_time.tzinfo))
 
         for variable in variables:
             variable_cfg = variables[variable]
@@ -197,10 +205,10 @@ class Data_Manager():
             df.index = pd.to_datetime(df.index)
 
             if start_time != None and end_time != None:
-                idx = df.loc[start_time: end_time].index
+                idx = df.loc[st_hour: end_time].index
                 df = df.loc[idx, column_name]
             elif start_time != None:
-                idx = df.loc[start_time:].index
+                idx = df.loc[st_hour:].index
                 df = df.loc[idx, column_name]
             elif end_time != None:
                 idx = df.loc[:end_time].index
@@ -209,7 +217,7 @@ class Data_Manager():
                 df = df.loc[:, column_name]
 
             if agg_fn != 'raw':
-                df = df.resample(window).agg(agg_fn)
+                df = df.resample(window).agg(agg_fn).interpolate(method='linear')[start_time:end_time]
             df = df.dropna()
 
             df_list.append(df)
@@ -218,8 +226,26 @@ class Data_Manager():
         final_df.columns = column_names
         return final_df
 
+    def get_last_ts_influx(self, uuid, measurement='timeseries'):
+        '''Query influx forecast table to retrieve the timestamp of the latest forecast
 
-    def get_section_data_from_influx(self, config, start_time=None, end_time=None):
+         Parameters
+            ----------
+            uuid: str
+                uuid of the variable we're interested in
+            measurement: str
+                measurement to find the latest forecast from. default measurement = timeseries
+
+            Returns
+            -------
+            ts: int
+                latest timestamp when the forecasts came in
+        '''
+        return self.influx_client.query(
+            "select last(value), time from timeseries where \"uuid\"=\'%s\' "%uuid)[measurement].index.values[0].astype('uint64')
+
+
+    def get_section_data_from_influx(self, config, start_time=None, end_time=None, forecast=False):
         '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
 
             Parameters
@@ -230,6 +256,8 @@ class Data_Manager():
                 Start time of timeseries
             end_time : datetime in utc
                 End time of timeseries
+            forecast: bool
+                Is this section querying forecast data or historic data
 
             Returns
             -------
@@ -244,6 +272,7 @@ class Data_Manager():
         column_names = []
         if start_time != None:
             st = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+            st_hour = datetime.datetime.combine(start_time.date(), datetime.time(start_time.hour, 0, 0, tzinfo=start_time.tzinfo))
 
         if end_time != None:
             et = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -255,22 +284,42 @@ class Data_Manager():
             agg = variable_cfg.get('agg', 'mean')
             measurement = variable_cfg.get('measurement', 'timeseries')
 
-            if agg != 'raw':
-                q = "select %s(value) as value from %s where \"uuid\"=\'%s\'" %(agg, measurement, uuid)
+            if forecast:
+                latest_ts = self.get_last_ts_influx(uuid=uuid)
+                q = "select prediction_time, value from %s where \"uuid\"=\'%s\'" % (measurement, uuid)
+                q += " and time= "+(str(latest_ts))
+                df = self.influx_client.query(q)[measurement]
+                df = df[['prediction_time', 'value']]
+                df.prediction_time = pd.to_datetime(df.prediction_time.astype(int) * 1e9)
+                df = df.sort_values(by='prediction_time').set_index('prediction_time').tz_localize(self.tz_utc)
+                df.index.name = 'time'
+                if start_time != None and end_time != None:
+                    df = df[st_hour: end_time]
+                elif start_time != None:
+                    df = df[st_hour:]
+                elif end_time != None:
+                    df = df[:end_time]
+
+                if agg != 'raw':
+                    window = window.replace("m", "T")
+                    df = df.resample(window).agg(agg).interpolate(method='linear')[start_time:end_time]
             else:
-                q = "select value from %s where \"uuid\"=\'%s\'" % (measurement, uuid)
+                if agg != 'raw':
+                    q = "select %s(value) as value from %s where \"uuid\"=\'%s\'" %(agg, measurement, uuid)
+                else:
+                    q = "select value from %s where \"uuid\"=\'%s\'" % (measurement, uuid)
 
-            if start_time != None and end_time != None:
-                q += " and time >= '%s' and time <= '%s'" % (st, et)
-            elif start_time != None:
-                q += " and time >= '%s'" % (st)
-            elif end_time != None:
-                q += " and time <= '%s'" % (et)
+                if start_time != None and end_time != None:
+                    q += " and time >= '%s' and time <= '%s'" % (st, et)
+                elif start_time != None:
+                    q += " and time >= '%s'" % (st)
+                elif end_time != None:
+                    q += " and time <= '%s'" % (et)
 
-            if agg != 'raw':
-                q += " group by time(%s)"%(window)
+                if agg != 'raw':
+                    q += " group by time(%s)"%(window)
 
-            df = self.influx_client.query(q)[measurement]
+                df = self.influx_client.query(q)[measurement]
             # df.index = df.index.tz_localize(None)
             df_list.append(df)
             column_names.append(variable)
@@ -278,7 +327,7 @@ class Data_Manager():
         final_df.columns = column_names
         return final_df
 
-    def get_section_data_from_xbos(self, config, start_time=None, end_time=None):
+    def get_section_data_from_xbos(self, config, start_time=None, end_time=None, forecast=False):
         '''From the configuration dictionary, get a DataFrame of all the variables from influxdb
 
             Parameters
@@ -289,6 +338,8 @@ class Data_Manager():
                 Start time of timeseries
             end_time : datetime in utc
                 End time of timeseries
+            forecast: bool
+                Is this section querying forecast data or historic data
 
             Returns
             -------
@@ -296,6 +347,7 @@ class Data_Manager():
                 DataFrame where each column is a variable in the variables section in the configuration
         '''
 
+        #TODO: handle forecasts
 
         variables = config["variables"]
 
@@ -346,7 +398,7 @@ class Data_Manager():
         final_df.columns = column_names
         return final_df
 
-    def get_timeseries_from_config(self, config, start_time=None, end_time=None):
+    def get_timeseries_from_config(self, config, start_time=None, end_time=None, forecast=False):
         '''From the configuration dictionary, get a DataFrame of all the variables in the variable map
            For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
 
@@ -372,16 +424,16 @@ class Data_Manager():
         source = section_config["type"]
 
         if source == "csv":
-            final_df = self.get_section_data_from_csv(config=section_config, start_time=start_time, end_time=end_time)
+            final_df = self.get_section_data_from_csv(config=section_config, start_time=start_time, end_time=end_time, forecast=forecast)
         elif source == "influxdb":
-            final_df = self.get_section_data_from_influx(config=section_config, start_time=start_time, end_time=end_time)
+            final_df = self.get_section_data_from_influx(config=section_config, start_time=start_time, end_time=end_time, forecast=forecast)
         elif source == "xbos":
-            final_df = self.get_section_data_from_xbos(config=section_config, start_time=start_time, end_time=end_time)
+            final_df = self.get_section_data_from_xbos(config=section_config, start_time=start_time, end_time=end_time, forecast=forecast)
 
         final_df = final_df.tz_localize(None)
         return final_df
 
-    def get_data_from_config(self, config, start_time=None, end_time=None):
+    def get_data_from_config(self, config, start_time=None, end_time=None, forecast=None):
         '''Get config file from mpc and retrieve required variables
 
             Parameters
@@ -399,7 +451,11 @@ class Data_Manager():
                 DataFrame, whose each column is the timeseries of the variables in config['vm']
 
         '''
-        df = self.get_timeseries_from_config(config=config, start_time=start_time, end_time=end_time)
+        if forecast == None:
+            forecast = False
+            if config == "weather" or config == "price" or config == "constraint":
+                forecast = True
+        df = self.get_timeseries_from_config(config=config, start_time=start_time, end_time=end_time, forecast=forecast)
         return df
 
     def init_data_from_config(self, config):

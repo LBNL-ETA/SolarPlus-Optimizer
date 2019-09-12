@@ -9,6 +9,7 @@
 #########
 data/*
 simulation/output/*
+controller/output/*
 
 # Dymola output files
 #####################
