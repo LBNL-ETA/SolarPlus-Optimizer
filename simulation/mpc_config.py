@@ -124,10 +124,12 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
     "control": {
         "type": "csv",
         "variables": {
-            "FreComp": {"filename": "Control2.csv", "column": "FreComp", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "RefComp": {"filename": "Control2.csv", "column": "RefComp", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-            "HVAC1": {"filename": "Control2.csv", "column": "HVAC1", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
-        }
+            "FreComp_Split_Norm": {"filename": "Control2.csv", "column": "FreComp_Split_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "RefComp_Norm": {"filename": "Control2.csv", "column": "RefComp_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "HVAC1_Norm": {"filename": "Control2.csv", "column": "HVAC1_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uHeat": {"filename": "Control2.csv", "column": "uHeat", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
+            "uBattery": {"filename": "Control2.csv", "column": "uBattery", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
+            }
     },
     "constraint": {
         "type": "csv",
