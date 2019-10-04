@@ -229,6 +229,12 @@ class mpc(object):
             if par != 'SOC_0':
                 value = self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1]
                 time = self.model.display_measurements('Measured')[self.init_vm[par]].index[-1]
+                if par == 'Tfre_0':
+                    if self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1] > 10:
+                        value = 0
+                if par == 'Tref_0':
+                    if self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1] > 36.5:
+                        value = 34
                 print('State {0} set to value {1} from measurement at time {2}.'.format(self.init_vm[par], value, time))
             else:
                 value = 0.5
@@ -534,6 +540,7 @@ class mpc(object):
             exo_object._df = df
             print('Updating {0}...'.format(exo_object.name))
             exo_object.collect_data(start_time, final_time)
+            # print(exo_object.display_data())
 
         return None
 
