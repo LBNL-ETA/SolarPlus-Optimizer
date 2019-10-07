@@ -194,6 +194,7 @@ class ParkerDriver(Driver):
                 # publishing to parker/refrigerator/* or parker/freezer/*
                 print(self.report(service_name, msg))
             except:
+                print("error occured! reconnecting and continuing")
                 self.modbus_device.reconnect()
 
 

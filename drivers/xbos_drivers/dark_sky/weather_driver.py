@@ -105,114 +105,117 @@ class WeatherDriver(Driver):
         return df
 
     def read(self, requestid=None):
-        response = requests.get(self.url)
-        json_data = json.loads(response.text)
+        try:
+            response = requests.get(self.url)
+            json_data = json.loads(response.text)
 
-        if 'hourly' not in json_data:
-            return
-        else:
-            hourly_df = pd.DataFrame.from_dict(json_data['hourly']['data'])
-            hourly_df.time = pd.to_datetime(hourly_df.time, unit='s', utc=True)
-            hourly_df = hourly_df.set_index('time')
+            if 'hourly' not in json_data:
+                return
+            else:
+                hourly_df = pd.DataFrame.from_dict(json_data['hourly']['data'])
+                hourly_df.time = pd.to_datetime(hourly_df.time, unit='s', utc=True)
+                hourly_df = hourly_df.set_index('time')
 
-            hourly_df = self.Perez_split(forecast_df=hourly_df)
-            hourly_df = self.plane_of_array(df=hourly_df)
-            hourly_df = hourly_df.reset_index()
-            hourly_df['time'] = hourly_df['time'].astype(int)
-            hourly_dict = hourly_df.drop(columns=['precipType']).to_dict('records')
-            json_data['hourly']['data'] = hourly_dict
+                hourly_df = self.Perez_split(forecast_df=hourly_df)
+                hourly_df = self.plane_of_array(df=hourly_df)
+                hourly_df = hourly_df.reset_index()
+                hourly_df['time'] = hourly_df['time'].astype(int)
+                hourly_dict = hourly_df.drop(columns=['precipType']).to_dict('records')
+                json_data['hourly']['data'] = hourly_dict
 
-        hourly = json_data['hourly']
-        predictions = []
-        hourly_output = {}
+            hourly = json_data['hourly']
+            predictions = []
+            hourly_output = {}
 
-        for hour in hourly.get('data',[]):
-            for key, value in hour.items():
-                hourly_output[key] = value
+            for hour in hourly.get('data',[]):
+                for key, value in hour.items():
+                    hourly_output[key] = value
 
-            if 'humidity' in hourly_output:
-                hourly_output['humidity'] *= 100
+                if 'humidity' in hourly_output:
+                    hourly_output['humidity'] *= 100
 
-            timestamp = int(hourly_output.get('time',None))
-            predictions.append(weather_station_pb2.WeatherStationPrediction.Prediction(
-                prediction_time=timestamp,
-                prediction=weather_station_pb2.WeatherStation(
-                    time  =   types.Int64(value=timestamp),
-                    icon  =  hourly_output.get('icon',None),
-                    nearestStormDistance  =   types.Double(value=hourly_output.get('nearestStormDistance',None)),
-                    nearestStormBearing  =   types.Double(value=hourly_output.get('nearestStormBearing',None)),
-                    precipIntensity  =   types.Double(value=hourly_output.get('precipIntensity',None)),
-                    precipIntensityError  =   types.Double(value=hourly_output.get('precipIntensityError',None)),
-                    precipProbability  =   types.Double(value=hourly_output.get('precipProbability',None)),
-                    precipType  =  hourly_output.get('precipType',None),
-                    temperature  =   types.Double(value=hourly_output.get('temperature',None)),
-                    apparentTemperature  =   types.Double(value=hourly_output.get('apparentTemperature',None)),
-                    dewPoint  =   types.Double(value=hourly_output.get('dewPoint',None)),
-                    humidity  =   types.Double(value=hourly_output.get('humidity',None)),
-                    pressure  =   types.Double(value=hourly_output.get('pressure',None)),
-                    windSpeed  =   types.Double(value=hourly_output.get('windSpeed',None)),
-                    windGust  =   types.Double(value=hourly_output.get('windGust',None)),
-                    windBearing  =   types.Double(value=hourly_output.get('windBearing',None)),
-                    cloudCover  =   types.Double(value=hourly_output.get('cloudCover',None)),
-                    uvIndex  =   types.Double(value=hourly_output.get('uvIndex',None)),
-                    visibility  =   types.Double(value=hourly_output.get('visibility',None)),
-                    ozone  =   types.Double(value=hourly_output.get('ozone',None)),
-                    estimatedGhi  =   types.Double(value=hourly_output.get('estimatedGhi',None)),
-                    beamRadiation  =   types.Double(value=hourly_output.get('beamRadiation',None)),
-                    diffuseRadiation  =   types.Double(value=hourly_output.get('diffuseRadiation',None)),
-                    poaSrOnPV =   types.Double(value=hourly_output.get('poaSrOnPV',None)),
-                    poaSrOnWindows  =   types.Double(value=hourly_output.get('poaSrOnWindows',None)),
-                )
-            ))
+                timestamp = int(hourly_output.get('time',None))
+                predictions.append(weather_station_pb2.WeatherStationPrediction.Prediction(
+                    prediction_time=timestamp,
+                    prediction=weather_station_pb2.WeatherStation(
+                        time  =   types.Int64(value=timestamp),
+                        icon  =  hourly_output.get('icon',None),
+                        nearestStormDistance  =   types.Double(value=hourly_output.get('nearestStormDistance',None)),
+                        nearestStormBearing  =   types.Double(value=hourly_output.get('nearestStormBearing',None)),
+                        precipIntensity  =   types.Double(value=hourly_output.get('precipIntensity',None)),
+                        precipIntensityError  =   types.Double(value=hourly_output.get('precipIntensityError',None)),
+                        precipProbability  =   types.Double(value=hourly_output.get('precipProbability',None)),
+                        precipType  =  hourly_output.get('precipType',None),
+                        temperature  =   types.Double(value=hourly_output.get('temperature',None)),
+                        apparentTemperature  =   types.Double(value=hourly_output.get('apparentTemperature',None)),
+                        dewPoint  =   types.Double(value=hourly_output.get('dewPoint',None)),
+                        humidity  =   types.Double(value=hourly_output.get('humidity',None)),
+                        pressure  =   types.Double(value=hourly_output.get('pressure',None)),
+                        windSpeed  =   types.Double(value=hourly_output.get('windSpeed',None)),
+                        windGust  =   types.Double(value=hourly_output.get('windGust',None)),
+                        windBearing  =   types.Double(value=hourly_output.get('windBearing',None)),
+                        cloudCover  =   types.Double(value=hourly_output.get('cloudCover',None)),
+                        uvIndex  =   types.Double(value=hourly_output.get('uvIndex',None)),
+                        visibility  =   types.Double(value=hourly_output.get('visibility',None)),
+                        ozone  =   types.Double(value=hourly_output.get('ozone',None)),
+                        estimatedGhi  =   types.Double(value=hourly_output.get('estimatedGhi',None)),
+                        beamRadiation  =   types.Double(value=hourly_output.get('beamRadiation',None)),
+                        diffuseRadiation  =   types.Double(value=hourly_output.get('diffuseRadiation',None)),
+                        poaSrOnPV =   types.Double(value=hourly_output.get('poaSrOnPV',None)),
+                        poaSrOnWindows  =   types.Double(value=hourly_output.get('poaSrOnWindows',None)),
+                    )
+                ))
 
-        time_now = int(time.time() * 1e9)
+            time_now = int(time.time() * 1e9)
 
-        hourly_msg = xbos_pb2.XBOS(
-            XBOSIoTDeviceState=iot_pb2.XBOSIoTDeviceState(
-                time=time_now,
-                weather_station_prediction=weather_station_pb2.WeatherStationPrediction(
-                    predictions=predictions
-                )
-            )
-        )
-        self.report(self.service_name+ '/prediction', hourly_msg)
-
-        if 'currently' not in json_data: return
-        currently_output = {}
-        for key, value in json_data['currently'].items():
-            currently_output[key] = value
-
-        if 'humidity' in currently_output:
-            currently_output['humidity'] *= 100 # change from decimal to percent
-
-        currently_msg = xbos_pb2.XBOS(
-            XBOSIoTDeviceState = iot_pb2.XBOSIoTDeviceState(
-                time = time_now,
-                weather_station = weather_station_pb2.WeatherStation(
-                    time  =   types.Int64(value=currently_output.get('time',None)),
-                    icon  =  currently_output.get('icon',None),
-                    nearestStormDistance  =   types.Double(value=currently_output.get('nearestStormDistance',None)),
-                    nearestStormBearing  =   types.Double(value=currently_output.get('nearestStormBearing',None)),
-                    precipIntensity  =   types.Double(value=currently_output.get('precipIntensity',None)),
-                    precipIntensityError  =   types.Double(value=currently_output.get('precipIntensityError',None)),
-                    precipProbability  =   types.Double(value=currently_output.get('precipProbability',None)),
-                    precipType  =  currently_output.get('precipType',None),
-                    temperature  =   types.Double(value=currently_output.get('temperature',None)),
-                    apparentTemperature  =   types.Double(value=currently_output.get('apparentTemperature',None)),
-                    dewPoint  =   types.Double(value=currently_output.get('dewPoint',None)),
-                    humidity  =   types.Double(value=currently_output.get('humidity',None)),
-                    pressure  =   types.Double(value=currently_output.get('pressure',None)),
-                    windSpeed  =   types.Double(value=currently_output.get('windSpeed',None)),
-                    windGust  =   types.Double(value=currently_output.get('windGust',None)),
-                    windBearing  =   types.Double(value=currently_output.get('windBearing',None)),
-                    cloudCover  =   types.Double(value=currently_output.get('cloudCover',None)),
-                    uvIndex  =   types.Double(value=currently_output.get('uvIndex',None)),
-                    visibility  =   types.Double(value=currently_output.get('visibility',None)),
-                    ozone  =   types.Double(value=currently_output.get('ozone',None)),
+            hourly_msg = xbos_pb2.XBOS(
+                XBOSIoTDeviceState=iot_pb2.XBOSIoTDeviceState(
+                    time=time_now,
+                    weather_station_prediction=weather_station_pb2.WeatherStationPrediction(
+                        predictions=predictions
+                    )
                 )
             )
-        )
-        self.report(self.service_name, currently_msg)
+            self.report(self.service_name+ '/prediction', hourly_msg)
+
+            if 'currently' not in json_data: return
+            currently_output = {}
+            for key, value in json_data['currently'].items():
+                currently_output[key] = value
+
+            if 'humidity' in currently_output:
+                currently_output['humidity'] *= 100 # change from decimal to percent
+
+            currently_msg = xbos_pb2.XBOS(
+                XBOSIoTDeviceState = iot_pb2.XBOSIoTDeviceState(
+                    time = time_now,
+                    weather_station = weather_station_pb2.WeatherStation(
+                        time  =   types.Int64(value=currently_output.get('time',None)),
+                        icon  =  currently_output.get('icon',None),
+                        nearestStormDistance  =   types.Double(value=currently_output.get('nearestStormDistance',None)),
+                        nearestStormBearing  =   types.Double(value=currently_output.get('nearestStormBearing',None)),
+                        precipIntensity  =   types.Double(value=currently_output.get('precipIntensity',None)),
+                        precipIntensityError  =   types.Double(value=currently_output.get('precipIntensityError',None)),
+                        precipProbability  =   types.Double(value=currently_output.get('precipProbability',None)),
+                        precipType  =  currently_output.get('precipType',None),
+                        temperature  =   types.Double(value=currently_output.get('temperature',None)),
+                        apparentTemperature  =   types.Double(value=currently_output.get('apparentTemperature',None)),
+                        dewPoint  =   types.Double(value=currently_output.get('dewPoint',None)),
+                        humidity  =   types.Double(value=currently_output.get('humidity',None)),
+                        pressure  =   types.Double(value=currently_output.get('pressure',None)),
+                        windSpeed  =   types.Double(value=currently_output.get('windSpeed',None)),
+                        windGust  =   types.Double(value=currently_output.get('windGust',None)),
+                        windBearing  =   types.Double(value=currently_output.get('windBearing',None)),
+                        cloudCover  =   types.Double(value=currently_output.get('cloudCover',None)),
+                        uvIndex  =   types.Double(value=currently_output.get('uvIndex',None)),
+                        visibility  =   types.Double(value=currently_output.get('visibility',None)),
+                        ozone  =   types.Double(value=currently_output.get('ozone',None)),
+                    )
+                )
+            )
+            self.report(self.service_name, currently_msg)
+        except:
+            print("error occured! continuing")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
