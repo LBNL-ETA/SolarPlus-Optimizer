@@ -65,6 +65,8 @@ def run():
     control.to_csv(outdir+'/control_{0}.csv'.format(start_time))
     measurements.to_csv(outdir+'/measurements_{0}.csv'.format(start_time))
     other_outputs.to_csv(outdir+'/other_outputs_{0}.csv'.format(start_time))
+    with open(outdir+'/optimal_statistics_{0}.txt'.format(start_time), 'a') as f:
+        f.write(str(start_time) + ': ' +  str(statistics) + '\n')
     # Push setpoints
     setpoints = controller.set_setpoints(control, measurements)
     setpoints.to_csv(outdir+'/setpoints_{0}.txt'.format(start_time))
