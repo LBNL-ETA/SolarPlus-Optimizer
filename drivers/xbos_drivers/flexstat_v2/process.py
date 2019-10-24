@@ -115,21 +115,33 @@ class XBOSProcess:
             except:
                 self._log.error(f"Error in processing callback: {traceback.format_exc()}")
 
-    async def query_topic(self, namespace, resource):
+    async def query_topic(self, namespace, resource, path):
         ns = ensure_b64decode(namespace)
-        values = []
+        responses = []
         async for msg in self._cl.Query(QueryParams(
                 perspective=self._perspective,
                 namespace=ns,
                 uri=resource,
                 )):
+            uri = msg.message.tbs.uri
+            namespace = ensure_b64encode(msg.message.tbs.namespace)
+            sent_timestamp = msg.message.timestamps
+            if len(sent_timestamp) == 0:
+                sent_timestamp = datetime.now()
+            else:
+                sent_timestamp = datetime.utcfromtimestamp(sent_timestamp[0]/1e9)
+
+            try:
+                values = []
                 for po in msg.message.tbs.payload:
                     x = xbos_pb2.XBOS.FromString(po.content)
                     x = MessageToDict(x)
-                    values.append(x)
-        
-        print("query completed")
-        return values
+                    values.append(jq.jq(path).transform(x))
+            except:
+                self._log.error(f"Error in processing callback: {traceback.format_exc()}")
+
+            responses.append(Response(namespace, uri, sent_timestamp, values))
+        return responses
 
 
     async def subscribe_extract(self, namespace, resource, path, callback, name=None):
@@ -166,8 +178,6 @@ class XBOSProcess:
                 content = msg.SerializeToString(),
                 ))
         namespace = ensure_b64decode(namespace)
-        print("publish uri = ", resource)
-        print("persist = ", persist)
         try:
             x = await self._cl.Publish(PublishParams(
                 perspective=self._perspective,
@@ -178,8 +188,6 @@ class XBOSProcess:
                 ))
             if not x:
                 self._log.error("Error publishing: {0}".format(x))
-            else:
-                print("published")
         except Exception as e:
             self._log.error("Error publishing: {0}".format(e))
 
