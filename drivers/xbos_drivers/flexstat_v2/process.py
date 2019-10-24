@@ -175,7 +175,6 @@ class XBOSProcess:
         while True:
             await asyncio.sleep(seconds)
             try:
-                print("insider while loop of call periodic before schedule")
                 schedule(cb(*args))
             except:
                 self._log.error(f"Error in processing callback: {traceback.format_exc()}")
@@ -213,8 +212,8 @@ def schedule(f):
     fun = asyncio.ensure_future(f)
     def handle_exception(f=None):
         exc = fun.exception()
-        #if exc is not None:
-            #self._log.error(exc)
+        if exc is not None:
+            self._log.error(exc)
     fun.add_done_callback(handle_exception)
 
 def run_loop():

@@ -1,0 +1,8 @@
+#conda create -n python36 python==3.6
+pandas
+bac0==0.99.932
+pyyaml
+jq
+toml
+xxhash
+aiogrpc
