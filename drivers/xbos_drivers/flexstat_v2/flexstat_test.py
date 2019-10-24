@@ -27,30 +27,30 @@ class FlexstatDriver(XBOSProcess):
 
 
 		print(resp.values[0])
-		print(resp.values[0]['coolingSetpoint']['value'])
+		# print(resp.values[0]['coolingSetpoint']['value'])
 
-
-		#setpoints = resp.values
-		#timestamp = setpoints['time']
-
-		#print("ts = ", timestamp)
-
-		#print(setpoints)
 
 	async def _read_and_publish(self, *args):
-            
-            msg = xbos_pb2.XBOS(
-                    flexstat_actuation_message = flexstat_pb2.FlexstateActuationMessage(
-                        setpoints = flexstat_pb2.FlexstatSetpoints(
-                            time = int(time.time()*1e9),
-                            heating_setpoint = types.Double(value=20.2),
-                            cooling_setpoint = types.Double(value=30.5)
-                            )
-                        )
-                    )
-            print(msg)
-            
-            await self.publish(self.namespace, "flexstat_test/test_tstat", msg)
+
+
+		setpoint_list = []
+		for i in range(5):
+			setpoint_list.append(
+				flexstat_pb2.FlexstatSetpoints(
+					change_time = int(time.time()*1e9),
+					heating_setpoint = types.Double(value = 20.2 + i),
+					cooling_setpoint = types.Double(value = 30.5 + i),
+				)
+			)
+			msg = xbos_pb2.XBOS(
+					flexstat_actuation_message = flexstat_pb2.FlexstateActuationMessage(
+						time = int(time.time()*1e9),
+						setpoints = setpoint_list
+						)
+					)
+			print(msg)
+			
+			await self.publish(self.namespace, "flexstat_test/test_tstat", msg)
 
 waved = 'localhost:777'
 wavemq = 'localhost:4516'
