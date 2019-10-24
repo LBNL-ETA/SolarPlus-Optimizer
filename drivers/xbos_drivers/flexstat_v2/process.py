@@ -115,6 +115,23 @@ class XBOSProcess:
             except:
                 self._log.error(f"Error in processing callback: {traceback.format_exc()}")
 
+    async def query_topic(self, namespace, resource):
+        ns = ensure_b64decode(namespace)
+        values = []
+        async for msg in self._cl.Query(QueryParams(
+                perspective=self._perspective,
+                namespace=ns,
+                uri=resource,
+                )):
+                for po in msg.message.tbs.payload:
+                    x = xbos_pb2.XBOS.FromString(po.content)
+                    x = MessageToDict(x)
+                    values.append(x)
+        
+        print("query completed")
+        return values
+
+
     async def subscribe_extract(self, namespace, resource, path, callback, name=None):
         """
         extracts the submessage at the given path
@@ -140,7 +157,7 @@ class XBOSProcess:
             callback(Response(namespace, uri, sent_timestamp, values))
         await self.subscribe_msg(namespace, resource, cb, name=name)
 
-    async def publish(self, namespace, resource, *msgs):
+    async def publish(self, namespace, resource, persist=False, *msgs):
         """publishes msgs in list as payload objects"""
         pos = []
         for msg in msgs:
@@ -149,12 +166,15 @@ class XBOSProcess:
                 content = msg.SerializeToString(),
                 ))
         namespace = ensure_b64decode(namespace)
+        print("publish uri = ", resource)
+        print("persist = ", persist)
         try:
             x = await self._cl.Publish(PublishParams(
                 perspective=self._perspective,
                 namespace=namespace,
                 uri = resource,
                 content = pos,
+                persist=persist
                 ))
             if not x:
                 self._log.error("Error publishing: {0}".format(x))
@@ -215,7 +235,8 @@ def schedule(f):
     def handle_exception(f=None):
         exc = fun.exception()
         if exc is not None:
-            self._log.error(exc)
+            # self._log.error(exc)
+            print(exc)
     fun.add_done_callback(handle_exception)
 
 def run_loop():
