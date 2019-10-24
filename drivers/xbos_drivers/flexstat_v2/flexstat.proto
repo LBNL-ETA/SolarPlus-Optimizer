@@ -2,7 +2,7 @@ syntax = "proto3";
 package xbospb;
 import "nullabletypes.proto";
 
-message FlexstateActuationMessage {
+message FlexstatActuationMessage {
 	uint64 time = 1;
 	repeated FlexstatSetpoints setpoints = 2;
 }

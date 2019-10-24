@@ -158,6 +158,8 @@ class XBOSProcess:
                 ))
             if not x:
                 self._log.error("Error publishing: {0}".format(x))
+            else:
+                print("published")
         except Exception as e:
             self._log.error("Error publishing: {0}".format(e))
 
