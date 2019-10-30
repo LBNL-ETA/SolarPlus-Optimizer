@@ -85,7 +85,8 @@ class FlexstatDriver(XBOSProcess):
 		for response in responses:
 			device = response.uri.split("/")[1]
 			setpoint_dict = self.extract_setpoint_dict(setpoint_values=response.values[0])
-			self._setpoints[device] = setpoint_dict
+			if not device in self._setpoints.keys():
+				self._setpoints[device] = setpoint_dict
 		await self._set_setpoints()
 
 	def _save_setpoints(self, resp):
