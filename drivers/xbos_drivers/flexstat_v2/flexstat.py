@@ -1,3 +1,7 @@
+import argparse
+import yaml
+import logging
+import BAC0
 import time
 from pyxbos.process import XBOSProcess, b64decode, b64encode, schedule, run_loop
 from pyxbos import xbos_pb2
@@ -204,10 +208,11 @@ class FlexstatDriver(XBOSProcess):
 							val = False
 					measurements[point] = val
 				print(measurements)
+				time_now = time.time() * 1e9
 
 				msg = xbos_pb2.XBOS(
 					flexstat_state=flexstat_pb2.FlexstatState(
-						time=int(time.time() * 1e9),
+						time=int(time_now),
 						space_temp_sensor=types.Double(value=measurements.get('space_temp_sensor', None)),
 						minimum_proportional=types.Double(value=measurements.get('minimum_proportional', None)),
 						active_cooling_setpt=types.Double(value=measurements.get('active_cooling_setpt', None)),
@@ -243,7 +248,8 @@ class FlexstatDriver(XBOSProcess):
 						fan_status=types.Int64(value=measurements.get('fan_status', None))
 					)
 				)
-				await self.publish(self.namespace, service_name, False, msg)
+				resource = self.base_resource+"/"+service_name
+				await self.publish(self.namespace, resource, False, msg)
 				print("published at time_now = ", time_now)
 			except:
 				print("error for thermostat {0} !! continuing!".format(service_name))
@@ -275,7 +281,7 @@ xbos_cfg = {
 	'base_resource': base_resource,
 	'entity': entity,
 	'id': driver_id,
-	'publish_rate': publish_rate,
+	'publish_rate': rate,
 	'check_setpoint_rate': check_setpoint_rate,
 	'service_name_map': service_name_map,
 	'config_file': config_file,
