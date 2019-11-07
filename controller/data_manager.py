@@ -7,6 +7,16 @@ import yaml
 import requests
 import json
 
+# xboswave packages
+from pyxbos.eapi_pb2 import *
+from pyxbos.wavemq_pb2 import *
+from pyxbos.wavemq_pb2_grpc import *
+from grpc import insecure_channel
+from pyxbos import xbos_pb2
+from pyxbos import flexstat_pb2
+from pyxbos import nullabletypes_pb2 as types
+import base64
+
 class Data_Manager():
 
     def __init__(self, data_path="data", data_manager_config=None):
@@ -76,8 +86,19 @@ class Data_Manager():
             -------
             None
         '''
-        self.xbos_url = xbos_cfg['web_server_url']
-        self.xbos_req_headers = {'Content-Type': 'application/json'}
+        # self.xbos_url = xbos_cfg.get('web_server_url', None)
+        # self.xbos_req_headers = {'Content-Type': 'application/json'}
+
+        self.entity = open(xbos_cfg.get('entity'), 'rb').read()
+        self.perspective = Perspective(
+            entitySecret=EntitySecret(DER=self.entity),
+        )
+        self.namespace = self.ensure_b64decode(xbos_cfg.get('namespace'))
+        self.wavemq = xbos_cfg.get('wavemq', 'localhost:4516')
+        wavemq_channel = insecure_channel(self.wavemq)
+        self.xbos_client = WAVEMQStub(wavemq_channel)
+        self.xbos_schema = "xbosproto/XBOS"
+
 
     def init_csv(self, files):
         '''For all the csv files in the config["csv_files"], get a dictionary of dataframes {filename, DataFrame, ..}
@@ -95,6 +116,12 @@ class Data_Manager():
             filename = self.data_path + file
             if not os.path.exists(filename):
                 raise Exception("file {0} does not exist in folder {1}".format(file, self.data_path))
+
+    def b64decode(self, e):
+        return base64.b64decode(e, altchars=bytes('-_', 'utf8'))
+
+    def ensure_b64decode(self, e):
+        return e if isinstance(e, bytes) else self.b64decode(e)
 
 
     def get_single_data_from_influx(self, measurement, variable_uuid, start_time=None, end_time=None, window='5m', agg='mean'):
@@ -531,6 +558,54 @@ class Data_Manager():
         influx_dataframe_client.write_points(dataframe=df, measurement=measurement, tag_columns=['name'],
                                         field_columns=['value'])
 
+    def publish_on_wavemq(self, uri, *msgs):
+        """publishes msgs in list as payload objects"""
+        pos = []
+        for msg in msgs:
+            pos.append(PayloadObject(
+                schema = self.xbos_schema,
+                content = msg.SerializeToString(),
+                ))
+
+        try:
+            x = self.xbos_client.Publish(PublishParams(
+                perspective=self.perspective,
+                namespace=self.namespace,
+                uri = uri,
+                content = pos,
+                ))
+
+            if not x:
+                print("Error publishing: {0}".format(x))
+        except Exception as e:
+            print("Error publishing: {0}".format(e))
+
+    def set_setpoints_xbos(self, df, device_config):
+        for device in device_config:
+            var_cfg = device_config[device]
+
+            cols = {}
+            for variable in var_cfg:
+                df_var_name = var_cfg[variable]
+                if df_var_name in df.columns:
+                    cols[df_var_name] = variable
+
+            df.columns = df.columns.map(cols)
+
+            setpoint_list = []
+            if device.startswith("flexstat"):
+                for index, row in df.iterrows():
+                    setpoint = flexstat_pb2.FlexstatSetpoints(change_time=index, heating_setpoint=row.get('heating_setpoint', None), cooling_setpoint=row.get('cooling_setpoint', None))
+                    setpoint_list.append(setpoint)
+                msg = xbos_pb2.XBOS(
+                    flexstat_actuation_message=flexstat_pb2.FlexstatActuationMessage(
+                        time=int(time.time() * 1e9),
+                        setpoints = setpoint_list
+                    )
+                )
+            self.publish_on_wavemq(uri=device, msgs=msg)
+
+
     def set_setpoints(self, df):
         '''Set following variables: uCharge, uDischarge, Trtu, Tref, Tfre, Trtu_cool, Trtu_heat
 
@@ -552,6 +627,9 @@ class Data_Manager():
             elif source_type == "influxdb":
                 measurement = self.data_sink["setpoints"]["measurement"]
                 self.write_df_to_influx(df=df, influx_dataframe_client=self.influx_client, measurement=measurement)
+            elif source_type == "xbos":
+                device_config = self.data_sink["setpoints"]["devices"]
+                self.set_setpoints_xbos(df=df, device_config=device_config)
 
     def set_data(self, df):
         '''Set one or more columns in the dataframe to corresponding destinations in data_sink

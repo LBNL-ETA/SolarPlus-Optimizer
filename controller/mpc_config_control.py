@@ -86,7 +86,12 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Shadow/Constraints_Forecast.csv"
         ],
         "influxdb": {"config_filename":"database_client/config.yaml",
-                     "section": "database"}
+                     "section": "database"},
+        "xbos": {
+            "namespace": "",
+            "wavemq": "localhost:4516",
+            "entity": "data_manager.ent"
+        }
     },
     # "weather": {
     #     "type": "csv",
@@ -159,8 +164,11 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 
     "data_sink": {
         "setpoints": {
-            "type": "csv",
-            "filename": "Shadow/setpoints.csv"
+            "type": "csv|xbos",
+            "filename": "Shadow/setpoints.csv",
+            "devices": {
+                "flexstat_test/thermostat/actuation": {"cooling_setpoint": "Trtu"}
+            }
         },
         "variables": {
             "Pbattery": {
