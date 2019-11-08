@@ -592,12 +592,25 @@ class Data_Manager():
                 if df_var_name in df.columns:
                     cols[df_var_name] = variable
 
-            df.columns = df.columns.map(cols)
+            df.columns = [cols[col] if col in cols.keys() else col for col in df.columns]
 
             setpoint_list = []
             if device.startswith("flexstat"):
                 for index, row in df.iterrows():
-                    setpoint = flexstat_pb2.FlexstatSetpoints(change_time=index, heating_setpoint=row.get('heating_setpoint', None), cooling_setpoint=row.get('cooling_setpoint', None))
+                    change_time = index
+                    hsp = row.get('heating_setpoint', None)
+                    csp = row.get('cooling_setpoint', None)
+
+                    if hsp != None and csp != None:
+                        setpoint = flexstat_pb2.FlexstatSetpoints(change_time=change_time,
+                                                                  heating_setpoint=types.Double(value=hsp),
+                                                                  cooling_setpoint=types.Double(value=csp))
+                    elif hsp!=None:
+                        setpoint = flexstat_pb2.FlexstatSetpoints(change_time=change_time,
+                                                                  heating_setpoint=types.Double(value=hsp))
+                    elif csp!=None:
+                        setpoint = flexstat_pb2.FlexstatSetpoints(change_time=change_time,
+                                                                  cooling_setpoint=types.Double(value=csp))
                     setpoint_list.append(setpoint)
                 msg = xbos_pb2.XBOS(
                     flexstat_actuation_message=flexstat_pb2.FlexstatActuationMessage(
