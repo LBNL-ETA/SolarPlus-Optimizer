@@ -18,6 +18,8 @@ thermostat_config:
   time_threshold_revert_to_default: 3600
   default_heating_setpoint: 60
   default_cooling_setpoint: 74
+  heating_setpoint_limit: 60
+  cooling_setpoint_limit: 78
   ip_addresses: [<>.10, <>.11]
   bacnet_device_ids: [1, 1]
   point_map:

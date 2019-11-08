@@ -6,6 +6,7 @@ from influxdb import DataFrameClient
 import yaml
 import requests
 import json
+import time
 
 # xboswave packages
 from pyxbos.eapi_pb2 import *
@@ -123,8 +124,7 @@ class Data_Manager():
         return base64.b64decode(e, altchars=bytes('-_', 'utf8'))
 
     def ensure_b64decode(self, e):
-        return e if isinstance(e, bytes) else self.b64decode(e)
-
+        return bytes(base64.b64decode(e, altchars=('-_')))
 
     def get_single_data_from_influx(self, measurement, variable_uuid, start_time=None, end_time=None, window='5m', agg='mean'):
         '''From the influxdb measurement, get one particular variable as a DataFrame
@@ -575,8 +575,8 @@ class Data_Manager():
                 namespace=self.namespace,
                 uri = uri,
                 content = pos,
+                persist=True
                 ))
-
             if not x:
                 print("Error publishing: {0}".format(x))
         except Exception as e:
@@ -597,7 +597,7 @@ class Data_Manager():
             setpoint_list = []
             if device.startswith("flexstat"):
                 for index, row in df.iterrows():
-                    change_time = index
+                    change_time = int(index.value)
                     hsp = row.get('heating_setpoint', None)
                     csp = row.get('cooling_setpoint', None)
 
@@ -618,8 +618,7 @@ class Data_Manager():
                         setpoints = setpoint_list
                     )
                 )
-            self.publish_on_wavemq(uri=device, msgs=msg)
-
+            self.publish_on_wavemq(device, msg)
 
     def set_setpoints(self, df):
         '''Set following variables: uCharge, uDischarge, Trtu, Tref, Tfre, Trtu_cool, Trtu_heat

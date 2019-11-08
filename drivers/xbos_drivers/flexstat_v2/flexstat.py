@@ -29,6 +29,8 @@ class FlexstatDriver(XBOSProcess):
 		self._default_time_threshold = self.thermostat_config.get("default_time_threshold", 60)
 		self._default_heating_setpoint = self.thermostat_config.get("default_heating_setpoint", 67)
 		self._default_cooling_setpoint = self.thermostat_config.get("default_cooling_setpoint", 74)
+		self._heating_setpoint_limit = self.thermostat_config.get("heating_setpoint_limit", 60)
+		self._cooling_setpoint_limit = self.thermostat_config.get("cooling_setpoint_limit", 78)
 
 		self.init_thermostats()
 
@@ -157,8 +159,10 @@ class FlexstatDriver(XBOSProcess):
 
 	def change_setpoints(self, device, variable_name, new_value):
 		if new_value!=None:
-			# TODO: remove during deployment
 			if variable_name == 'heating_setpoint':
+
+				if self._heating_setpoint_limit > new_value:
+					new_value = self._heating_setpoint_limit
 
 				occ_hsp_bacnet_variable_name = self.point_map['occ_heating_setpt']
 				current_occ_heating_sp = self.device_map[device][occ_hsp_bacnet_variable_name].value
@@ -167,8 +171,8 @@ class FlexstatDriver(XBOSProcess):
 				current_unocc_heating_sp = self.device_map[device][unocc_hsp_bacnet_variable_name].value
 
 				if current_occ_heating_sp != new_value or current_unocc_heating_sp != new_value:
-					self.device_map[device][occ_hsp_bacnet_variable_name] = new_value
-					self.device_map[device][unocc_hsp_bacnet_variable_name] = new_value
+					self.device_map[device][occ_hsp_bacnet_variable_name].write(new_value, priority=8)
+					self.device_map[device][unocc_hsp_bacnet_variable_name].write(new_value, priority=8)
 					print("device %s, variable= %s, bacnet variable=%s, old value = %f, new value = %f" % (
 					device, variable_name, occ_hsp_bacnet_variable_name, current_occ_heating_sp, new_value))
 					print("device %s, variable= %s, bacnet variable=%s, old value = %f, new value = %f" % (
@@ -176,6 +180,10 @@ class FlexstatDriver(XBOSProcess):
 					print()
 
 			if variable_name == 'cooling_setpoint':
+
+				if self._cooling_setpoint_limit < new_value:
+					new_value = self._cooling_setpoint_limit
+
 				occ_csp_bacnet_variable_name = self.point_map['occ_cooling_setpt']
 				current_occ_cooling_sp = self.device_map[device][occ_csp_bacnet_variable_name].value
 
@@ -183,8 +191,8 @@ class FlexstatDriver(XBOSProcess):
 				current_unocc_cooling_sp = self.device_map[device][unocc_csp_bacnet_variable_name].value
 
 				if current_occ_cooling_sp != new_value or current_unocc_cooling_sp != new_value:
-					self.device_map[device][occ_csp_bacnet_variable_name] = new_value
-					self.device_map[device][unocc_csp_bacnet_variable_name] = new_value
+					self.device_map[device][occ_csp_bacnet_variable_name].write(new_value, priority=8)
+					self.device_map[device][unocc_csp_bacnet_variable_name].write(new_value, priority=8)
 					print("device %s, variable= %s, bacnet variable=%s, old value = %f, new value = %f" % (
 					device, variable_name, occ_csp_bacnet_variable_name, current_occ_cooling_sp, new_value))
 					print("device %s, variable= %s, bacnet variable=%s, old value = %f, new value = %f" % (
@@ -207,7 +215,6 @@ class FlexstatDriver(XBOSProcess):
 						else:
 							val = False
 					measurements[point] = val
-				print(measurements)
 				time_now = time.time() * 1e9
 
 				msg = xbos_pb2.XBOS(
