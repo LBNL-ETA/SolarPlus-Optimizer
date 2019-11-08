@@ -43,8 +43,10 @@ class Data_Manager():
                     self.influx_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
                 self.init_influx(influx_cfg=self.influx_cfg)
             elif source_type == "xbos":
-                with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
-                    self.xbos_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
+                # TODO: FIX THIS
+                # with open(self.data_manager_config["source"][source_type]["config_filename"], "r") as fp:
+                # self.xbos_cfg = yaml.safe_load(fp)[self.data_manager_config["source"][source_type]["section"]]
+                self.xbos_cfg = self.data_manager_config["source"]["xbos"]
                 self.init_xbos(xbos_cfg=self.xbos_cfg)
 
 

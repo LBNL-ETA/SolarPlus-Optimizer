@@ -15,7 +15,8 @@ import mpc_config_control as mpc_config
 from mpc import mpc
 
 def run():
-    tz_computer = 'America/Los_Angeles'
+    #tz_computer = 'America/Los_Angeles'
+    tz_computer = 'UTC'
 
     # Setup
     # ==============================================================================
@@ -78,6 +79,15 @@ def run():
 if __name__ == '__main__':
     minute = -1
     while True:
+        try:
+            run()
+            time.sleep(60)
+            print("run passed")
+        except Exception as e:
+            print("error: ",e)
+            raise e
+
+        '''
         time.sleep(1)
         t = datetime.datetime.now()
         print(t)
@@ -88,3 +98,4 @@ if __name__ == '__main__':
                 print('Run ended ok.')
             except:
                 print('Run ended in error.')
+        '''
