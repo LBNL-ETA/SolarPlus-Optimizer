@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 # --------------------------------------------------------------------------
 # Estimation periods
 start_time = '2019-11-06 08:00:00+00:00' # UTC time
-final_time = '2019-11-07 07:00:00+00:00' # UTC time
+final_time = '2019-11-06 10:00:00+00:00' # UTC time
 # local_time = 'America/Los_Angeles'
 # Model definition
 mopath = 'models/SolarPlus.mo'
