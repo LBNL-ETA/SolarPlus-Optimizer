@@ -16,7 +16,7 @@ thermostat_config:
   bacnet_router_address: <>.254
   bbmd_ttl: 600
   time_threshold_revert_to_default: 3600
-  default_heating_setpoint: 60
+  default_heating_setpoint: 68
   default_cooling_setpoint: 74
   heating_setpoint_limit: 60
   cooling_setpoint_limit: 78
