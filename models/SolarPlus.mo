@@ -865,6 +865,9 @@ package SolarPlus "This package contains models for MPC control optimization."
           Rref_fre=0.018),
         multiSum(k={0.001,0.001,0.001,0.001,0.001,0.001/4}),
         Battery(eta=0.88));
+      parameter Modelica.SIunits.Temperature TSpRtu;
+      parameter Modelica.SIunits.Temperature TSpRef;
+      parameter Modelica.SIunits.Temperature TSpFre;
     Modelica.Blocks.Interfaces.RealInput uHeat "Heating signal input"
       annotation (Placement(transformation(extent={{-140,-40},{-100,0}}),
             iconTransformation(extent={{-140,-40},{-100,0}})));
@@ -887,8 +890,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{44,-182},{56,-170}})));
     Modelica.Blocks.Math.Product squareTrtu
       annotation (Placement(transformation(extent={{14,-112},{20,-106}})));
-      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant rtu(k=23.3 +
-            273.15)
+      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant TSetRtu(k=TSpRtu)
         annotation (Placement(transformation(extent={{-80,-130},{-60,-110}})));
       Modelica.Blocks.Math.Add add(k2=-1)
         annotation (Placement(transformation(extent={{-40,-120},{-20,-100}})));
@@ -896,15 +898,13 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{-40,-160},{-20,-140}})));
     Modelica.Blocks.Math.Product squareTref
         annotation (Placement(transformation(extent={{14,-152},{20,-146}})));
-      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant ref(k=0.56 +
-            273.15)
+      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant TSetRef(k=TSpRef)
         annotation (Placement(transformation(extent={{-80,-170},{-60,-150}})));
       Modelica.Blocks.Math.Add add2(k2=-1)
         annotation (Placement(transformation(extent={{-40,-200},{-20,-180}})));
     Modelica.Blocks.Math.Product squareTfre
         annotation (Placement(transformation(extent={{14,-180},{20,-174}})));
-      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant fre(k=-21.7 +
-            273.15)
+      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant TSetFre(k=TSpFre)
         annotation (Placement(transformation(extent={{-80,-210},{-60,-190}})));
       Modelica.Blocks.Interfaces.RealOutput Pnet_pen
         annotation (Placement(transformation(extent={{100,-180},{120,-160}}),
@@ -950,9 +950,8 @@ package SolarPlus "This package contains models for MPC control optimization."
                                          color={0,0,127}));
       connect(squareTrtu.y, multiSum1.u[1]) annotation (Line(points={{20.3,-109},
               {32,-109},{32,-173.2},{44,-173.2}}, color={0,0,127}));
-      connect(ref.y, add1.u2)
-        annotation (Line(points={{-58,-160},{-50,-160},{-50,-156},{-42,-156}},
-                                                         color={0,0,127}));
+      connect(TSetRef.y, add1.u2) annotation (Line(points={{-58,-160},{-50,-160},{-50,
+              -156},{-42,-156}}, color={0,0,127}));
       connect(add1.y, squareTref.u1) annotation (Line(points={{-19,-150},{-4,
               -150},{-4,-147.2},{13.4,-147.2}},
                                           color={0,0,127}));
@@ -962,8 +961,8 @@ package SolarPlus "This package contains models for MPC control optimization."
       connect(add2.y, squareTfre.u1) annotation (Line(points={{-19,-190},{0,
               -190},{0,-175.2},{13.4,-175.2}},
                                          color={0,0,127}));
-      connect(fre.y, add2.u2) annotation (Line(points={{-58,-200},{-49.5,-200},
-              {-49.5,-196},{-42,-196}}, color={0,0,127}));
+      connect(TSetFre.y, add2.u2) annotation (Line(points={{-58,-200},{-49.5,-200},{
+              -49.5,-196},{-42,-196}}, color={0,0,127}));
       connect(squareTref.y, multiSum1.u[2]) annotation (Line(points={{20.3,-149},
               {30,-149},{30,-176},{44,-176}}, color={0,0,127}));
       connect(squareTfre.y, multiSum1.u[3]) annotation (Line(points={{20.3,-177},
@@ -977,8 +976,8 @@ package SolarPlus "This package contains models for MPC control optimization."
               -176}},                     color={0,0,127}));
       connect(add3.y, Pnet_pen) annotation (Line(points={{92,-170},{110,-170}},
                                     color={0,0,127}));
-      connect(rtu.y, add.u2) annotation (Line(points={{-58,-120},{-46,-120},{
-              -46,-116},{-42,-116}}, color={0,0,127}));
+      connect(TSetRtu.y, add.u2) annotation (Line(points={{-58,-120},{-46,-120},{-46,
+              -116},{-42,-116}}, color={0,0,127}));
       connect(add1.u1, Tref) annotation (Line(points={{-42,-144},{-54,-144},{
               -54,-132},{0,-132},{0,-120},{110,-120}}, color={0,0,127}));
       connect(add2.u1, Tfre) annotation (Line(points={{-42,-184},{-54,-184},{
@@ -1602,7 +1601,10 @@ package SolarPlus "This package contains models for MPC control optimization."
       end BaseClasses;
 
       model Store
-        extends BaseClasses.partialStore;
+        extends BaseClasses.partialStore(store(
+            TSpRtu=20.5 + 273.15,
+            TSpRef=0.5 + 273.15,
+            TSpFre=-21.6 + 273.15));
       Modelica.Blocks.Interfaces.RealInput uHeat "Heating signal input"
           annotation (Placement(transformation(extent={{-140,-26},{-100,14}}),
               iconTransformation(extent={{-140,-40},{-100,0}})));
