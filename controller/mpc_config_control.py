@@ -167,7 +167,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "type": "csv|xbos",
             "filename": "Shadow/setpoints.csv",
             "devices": {
-                "flexstat_test/thermostat_west/actuation": {"cooling_setpoint": "Trtu"}
+                "flexstat_test/thermostat_east/actuation": {"cooling_setpoint": "Trtu"}
             }
         },
         "variables": {
