@@ -102,10 +102,12 @@ if simulate_initial:
 # --------------------------------------------------------------------------
 # Solve estimation problem
 model.estimate(start_time, final_time, ['Trtu','Tref','Tfre'])
-model.validate(start_time, final_time, 'validate', plot=0)
-for key in ['Trtu','Tref','Tfre']:
-    plt.plot(model.measurements[key]['Simulated'].get_base_data()-273.15, label=key+'_Simulated')
-    plt.plot(model.measurements[key]['Measured'].get_base_data()-273.15, label=key+'_Measured')
-    plt.legend()
-plt.show()
+for key in model.parameter_data.keys():
+    print(key, model.parameter_data[key]['Value'].display_data())
+# model.validate(start_time, final_time, 'validate', plot=1)
+# for key in ['Trtu','Tref','Tfre']:
+#     plt.plot(model.measurements[key]['Simulated'].get_base_data()-273.15, label=key+'_Simulated')
+#     plt.plot(model.measurements[key]['Measured'].get_base_data()-273.15, label=key+'_Measured')
+#     plt.legend()
+# plt.show()
 # --------------------------------------------------------------------------
