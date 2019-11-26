@@ -26,7 +26,7 @@ class FlexstatDriver(XBOSProcess):
 		self.bacnet_router_address = self.thermostat_config.get('bacnet_router_address', None)
 		self.bbmd_ttl = self.thermostat_config.get('bbmd_ttl', None)
 
-		self._default_time_threshold = self.thermostat_config.get("default_time_threshold", 60)
+		self._default_time_threshold = self.thermostat_config.get("time_threshold_revert_to_default", 14400)
 		self._default_heating_setpoint = self.thermostat_config.get("default_heating_setpoint", 67)
 		self._default_cooling_setpoint = self.thermostat_config.get("default_cooling_setpoint", 74)
 		self._heating_setpoint_limit = self.thermostat_config.get("heating_setpoint_limit", 60)
@@ -116,7 +116,7 @@ class FlexstatDriver(XBOSProcess):
 			setpoint_dict = self.extract_setpoint_dict(setpoint_values=response.values[0])
 			if not device in self._setpoints.keys():
 				self._setpoints[device] = setpoint_dict
-		await self._set_setpoints()
+		#await self._set_setpoints()
 
 	def _save_setpoints(self, resp):
 		device = resp.uri.split('-')[-1].split("/")[1]
@@ -129,27 +129,27 @@ class FlexstatDriver(XBOSProcess):
 		for device in device_setpoint_dict:
 			found = False
 			setpoint_dict = device_setpoint_dict[device]
-			
-			for change_time in sorted(setpoint_dict, reverse=True):
-				if not found and time_now > change_time:
-					found = True
-					if (time_now - change_time) > self._default_time_threshold:
-						# CASE1: if time_now is at least an hour ahead of the last setpoint in the list of setpoints, set to default setpoints
-						heating_setpoint = self._default_heating_setpoint
-						cooling_setpoint = self._default_cooling_setpoint
-					else:
+			first_change_time = sorted(setpoint_dict)[0]
+
+			if abs(time_now - first_change_time) > self._default_time_threshold:
+				# CASE1: time now is at least 4 hours ahead of the last time MPC published the setpoints, set to default setpoints (first change_time of setpoints is approximately the same time as the time MPC ran)
+				heating_setpoint = self._default_heating_setpoint
+				cooling_setpoint = self._default_cooling_setpoint
+			else:
+				for change_time in sorted(setpoint_dict, reverse=True):
+					if not found and time_now > change_time:
+						found = True
 						# CASE2: if time_now is between the list of setpoints, get the new setpoints
 						heating_setpoint = setpoint_dict[change_time].get('heating_setpoint', None)
 						cooling_setpoint = setpoint_dict[change_time].get('cooling_setpoint', None)
-			
+
 			if not found:
-				first_change_time = sorted(setpoint_dict)[0]
 				if (first_change_time - time_now) > self._default_time_threshold:
-					# CASE3: if the tiem_now is more than 1 hour before the 1st setpoint in the list of setpoints; set default setpoints
+					# CASE3: if the time_now is more than 4 hours before the 1st setpoint in the list of setpoints; set default setpoints
 					heating_setpoint = self._default_heating_setpoint
 					cooling_setpoint = self._default_cooling_setpoint
 				else:
-					# CASE4: if the tiem_now is less than 1 hour before the 1st setpoint in the list of setpoints; do not change anything
+					# CASE4: if the tiem_now is less than 4 hours before the 1st setpoint in the list of setpoints; do not change anything
 					heating_setpoint = None
 					cooling_setpoint = None
 			
@@ -159,16 +159,17 @@ class FlexstatDriver(XBOSProcess):
 
 	def change_setpoints(self, device, variable_name, new_value):
 		if new_value!=None:
+			new_value = round(new_value, 2)
 			if variable_name == 'heating_setpoint':
 
 				if self._heating_setpoint_limit > new_value:
 					new_value = self._heating_setpoint_limit
 
 				occ_hsp_bacnet_variable_name = self.point_map['occ_heating_setpt']
-				current_occ_heating_sp = self.device_map[device][occ_hsp_bacnet_variable_name].value
+				current_occ_heating_sp = round(self.device_map[device][occ_hsp_bacnet_variable_name].value, 2)
 
 				unocc_hsp_bacnet_variable_name = self.point_map['unocc_heating_setpt']
-				current_unocc_heating_sp = self.device_map[device][unocc_hsp_bacnet_variable_name].value
+				current_unocc_heating_sp = round(self.device_map[device][unocc_hsp_bacnet_variable_name].value, 2)
 
 				if current_occ_heating_sp != new_value or current_unocc_heating_sp != new_value:
 					self.device_map[device][occ_hsp_bacnet_variable_name].write(new_value, priority=8)
@@ -178,6 +179,9 @@ class FlexstatDriver(XBOSProcess):
 					print("device %s, variable= %s, bacnet variable=%s, old value = %f, new value = %f" % (
 					device, variable_name, unocc_hsp_bacnet_variable_name, current_unocc_heating_sp, new_value))
 					print()
+				else:
+					print("no change in setpoint, not changing")
+
 
 			if variable_name == 'cooling_setpoint':
 
@@ -185,10 +189,10 @@ class FlexstatDriver(XBOSProcess):
 					new_value = self._cooling_setpoint_limit
 
 				occ_csp_bacnet_variable_name = self.point_map['occ_cooling_setpt']
-				current_occ_cooling_sp = self.device_map[device][occ_csp_bacnet_variable_name].value
+				current_occ_cooling_sp = round(self.device_map[device][occ_csp_bacnet_variable_name].value, 2)
 
 				unocc_csp_bacnet_variable_name = self.point_map['unocc_cooling_setpt']
-				current_unocc_cooling_sp = self.device_map[device][unocc_csp_bacnet_variable_name].value
+				current_unocc_cooling_sp = round(self.device_map[device][unocc_csp_bacnet_variable_name].value, 2)
 
 				if current_occ_cooling_sp != new_value or current_unocc_cooling_sp != new_value:
 					self.device_map[device][occ_csp_bacnet_variable_name].write(new_value, priority=8)
@@ -198,6 +202,8 @@ class FlexstatDriver(XBOSProcess):
 					print("device %s, variable= %s, bacnet variable=%s, old value = %f, new value = %f" % (
 					device, variable_name, unocc_csp_bacnet_variable_name, current_unocc_cooling_sp, new_value))
 					print()
+				else:
+					print("no change in setpoint, not changing")
 
 	async def _read_and_publish(self, *args):
 
@@ -209,11 +215,88 @@ class FlexstatDriver(XBOSProcess):
 				for point in self.point_map:
 					bacnet_point_name = self.point_map[point]
 					val = device[bacnet_point_name].value
+					if point == "app_main_type":
+						if val == "NOT CONFIGURED":
+							val = 0
+						elif val == "AIR HANDLER":
+							val = 1
+						elif val == "ROOF TOP":
+							val = 2
+						elif val == "FAN COIL":
+							val = 3
+						elif val == "HEAT PUMP":
+							val = 4
+						else:
+							val = 5
+					elif point == "app_sub_type":
+						if val == "1H / 1C":
+							val = 0
+						elif val == "1H / 2C":
+							val = 1
+						elif val == "2H / 1C":
+							val = 2
+						elif val == "2H / 2C":
+							val = 3
+						else:
+							val = 4
+					elif point == "fan_control_type":
+						if val == "CONSTANT SPEED":
+							val = 0
+						else:
+							val = 1
+					elif point == "oa_damper_option":
+						if val == "NONE":
+							val = 0
+						elif val == "MODULATING":
+							val = 1
+						elif val == "EN/DIS":
+							val = 2
+						else:
+							val = 3
+					elif point == "system_mode":
+						if val == "AUTO":
+							val = 0
+						elif val == "HEATING":
+							val = 1
+						elif val == "COOLING":
+							val = 2
+						elif val == "OFF":
+							val = 3
+						else:
+							val = 4
+					elif point == "fan_speed_output":
+						if val == "NOT USED":
+							val = 0
+						else:
+							val = 1
+					elif point == "ui_mode":
+						if val == "STANDARD":
+							val = 0
+						elif val == "HOSPITALITY":
+							val = 1
+						elif val == "LOCKED UI":
+							val = 2
+						else:
+							val = 3
+					elif point == "temperature_reference":
+						if val == "ONBOARD":
+							val = 0
+						elif val == "REMOTE":
+							val = 1
+						elif val == "AVERAGE":
+							val = 2
+						elif val == "HIGHEST":
+							val = 3
+						elif val == "LOWEST":
+							val = 4
+						else:
+							val = 5
+
 					if type(val) == str:
 						if val == "active":
-							val = True
+							val = 1
 						else:
-							val = False
+							val = 0
 					measurements[point] = val
 				time_now = time.time() * 1e9
 
@@ -228,6 +311,8 @@ class FlexstatDriver(XBOSProcess):
 						unocc_heating_setpt=types.Double(value=measurements.get('unocc_heating_setpt', None)),
 						occ_min_clg_setpt=types.Double(value=measurements.get('occ_min_clg_setpt', None)),
 						occ_max_htg_setpt=types.Double(value=measurements.get('occ_max_htg_setpt', None)),
+						stage_delay=types.Double(value=measurements.get('stage_delay', None)),
+						fan_shutoff_delay=types.Double(value=measurements.get('fan_shutoff_delay', None)),
 						override_timer=types.Double(value=measurements.get('override_timer', None)),
 						occ_cooling_setpt=types.Double(value=measurements.get('occ_cooling_setpt', None)),
 						occ_heating_setpt=types.Double(value=measurements.get('occ_heating_setpt', None)),
@@ -244,15 +329,35 @@ class FlexstatDriver(XBOSProcess):
 						heating_prop=types.Double(value=measurements.get('heating_prop', None)),
 						cooling_intg=types.Double(value=measurements.get('cooling_intg', None)),
 						heating_intg=types.Double(value=measurements.get('heating_intg', None)),
+						app_main_type=types.Int64(value=measurements.get('app_main_type', None)),
+						app_sub_type=types.Int64(value=measurements.get('app_sub_type', None)),
+						fan_control_type=types.Int64(value=measurements.get('fan_control_type', None)),
+						oa_damper_option=types.Int64(value=measurements.get('oa_damper_option', None)),
+						system_mode=types.Int64(value=measurements.get('system_mode', None)),
+						fan_speed_output=types.Int64(value=measurements.get('fan_speed_output', None)),
+						ui_mode=types.Int64(value=measurements.get('ui_mode', None)),
+						temperature_reference=types.Int64(value=measurements.get('temperature_reference', None)),
 						fan=types.Int64(value=measurements.get('fan', None)),
+						cool_1=types.Int64(value=measurements.get('cool_1', None)),
+						cool_2=types.Int64(value=measurements.get('cool_2', None)),
+						heat_1=types.Int64(value=measurements.get('heat_1', None)),
+						bo_05=types.Int64(value=measurements.get('bo_05', None)),
+						bo_06=types.Int64(value=measurements.get('bo_06', None)),
 						occupancy_mode=types.Int64(value=measurements.get('occupancy_mode', None)),
 						setpt_override_mode=types.Int64(value=measurements.get('setpt_override_mode', None)),
+						economizer_mode=types.Int64(value=measurements.get('economizer_mode', None)),
+						low_limit_condition=types.Int64(value=measurements.get('low_limit_condition', None)),
 						fan_alarm=types.Int64(value=measurements.get('fan_alarm', None)),
 						fan_need=types.Int64(value=measurements.get('fan_need', None)),
 						heating_cooling_mode=types.Int64(value=measurements.get('heating_cooling_mode', None)),
 						occ_fan_auto_on=types.Int64(value=measurements.get('occ_fan_auto_on', None)),
 						unocc_fan_auto_on=types.Int64(value=measurements.get('unocc_fan_auto_on', None)),
-						fan_status=types.Int64(value=measurements.get('fan_status', None))
+						f_c_flag=types.Int64(value=measurements.get('f_c_flag', None)),
+						fan_status=types.Int64(value=measurements.get('fan_status', None)),
+						ui_system_mode_active=types.Int64(value=measurements.get('ui_system_mode_active', None)),
+						opt_start_enable=types.Int64(value=measurements.get('opt_start_enable', None)),
+						setback_oat_lockout=types.Int64(value=measurements.get('setback_oat_lockout', None)),
+						htg_call_fan=types.Int64(value=measurements.get('htg_call_fan', None))
 					)
 				)
 				resource = self.base_resource+"/"+service_name
