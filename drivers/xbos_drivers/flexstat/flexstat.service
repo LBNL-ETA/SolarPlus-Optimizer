@@ -1,0 +1,13 @@
+[Unit]
+Description=dark sky service
+Requires=wave.service
+Requires=wavemq.service
+
+
+[Service]
+After=network.target
+Type=simple
+ExecStart=/usr/bin/env python3 ~/SolarPlus-Optimizer/drivers/xbos_drivers/flexstat/flexstat.service
+
+[Install]
+WantedBy=multi-user.target
