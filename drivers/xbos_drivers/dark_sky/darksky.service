@@ -7,7 +7,7 @@ Requires=wavemq.service
 [Service]
 After=network.target
 Type=simple
-ExecStart=/usr/bin/env python3 /home/solarplus/xboswave/python/pyxbos/pyxbos/drivers/dark_sky/weather_driver.py
+ExecStart=/usr/bin/env python3 /home/solarplus/xboswave/python/pyxbos/pyxbos/drivers/dark_sky/weather_driver.py /home/solarplus/xboswave/python/pyxbos/pyxbos/drivers/dark_sky/weather_driver_config_template.yaml
 
 [Install]
 WantedBy=multi-user.target
