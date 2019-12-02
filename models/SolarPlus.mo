@@ -1374,8 +1374,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{-100,30},{-80,50}})));
         Modelica.Blocks.Interfaces.RealInput weaPoaWin "Window solar radiation"
            annotation (Placement(transformation(extent=
-                 {{-140,40},{-100,80}}), iconTransformation(extent={{-116,60},{
-                  -76,100}})));
+                 {{-140,40},{-100,80}}), iconTransformation(extent={{-140,40},{
+                  -100,80}})));
       equation
       connect(weaTDryBul, thermal.Tout) annotation (Line(points={{-120,100},{
                 -60,100},{-60,10},{-11.2,10}},
