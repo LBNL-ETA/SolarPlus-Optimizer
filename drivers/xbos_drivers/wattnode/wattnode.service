@@ -1,5 +1,5 @@
 [Unit]
-Description=dark sky service
+Description=wattnode service
 Requires=wave.service
 Requires=wavemq.service
 
