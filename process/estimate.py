@@ -5,17 +5,15 @@ This script demonstrates solving the parameter estimation for the store.
 
 from mpcpy import units, variables, exodata, models, systems
 import os
-from process_data import clean_power_data, clean_temperature_data
+#from process_data import clean_power_data, clean_temperature_data
 from matplotlib import pyplot as plt
 
 # Setup
 # --------------------------------------------------------------------------
 # Estimation periods
-start_time = '4/9/2018 13:00:00' # local time
-final_time = '4/9/2018 18:00:00' # local time
-local_time = 'America/Los_Angeles'
-# Input data
-csvpath = 'data/Temperature.csv'
+start_time = '2019-11-06 08:00:00+00:00' # UTC time
+final_time = '2019-11-06 10:00:00+00:00' # UTC time
+# local_time = 'America/Los_Angeles'
 # Model definition
 mopath = 'models/SolarPlus.mo'
 modelpath = 'SolarPlus.Building.Training.Thermal'
@@ -23,9 +21,9 @@ modelpath = 'SolarPlus.Building.Training.Thermal'
 meas_list = ['Trtu', 'Prtu', 'Tref', 'Pref', 'Tfre', 'Pfre']
 sample_rate = 300;
 # Initial states (must satisfy optimization constraints)
-Trtu_0 = 22 # deg C
-Tref_0 = 3.5 # deg C
-Tfre_0 = -25 # deg C
+Trtu_0 = 295.59 # deg C
+Tref_0 = 274.48 # deg C
+Tfre_0 = 252.82 # deg C
 # Simulate Initial Option
 simulate_initial = False
 # --------------------------------------------------------------------------
@@ -33,19 +31,21 @@ simulate_initial = False
 # Exodata
 # --------------------------------------------------------------------------
 # Weather
-vm_weather = {'Outdoor' : ('weaTDryBul', units.degC)}
-geography = (40.88, -124)
-csv_weather = 'data/Temperature.csv'
-weather = exodata.WeatherFromCSV(csv_weather,vm_weather,geography, tz_name=local_time)
+vm_weather = {'temperature_k' : ('weaTDryBul', units.K),
+              'poa_win': ('weaPoaWin', units.W_m2),
+              'poa_pv': ('weaPoaPv', units.W_m2)}
+geography = (37.8771, -122.2485)
+csv_weather = 'controller/validation/weather_input_201911.csv'
+weather = exodata.WeatherFromCSV(csv_weather,vm_weather,geography, tz_name='UTC')
 weather.collect_data(start_time, final_time);
 # Controls
-df_power = clean_power_data(start_time, final_time, plot=False)
 vm_controls = {'HVAC1_Norm' : ('uCool', units.unit1),
                'RefComp_Norm' : ('uRef', units.unit1),
                'FreComp_Split_Norm' : ('uFreCool', units.unit1),
-               'FreHeater_Split_Norm' : ('uFreDef', units.unit1)}
-controls = exodata.ControlFromDF(df_power, vm_controls, tz_name = weather.tz_name)
-controls.collect_data(start_time, final_time);               
+               'uFreDef' : ('uFreDef', units.unit1)}
+csv_power = 'controller/validation/normalized_power_201911.csv'
+controls = exodata.ControlFromCSV(csv_power, vm_controls, tz_name=weather.tz_name)
+controls.collect_data(start_time, final_time);
 # Parameters
 csv_parameters = 'models/pars_thermal.csv'
 parameters = exodata.ParameterFromCSV(csv_parameters)
@@ -54,18 +54,15 @@ parameters.collect_data()
 
 # Measurements
 # --------------------------------------------------------------------------
-df_temp = clean_temperature_data(start_time, final_time, plot=False)
 measurements = dict()
 for meas in meas_list:
     measurements[meas] = {'Sample' : variables.Static('{0}_sample'.format(meas), sample_rate, units.s)};
-vm_measurements = {'HVAC East_Int' : ('Trtu', units.degC),
-                   'Refrigerator West_Int' : ('Tref', units.degC),
-                   'Freezer_Int' : ('Tfre', units.degC)}
-csv_measurements = 'models/temp_clean.csv'
-df_temp.to_csv(csv_measurements)
+vm_measurements = {'temp_rtu_west_k' : ('Trtu', units.K),
+                   'ref_k' : ('Tref', units.K),
+                   'fre_k' : ('Tfre', units.K)}
+csv_measurements = 'controller/validation/temperature_201911.csv'
 store = systems.RealFromCSV(csv_measurements, measurements, vm_measurements, tz_name = weather.tz_name)
 store.collect_measurements(start_time, final_time)
-os.remove(csv_measurements)
 # --------------------------------------------------------------------------
 
 # Model
@@ -94,7 +91,7 @@ if simulate_initial:
             x = 0
             y = -273.15
         else:
-            x = 1    
+            x = 1
             y = 0
         ax[x].plot(model.display_measurements('Simulated')[key]+y, label=key)
         ax[x].legend()
@@ -105,10 +102,12 @@ if simulate_initial:
 # --------------------------------------------------------------------------
 # Solve estimation problem
 model.estimate(start_time, final_time, ['Trtu','Tref','Tfre'])
-model.validate(start_time, final_time, 'validate', plot=0)
-for key in ['Trtu','Tref','Tfre']:
-    plt.plot(model.measurements[key]['Simulated'].get_base_data()-273.15, label=key+'_Simulated')
-    plt.plot(model.measurements[key]['Measured'].get_base_data()-273.15, label=key+'_Measured')
-    plt.legend()
-plt.show()
+for key in model.parameter_data.keys():
+    print(key, model.parameter_data[key]['Value'].display_data())
+# model.validate(start_time, final_time, 'validate', plot=1)
+# for key in ['Trtu','Tref','Tfre']:
+#     plt.plot(model.measurements[key]['Simulated'].get_base_data()-273.15, label=key+'_Simulated')
+#     plt.plot(model.measurements[key]['Measured'].get_base_data()-273.15, label=key+'_Measured')
+#     plt.legend()
+# plt.show()
 # --------------------------------------------------------------------------
