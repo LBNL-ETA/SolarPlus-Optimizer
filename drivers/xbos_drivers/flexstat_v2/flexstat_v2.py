@@ -12,6 +12,7 @@ from functools import partial
 from collections import deque
 import asyncio
 
+
 class FlexstatDriver(XBOSProcess):
 	def __init__(self, cfg):
 		super().__init__(cfg)
@@ -33,10 +34,10 @@ class FlexstatDriver(XBOSProcess):
 		self._cooling_setpoint_limit = self.thermostat_config.get("cooling_setpoint_limit", 78)
 
 		self.init_thermostats()
-
 		self._setpoints = {}
-		self._actuation_message_uri = self.base_resource+"/*/actuation"
-		self._actuation_message_path = ".flexstatActuationMessage.setpoints"
+		self._actuation_message_uri = self.base_resource + "/*/actuation"
+		self._actuation_message_path = ".flexstatActuationMessage"
+		self.device_control_flag = {}
 
 		# Check message bus and extract latest setpoint list
 		schedule(self._query_existing(uri=self._actuation_message_uri))
@@ -52,15 +53,16 @@ class FlexstatDriver(XBOSProcess):
 		# periodically check if there is a need to change setpoints
 		schedule(self.call_periodic(self._set_setpoint_rate, self._set_setpoints, runfirst=False))
 
-
 	def init_thermostats(self):
 		if self.bacnet_router_address == None or self.bbmd_ttl == None:
 			self.bacnet = BAC0.connect(ip=self.bacnet_mask)
 		else:
-			self.bacnet = BAC0.connect(ip=self.bacnet_mask, bbmdAddress=self.bacnet_router_address, bbmdTTL=self.bbmd_ttl)
+			self.bacnet = BAC0.connect(ip=self.bacnet_mask, bbmdAddress=self.bacnet_router_address,
+									   bbmdTTL=self.bbmd_ttl)
 		self.point_map = self.thermostat_config['point_map']
 
 		self.device_map = {}
+		self.available_points = {}
 		for service_name in self.service_name_map:
 			ip = self.service_name_map[service_name].get('ip')
 			device_id = self.service_name_map[service_name].get('device_id', 1)
@@ -68,38 +70,42 @@ class FlexstatDriver(XBOSProcess):
 			device = BAC0.device(address=ip, device_id=device_id, network=self.bacnet)
 			self.device_map[service_name] = device
 
+			points_list = []
+			for point in device.points_name:
+				points_list.append(point)
+			self.available_points[service_name] = points_list
 
 	def extract_setpoint_dict(self, setpoint_values):
 		'''
-            Example setpoints:
-            {
-                'test_tstat2': {
-                    1571944506.1637542: {
-                        'heating_setpoint': 20.2,
-                        'cooling_setpoint': 30.5
-                    },
-                    1571944566.1637542: {
-                        'heating_setpoint': 30.2,
-                        'cooling_setpoint': 40.5
-                    },
-                    1571944626.1637542: {
-                        'heating_setpoint': 40.2,
-                        'cooling_setpoint': 50.5
-                    },
-                    1571944686.1637542: {
-                        'heating_setpoint': 50.2,
-                        'cooling_setpoint': 60.5
-                    },
-                    1571944746.1637542: {
-                        'heating_setpoint': 60.2,
-                        'cooling_setpoint': 70.5
-                    }
-                }
-            }
-        '''
+			Example setpoints:
+			{
+				'test_tstat2': {
+					1571944506.1637542: {
+						'heating_setpoint': 20.2,
+						'cooling_setpoint': 30.5
+					},
+					1571944566.1637542: {
+						'heating_setpoint': 30.2,
+						'cooling_setpoint': 40.5
+					},
+					1571944626.1637542: {
+						'heating_setpoint': 40.2,
+						'cooling_setpoint': 50.5
+					},
+					1571944686.1637542: {
+						'heating_setpoint': 50.2,
+						'cooling_setpoint': 60.5
+					},
+					1571944746.1637542: {
+						'heating_setpoint': 60.2,
+						'cooling_setpoint': 70.5
+					}
+				}
+			}
+		'''
 		setpoint_dict = {}
 		for setpoint in setpoint_values:
-			time = float(setpoint['changeTime'])/1e9
+			time = float(setpoint['changeTime']) / 1e9
 			setpoint_dict[time] = {}
 
 			if 'heatingSetpoint' in setpoint.keys():
@@ -111,17 +117,35 @@ class FlexstatDriver(XBOSProcess):
 
 	async def _query_existing(self, uri):
 		responses = await self.query_topic(self.namespace, uri, self._actuation_message_path)
+		print(responses)
 		for response in responses:
 			device = response.uri.split("/")[1]
-			setpoint_dict = self.extract_setpoint_dict(setpoint_values=response.values[0])
-			if not device in self._setpoints.keys():
-				self._setpoints[device] = setpoint_dict
-		#await self._set_setpoints()
+			response_content =  response.values[0]
+			control_flag = response_content.get('control_flag', False)
+			setpoints = response_content.get('setpoints', None)
+
+			self.device_control_flag[device] = control_flag
+
+			if setpoints != None:
+				setpoint_dict = self.extract_setpoint_dict(setpoint_values=setpoints)
+				if not device in self._setpoints.keys():
+					self._setpoints[device] = setpoint_dict
+
+	# await self._set_setpoints()
 
 	def _save_setpoints(self, resp):
 		device = resp.uri.split('-')[-1].split("/")[1]
-		setpoint_dict = self.extract_setpoint_dict(setpoint_values=resp.values[0])
-		self._setpoints[device] = setpoint_dict
+
+		response_content = resp.values[0]
+		control_flag = response_content.get('control_flag', False)
+		setpoints = response_content.get('setpoints', None)
+
+		self.device_control_flag[device] = control_flag
+
+		if setpoints != None:
+			setpoint_dict = self.extract_setpoint_dict(setpoint_values=setpoints)
+			if not device in self._setpoints.keys():
+				self._setpoints[device] = setpoint_dict
 
 	async def _set_setpoints(self, *args):
 		time_now = time.time()
@@ -152,13 +176,12 @@ class FlexstatDriver(XBOSProcess):
 					# CASE4: if the tiem_now is less than 4 hours before the 1st setpoint in the list of setpoints; do not change anything
 					heating_setpoint = None
 					cooling_setpoint = None
-			
-			# TODO: find what variables to change
+
 			self.change_setpoints(device=device, variable_name='heating_setpoint', new_value=heating_setpoint)
 			self.change_setpoints(device=device, variable_name='cooling_setpoint', new_value=cooling_setpoint)
 
 	def change_setpoints(self, device, variable_name, new_value):
-		if new_value!=None:
+		if new_value != None:
 			new_value = round(new_value, 2)
 			if variable_name == 'heating_setpoint':
 
@@ -175,13 +198,12 @@ class FlexstatDriver(XBOSProcess):
 					self.device_map[device][occ_hsp_bacnet_variable_name].write(new_value, priority=8)
 					self.device_map[device][unocc_hsp_bacnet_variable_name].write(new_value, priority=8)
 					print("device %s, variable= %s, bacnet variable=%s, old value = %f, new value = %f" % (
-					device, variable_name, occ_hsp_bacnet_variable_name, current_occ_heating_sp, new_value))
+						device, variable_name, occ_hsp_bacnet_variable_name, current_occ_heating_sp, new_value))
 					print("device %s, variable= %s, bacnet variable=%s, old value = %f, new value = %f" % (
-					device, variable_name, unocc_hsp_bacnet_variable_name, current_unocc_heating_sp, new_value))
+						device, variable_name, unocc_hsp_bacnet_variable_name, current_unocc_heating_sp, new_value))
 					print()
 				else:
 					print("no change in setpoint, not changing")
-
 
 			if variable_name == 'cooling_setpoint':
 
@@ -198,9 +220,9 @@ class FlexstatDriver(XBOSProcess):
 					self.device_map[device][occ_csp_bacnet_variable_name].write(new_value, priority=8)
 					self.device_map[device][unocc_csp_bacnet_variable_name].write(new_value, priority=8)
 					print("device %s, variable= %s, bacnet variable=%s, old value = %f, new value = %f" % (
-					device, variable_name, occ_csp_bacnet_variable_name, current_occ_cooling_sp, new_value))
+						device, variable_name, occ_csp_bacnet_variable_name, current_occ_cooling_sp, new_value))
 					print("device %s, variable= %s, bacnet variable=%s, old value = %f, new value = %f" % (
-					device, variable_name, unocc_csp_bacnet_variable_name, current_unocc_cooling_sp, new_value))
+						device, variable_name, unocc_csp_bacnet_variable_name, current_unocc_cooling_sp, new_value))
 					print()
 				else:
 					print("no change in setpoint, not changing")
@@ -214,6 +236,9 @@ class FlexstatDriver(XBOSProcess):
 				measurements = {}
 				for point in self.point_map:
 					bacnet_point_name = self.point_map[point]
+					if not bacnet_point_name in self.available_points[service_name]:
+						continue
+
 					val = device[bacnet_point_name].value
 					if point == "app_main_type":
 						if val == "NOT CONFIGURED":
@@ -360,7 +385,7 @@ class FlexstatDriver(XBOSProcess):
 						htg_call_fan=types.Int64(value=measurements.get('htg_call_fan', None))
 					)
 				)
-				resource = self.base_resource+"/"+service_name
+				resource = self.base_resource + "/" + service_name
 				await self.publish(self.namespace, resource, False, msg)
 				print("published at time_now = ", time_now)
 			except:

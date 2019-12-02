@@ -10,7 +10,7 @@ message Flexstat {
 
 message FlexstatActuationMessage {
     uint64 time = 1;
-    Int64 controls = 2;
+    Int64 control_flag = 2;
     repeated FlexstatSetpoints setpoints = 3;
 }
 
