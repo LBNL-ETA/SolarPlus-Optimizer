@@ -1,0 +1,11 @@
+xbos:
+    waved: localhost:777
+    wavemq: localhost:4516
+    publish_rate: 3600
+    entity:
+    namespace:
+    service_name_map:
+        thermostats:
+          flexstat_test/thermostat_west/actuation: False
+          flexstat_test/thermostat_east/actuation: False
+    id: controlflag-driver
