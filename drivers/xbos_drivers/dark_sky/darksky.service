@@ -7,7 +7,7 @@ Requires=wavemq.service
 [Service]
 After=network.target
 Type=simple
-ExecStart=/usr/bin/env python3 ~/SolarPlus-Optimizer/drivers/xbos_drivers/dark_sky/darksky.service
+ExecStart=/usr/bin/env python3 /home/solarplus/xboswave/python/pyxbos/pyxbos/drivers/dark_sky/weather_driver.py
 
 [Install]
 WantedBy=multi-user.target
