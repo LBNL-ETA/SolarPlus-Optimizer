@@ -2157,5 +2157,5 @@ package SolarPlus "This package contains models for MPC control optimization."
         experiment(StopTime=1296000, Interval=300));
     end Store;
   end Validation;
-annotation (uses(Modelica(version="3.2.2"), Buildings(version="5.0.0")));
+annotation (uses(Modelica(version="3.2.3"),Buildings(version="7.0.0"),Complex(version="3.2.3")));
 end SolarPlus;
