@@ -9,7 +9,7 @@ import (
 type add_fn func(types.ExtractedTimeseries) error
 
 func has_device(msg xbospb.XBOS) bool {
-	return msg.FlexstatActuationMessage != nil
+	return msg.FlexstatActuationMessage.Setpoints != nil
 }
 
 // This contains the mapping of each field's value to the unit
@@ -47,6 +47,22 @@ func Extract(uri types.SubscriptionURI, msg xbospb.XBOS, add func(types.Extracte
 
 		if has_device(msg) {
 			step := 1
+
+			if msg.FlexstatActuationMessage.ControlFlag != nil {
+			    controlFlag := float64(msg.FlexstatActuationMessage.ControlFlag.Value)
+
+			    var extracted types.ExtractedTimeseries
+                time := int64(msg.FlexstatActuationMessage.Time)
+                extracted.Values = append(extracted.Values, controlFlag)
+                extracted.Times = append(extracted.Times, time)
+                extracted.UUID = types.GenerateUUID(uri, []byte("control_flag"))
+                extracted.Collection = fmt.Sprintf("xbos/%s", uri.Resource)
+                extracted.Tags = map[string]string{
+                    "unit": "T/F",
+                    "name": "control_flag",
+                }
+                add(extracted)
+            }
 
 			//Iterate through each hour of prediction from current to 48 hours from current
 			for _, _prediction := range msg.FlexstatActuationMessage.Setpoints {

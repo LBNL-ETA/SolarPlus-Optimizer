@@ -45,5 +45,5 @@ ENV IPOPT_HOME $ROOT_DIR/Ipopt-3.12.4
 ENV SUNDIALS_HOME $JMODELICA_HOME/ThirdParty/Sundials
 ENV SEPARATE_PROCESS_JVM /usr/lib/jvm/java-8-openjdk-amd64/
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
-ENV PYTHONPATH $PYTHONPATH:$HOME/git/estimationpy-ka/EstimationPy-KA:$HOME/git/mpcpy/MPCPy:$JMODELICA_HOME/Python:$JMODELICA_HOME/Python/pymodelica:$HOME/git/pyfunnel/funnel/bin:$HOME/git/xbos/xboswave/python/pyxbos
+ENV PYTHONPATH $PYTHONPATH:$HOME/git/estimationpy-ka/EstimationPy-KA:$HOME/git/mpcpy/MPCPy:$JMODELICA_HOME/Python:$JMODELICA_HOME/Python/pymodelica:$HOME/git/pyfunnel/funnel/bin
 ENV MODELICAPATH $MODELICAPATH:$HOME/git/buildings/modelica-buildings
