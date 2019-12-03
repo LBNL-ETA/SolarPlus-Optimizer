@@ -583,6 +583,7 @@ class Data_Manager():
             print("Error publishing: {0}".format(e))
 
     def set_setpoints_xbos(self, df, device_config):
+        df = df.dropna()
         for device in device_config:
             var_cfg = device_config[device]
 

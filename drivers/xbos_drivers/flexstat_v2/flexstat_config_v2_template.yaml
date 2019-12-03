@@ -1,7 +1,7 @@
 xbos:
     waved: localhost:777
     wavemq: localhost:4516
-    base_resource: flexstat
+    base_resource:
     publish_rate: 60
     check_setpoint_rate: 30
     entity: 

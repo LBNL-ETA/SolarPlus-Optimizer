@@ -42,10 +42,14 @@ class FlexstatDriver(XBOSProcess):
 		for device_name in self.service_name_map:
 			actuation_message_uri = self.base_resource+"/"+device_name+"/actuation"
 			schedule(self._query_existing(uri=actuation_message_uri))
+			schedule(self._query_existing(uri=actuation_message_uri+"/control_flag"))
 
 			# set subscription to any new action message that is published and extract setpoint list
 			schedule(
 				self.subscribe_extract(self.namespace, actuation_message_uri, self._actuation_message_path,
+									self._save_setpoints, "save_setpoints"))
+			schedule(
+				self.subscribe_extract(self.namespace, actuation_message_uri+"/control_flag", self._actuation_message_path,
 									self._save_setpoints, "save_setpoints"))
 
 		# read thermostat points every _rate seconds and publish
@@ -122,10 +126,11 @@ class FlexstatDriver(XBOSProcess):
 		for response in responses:
 			device = response.uri.split("/")[1]
 			response_content =  response.values[0]
-			control_flag = response_content.get('controlFlag', False)
+			control_flag = response_content.get('controlFlag', None)
 			setpoints = response_content.get('setpoints', None)
 
-			self.device_control_flag[device] = control_flag.get('value', False) == '1'
+			if control_flag != None:
+				self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
 			if setpoints != None:
 				setpoint_dict = self.extract_setpoint_dict(setpoint_values=setpoints)
@@ -136,13 +141,14 @@ class FlexstatDriver(XBOSProcess):
 
 	def _save_setpoints(self, resp):
 		print('inside subscribe_extract')
-		device = resp.uri.split('-')[-1].split("/")[1]
+		device = resp.uri.split("/")[1]
 
 		response_content = resp.values[0]
-		control_flag = response_content.get('controlFlag', False)
+		control_flag = response_content.get('controlFlag', None)
 		setpoints = response_content.get('setpoints', None)
 
-		self.device_control_flag[device] = control_flag.get('value', False) == '1'
+		if control_flag != None:
+			self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
 		if setpoints != None:
 			setpoint_dict = self.extract_setpoint_dict(setpoint_values=setpoints)
@@ -183,6 +189,9 @@ class FlexstatDriver(XBOSProcess):
 
 				self.change_setpoints(device=device, variable_name='heating_setpoint', new_value=heating_setpoint)
 				self.change_setpoints(device=device, variable_name='cooling_setpoint', new_value=cooling_setpoint)
+			else:
+				print("control flag for device %s is False. Not changing setpoints"%(device))
+
 
 	def change_setpoints(self, device, variable_name, new_value):
 		if new_value != None:
