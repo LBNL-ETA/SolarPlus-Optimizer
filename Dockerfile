@@ -34,8 +34,7 @@ RUN mkdir git && cd git && \
     mkdir mpcpy && cd mpcpy && git clone https://github.com/lbl-srg/MPCPy && cd .. && \
     mkdir estimationpy-ka && cd estimationpy-ka && git clone https://github.com/krzysztofarendt/EstimationPy-KA && cd .. && \
     mkdir buildings && cd buildings && git clone https://github.com/lbl-srg/modelica-buildings.git && cd .. && \
-    mkdir pyfunnel && cd pyfunnel && git clone https://github.com/lbl-srg/funnel.git && cd .. && \
-    mkdir xbos && cd xbos && git clone https://github.com/gtfierro/xboswave.git
+    mkdir pyfunnel && cd pyfunnel && git clone https://github.com/lbl-srg/funnel.git
 
 
 WORKDIR $ROOT_DIR
