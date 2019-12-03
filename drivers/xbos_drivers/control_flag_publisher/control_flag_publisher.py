@@ -36,7 +36,7 @@ class ControlFlagPublisher(XBOSProcess):
                                 control_flag=types.Int64(value=control_flag)
                             )
                         )
-                        await self.publish(self.namespace, topic, False, msg)
+                        await self.publish(self.namespace, topic, True, msg)
                         print("published")
             except:
                 print("error occured in pushing control signal to device: %s!" % (device_type))

@@ -35,17 +35,18 @@ class FlexstatDriver(XBOSProcess):
 
 		self.init_thermostats()
 		self._setpoints = {}
-		self._actuation_message_uri = self.base_resource + "/*/actuation"
 		self._actuation_message_path = ".flexstatActuationMessage"
 		self.device_control_flag = {}
 
-		# Check message bus and extract latest setpoint list
-		schedule(self._query_existing(uri=self._actuation_message_uri))
+		# Check message bus and extract latest control flag and setpoint list
+		for device_name in self.service_name_map:
+			actuation_message_uri = self.base_resource+"/"+device_name+"/actuation"
+			schedule(self._query_existing(uri=actuation_message_uri))
 
-		# set subscription to any new action message that is published and extract setpoint list
-		schedule(
-			self.subscribe_extract(self.namespace, self._actuation_message_uri, self._actuation_message_path,
-								   self._save_setpoints, "save_setpoints"))
+			# set subscription to any new action message that is published and extract setpoint list
+			schedule(
+				self.subscribe_extract(self.namespace, actuation_message_uri, self._actuation_message_path,
+									self._save_setpoints, "save_setpoints"))
 
 		# read thermostat points every _rate seconds and publish
 		schedule(self.call_periodic(self._rate, self._read_and_publish, runfirst=True))
@@ -117,14 +118,14 @@ class FlexstatDriver(XBOSProcess):
 
 	async def _query_existing(self, uri):
 		responses = await self.query_topic(self.namespace, uri, self._actuation_message_path)
-		print(responses)
+		print("Extracting persisted messages")
 		for response in responses:
 			device = response.uri.split("/")[1]
 			response_content =  response.values[0]
-			control_flag = response_content.get('control_flag', False)
+			control_flag = response_content.get('controlFlag', False)
 			setpoints = response_content.get('setpoints', None)
 
-			self.device_control_flag[device] = control_flag
+			self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
 			if setpoints != None:
 				setpoint_dict = self.extract_setpoint_dict(setpoint_values=setpoints)
@@ -134,13 +135,14 @@ class FlexstatDriver(XBOSProcess):
 	# await self._set_setpoints()
 
 	def _save_setpoints(self, resp):
+		print('inside subscribe_extract')
 		device = resp.uri.split('-')[-1].split("/")[1]
 
 		response_content = resp.values[0]
-		control_flag = response_content.get('control_flag', False)
+		control_flag = response_content.get('controlFlag', False)
 		setpoints = response_content.get('setpoints', None)
 
-		self.device_control_flag[device] = control_flag
+		self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
 		if setpoints != None:
 			setpoint_dict = self.extract_setpoint_dict(setpoint_values=setpoints)
@@ -151,34 +153,36 @@ class FlexstatDriver(XBOSProcess):
 		time_now = time.time()
 		device_setpoint_dict = self._setpoints
 		for device in device_setpoint_dict:
-			found = False
-			setpoint_dict = device_setpoint_dict[device]
-			first_change_time = sorted(setpoint_dict)[0]
+			control_flag = self.device_control_flag.get(device, False)
+			if control_flag:
+				found = False
+				setpoint_dict = device_setpoint_dict[device]
+				first_change_time = sorted(setpoint_dict)[0]
 
-			if abs(time_now - first_change_time) > self._default_time_threshold:
-				# CASE1: time now is at least 4 hours ahead of the last time MPC published the setpoints, set to default setpoints (first change_time of setpoints is approximately the same time as the time MPC ran)
-				heating_setpoint = self._default_heating_setpoint
-				cooling_setpoint = self._default_cooling_setpoint
-			else:
-				for change_time in sorted(setpoint_dict, reverse=True):
-					if not found and time_now > change_time:
-						found = True
-						# CASE2: if time_now is between the list of setpoints, get the new setpoints
-						heating_setpoint = setpoint_dict[change_time].get('heating_setpoint', None)
-						cooling_setpoint = setpoint_dict[change_time].get('cooling_setpoint', None)
-
-			if not found:
-				if (first_change_time - time_now) > self._default_time_threshold:
-					# CASE3: if the time_now is more than 4 hours before the 1st setpoint in the list of setpoints; set default setpoints
+				if abs(time_now - first_change_time) > self._default_time_threshold:
+					# CASE1: time now is at least 4 hours ahead of the last time MPC published the setpoints, set to default setpoints (first change_time of setpoints is approximately the same time as the time MPC ran)
 					heating_setpoint = self._default_heating_setpoint
 					cooling_setpoint = self._default_cooling_setpoint
 				else:
-					# CASE4: if the tiem_now is less than 4 hours before the 1st setpoint in the list of setpoints; do not change anything
-					heating_setpoint = None
-					cooling_setpoint = None
+					for change_time in sorted(setpoint_dict, reverse=True):
+						if not found and time_now > change_time:
+							found = True
+							# CASE2: if time_now is between the list of setpoints, get the new setpoints
+							heating_setpoint = setpoint_dict[change_time].get('heating_setpoint', None)
+							cooling_setpoint = setpoint_dict[change_time].get('cooling_setpoint', None)
 
-			self.change_setpoints(device=device, variable_name='heating_setpoint', new_value=heating_setpoint)
-			self.change_setpoints(device=device, variable_name='cooling_setpoint', new_value=cooling_setpoint)
+				if not found:
+					if (first_change_time - time_now) > self._default_time_threshold:
+						# CASE3: if the time_now is more than 4 hours before the 1st setpoint in the list of setpoints; set default setpoints
+						heating_setpoint = self._default_heating_setpoint
+						cooling_setpoint = self._default_cooling_setpoint
+					else:
+						# CASE4: if the tiem_now is less than 4 hours before the 1st setpoint in the list of setpoints; do not change anything
+						heating_setpoint = None
+						cooling_setpoint = None
+
+				self.change_setpoints(device=device, variable_name='heating_setpoint', new_value=heating_setpoint)
+				self.change_setpoints(device=device, variable_name='cooling_setpoint', new_value=cooling_setpoint)
 
 	def change_setpoints(self, device, variable_name, new_value):
 		if new_value != None:
