@@ -22,7 +22,7 @@ class ControlFlagPublisher(XBOSProcess):
     async def read_and_publish(self, *args):
         with open(self.config_file) as fp:
             config = yaml.safe_load(fp)
-        self.service_name_map = config_file.get('service_name_map', {})
+        self.service_name_map = config['xbos'].get('service_name_map', {})
 
         for device_type in self.service_name_map:
             try:
@@ -37,6 +37,7 @@ class ControlFlagPublisher(XBOSProcess):
                             )
                         )
                         await self.publish(self.namespace, topic, False, msg)
+                        print("published")
             except:
                 print("error occured in pushing control signal to device: %s!" % (device_type))
 
