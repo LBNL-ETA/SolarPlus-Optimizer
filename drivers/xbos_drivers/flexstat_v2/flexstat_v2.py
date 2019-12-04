@@ -130,6 +130,10 @@ class FlexstatDriver(XBOSProcess):
 			setpoints = response_content.get('setpoints', None)
 
 			if control_flag != None:
+				if not control_flag and self.device_control_flag.get(device, False):
+					self.change_setpoints(device=device, variable_name='heating_setpoint', new_value=self._default_heating_setpoint)
+					self.change_setpoints(device=device, variable_name='cooling_setpoint', new_value=self._default_cooling_setpoint)
+
 				self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
 			if setpoints != None:
@@ -148,6 +152,9 @@ class FlexstatDriver(XBOSProcess):
 		setpoints = response_content.get('setpoints', None)
 
 		if control_flag != None:
+			if not control_flag  and self.device_control_flag.get(device, False):
+				self.change_setpoints(device=device, variable_name='heating_setpoint', new_value=self._default_heating_setpoint)
+				self.change_setpoints(device=device, variable_name='cooling_setpoint', new_value=self._default_cooling_setpoint)
 			self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
 		if setpoints != None:

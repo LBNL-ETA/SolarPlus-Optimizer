@@ -579,6 +579,8 @@ class Data_Manager():
                 ))
             if not x:
                 print("Error publishing: {0}".format(x))
+            else:
+                print("published on wavemq")
         except Exception as e:
             print("Error publishing: {0}".format(e))
 
@@ -619,6 +621,7 @@ class Data_Manager():
                         setpoints = setpoint_list
                     )
                 )
+            print("publishing on to wavemq")
             self.publish_on_wavemq(device, msg)
 
     def set_setpoints(self, df):
