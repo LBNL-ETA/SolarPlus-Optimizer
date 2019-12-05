@@ -173,26 +173,28 @@ class FlexstatDriver(XBOSProcess):
 				first_change_time = sorted(setpoint_dict)[0]
 
 				if abs(time_now - first_change_time) > self._default_time_threshold:
-					# CASE1: time now is at least 4 hours ahead of the last time MPC published the setpoints, set to default setpoints (first change_time of setpoints is approximately the same time as the time MPC ran)
+					# CASE1: if the time_now is more than 4 hours before the 1st setpoint in the list of setpoints; set default setpoints
+					# CASE2: if the last time mpc published the setpoints (first change_time of setpoints is approximately the same time as the time MPC ran) is at least 4 hours before time_now, set defaults setpoints
 					heating_setpoint = self._default_heating_setpoint
 					cooling_setpoint = self._default_cooling_setpoint
 				else:
-					for change_time in sorted(setpoint_dict, reverse=True):
-						if not found and time_now > change_time:
+					for change_time in sorted(setpoint_dict):
+						if not found and time_now < change_time:
 							found = True
-							# CASE2: if time_now is between the list of setpoints, get the new setpoints
+							# CASE3: if time_now is between the list of setpoints, get the new setpoints
 							heating_setpoint = setpoint_dict[change_time].get('heating_setpoint', None)
 							cooling_setpoint = setpoint_dict[change_time].get('cooling_setpoint', None)
 
-				if not found:
-					if (first_change_time - time_now) > self._default_time_threshold:
-						# CASE3: if the time_now is more than 4 hours before the 1st setpoint in the list of setpoints; set default setpoints
-						heating_setpoint = self._default_heating_setpoint
-						cooling_setpoint = self._default_cooling_setpoint
-					else:
-						# CASE4: if the tiem_now is less than 4 hours before the 1st setpoint in the list of setpoints; do not change anything
-						heating_setpoint = None
-						cooling_setpoint = None
+					if not found:
+						last_change_time = sorted(setpoint_dict, reverse=True)[0]
+						if (time_now - last_change_time) > self._default_time_threshold:
+							# CASE4: time now is at least 4 hours ahead of the last time MPC published the setpoints, set to default setpoints
+							heating_setpoint = self._default_heating_setpoint
+							cooling_setpoint = self._default_cooling_setpoint
+						else:
+							# CASE5: time_now is less that 4 hours ahead of the last setpoint forecase, do nothing
+							heating_setpoint = None
+							cooling_setpoint = None
 
 				self.change_setpoints(device=device, variable_name='heating_setpoint', new_value=heating_setpoint)
 				self.change_setpoints(device=device, variable_name='cooling_setpoint', new_value=cooling_setpoint)
@@ -407,7 +409,7 @@ class FlexstatDriver(XBOSProcess):
 				)
 				resource = self.base_resource + "/" + service_name
 				await self.publish(self.namespace, resource, False, msg)
-				print("published at time_now = ", time_now)
+				print("published at time_now = %s", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_now/1e9)))
 			except:
 				print("error for thermostat {0} !! continuing!".format(service_name))
 
