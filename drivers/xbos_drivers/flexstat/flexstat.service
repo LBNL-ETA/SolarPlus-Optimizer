@@ -7,7 +7,8 @@ Requires=wavemq.service
 [Service]
 After=network.target
 Type=simple
-ExecStart=/usr/bin/env python3 /home/solarplus/xboswave/python/pyxbos/pyxbos/drivers/flexstat/flexstat.py /home/solarplus/xboswave/python/pyxbos/pyxbos/drivers/flexstat/flexstat_config_template.yaml
+ExecStart=/usr/bin/env python3 /home/solarplus/xboswave/python/pyxbos/pyxbos/drivers/flexstat/flexstat.py /home/solarplus/xboswave/python/pyxbos/pyxbos/drivers/flexstat/flexstat_config.yaml
 
 [Install]
 WantedBy=multi-user.target
+
