@@ -1613,7 +1613,7 @@ package SolarPlus "This package contains models for MPC control optimization."
 
       model Store
         extends BaseClasses.partialStore(store(
-            TSpRtu=20.5 + 273.15,
+            TSpRtu=21.1 + 273.15,
             TSpRef=0.5 + 273.15,
             TSpFre=-21.6 + 273.15));
       Modelica.Blocks.Interfaces.RealInput uHeat "Heating signal input"
