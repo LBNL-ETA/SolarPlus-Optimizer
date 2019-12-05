@@ -38,10 +38,10 @@ def run():
     if not os.path.exists(outdir):
         os.mkdir(outdir)
     # Save setup: UTC time
-    with open(outdir+'/mpc_setup_{0}.txt'.format(start_time), 'w') as f:
-        f.write(str(start_time_utc) +'\n')
-        f.write(str(mpc_step) +'\n')
-        f.write(str(mpc_horizon) +'\n')
+    # with open(outdir+'/mpc_setup_{0}.txt'.format(start_time), 'w') as f:
+    #     f.write(str(start_time_utc) +'\n')
+    #     f.write(str(mpc_step) +'\n')
+    #     f.write(str(mpc_horizon) +'\n')
 
     # Instantiate controller
     if controller is 'mpc':
