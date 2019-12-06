@@ -81,7 +81,7 @@ if __name__ == '__main__':
     while True:
         try:
             run()
-            time.sleep(60)
+            time.sleep(300)
             print("run passed")
         except Exception as e:
             print("error: ",e)
