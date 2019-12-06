@@ -1,0 +1,9 @@
+[
+  {
+    "type": "price-tou",
+    "data":
+    {
+      "tariff-json": "openei_tariff/urcea_Commercial_E-19S_TOU_gridlevelSecondary_revised.json"
+    }
+  }
+]
