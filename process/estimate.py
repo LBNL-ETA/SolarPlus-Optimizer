@@ -18,7 +18,7 @@ final_time = '2019-11-06 10:00:00+00:00' # UTC time
 mopath = 'models/SolarPlus.mo'
 modelpath = 'SolarPlus.Building.Training.Thermal'
 # Model measurements
-meas_list = ['Trtu', 'Prtu', 'Tref', 'Pref', 'Tfre', 'Pfre']
+meas_list = ['Trtu', 'Tref', 'Tfre']
 sample_rate = 300;
 # Initial states (must satisfy optimization constraints)
 Trtu_0 = 295.59 # deg C
@@ -102,12 +102,13 @@ if simulate_initial:
 # --------------------------------------------------------------------------
 # Solve estimation problem
 model.estimate(start_time, final_time, ['Trtu','Tref','Tfre'])
+print(model.display_measurements('Measured'))
 for key in model.parameter_data.keys():
     print(key, model.parameter_data[key]['Value'].display_data())
-# model.validate(start_time, final_time, 'validate', plot=1)
-# for key in ['Trtu','Tref','Tfre']:
-#     plt.plot(model.measurements[key]['Simulated'].get_base_data()-273.15, label=key+'_Simulated')
-#     plt.plot(model.measurements[key]['Measured'].get_base_data()-273.15, label=key+'_Measured')
-#     plt.legend()
-# plt.show()
+model.validate(start_time, final_time, 'validate', plot=0)
+for key in ['Trtu','Tref','Tfre']:
+    plt.plot(model.measurements[key]['Simulated'].get_base_data()-273.15, label=key+'_Simulated')
+    plt.plot(model.measurements[key]['Measured'].get_base_data()-273.15, label=key+'_Measured')
+    plt.legend()
+plt.show()
 # --------------------------------------------------------------------------
