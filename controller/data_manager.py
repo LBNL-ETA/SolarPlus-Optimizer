@@ -621,7 +621,7 @@ class Data_Manager():
                         setpoints = setpoint_list
                     )
                 )
-            print("publishing on to wavemq")
+            print("publishing on to wavemq to topic %s"%(device))
             self.publish_on_wavemq(device, msg)
 
     def set_setpoints(self, df):
