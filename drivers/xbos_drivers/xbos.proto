@@ -52,6 +52,8 @@ message XBOS {
   ParkerState parker_state = 151;
   WattnodeState wattnode_state = 152;
   FlexstatState flexstat_state = 153;
+  FlexstatActuationMessage flexstat_actuation_message = 154;
+  ParkerActuationMessage parker_actuation_message = 155;
 
   //System Status Fields
   BasicServerStatus BasicServerStatus = 200;
