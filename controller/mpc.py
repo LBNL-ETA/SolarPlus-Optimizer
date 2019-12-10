@@ -159,11 +159,19 @@ class mpc(object):
                 setpoints_list.append(measurements[key])
             else:
                 raise ValueError("{0} is not in control or measurements".format(key))
-        setpoints = pd.concat(setpoints_list,axis=1)
+        setpoints_raw = pd.concat(setpoints_list,axis=1)
+        setpoints = setpoints_raw.resample('5T').pad()
+        print(setpoints.head())
         if 'Trtu' in setpoints.columns:
+            # convert K to F
+            setpoints['Trtu'] = (setpoints['Trtu'] - 273.15) * 9/5 + 32
             # Considering 2 F deadband (between heating and cooling setpoint) in the thermostat
             setpoints['Trtu_cool'] = setpoints['Trtu'] + 1
             setpoints['Trtu_heat'] = setpoints['Trtu'] - 1
+        if 'Tfre' in setpoints.columns:
+            setpoints['Tfre'] = (setpoints['Tfre'] - 273.15) * 9/5 + 32
+        if 'Tref' in setpoints.columns:
+            setpoints['Tref'] = (setpoints['Tref'] - 273.15) * 9/5 + 32
         self.data_manager.set_setpoints(setpoints)
 
         return setpoints
