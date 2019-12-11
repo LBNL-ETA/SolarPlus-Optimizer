@@ -17,15 +17,22 @@ modbus:
     default_setpoint_map:
       refrigerator: 33
       freezer: -7
-    default_differential_map:
-      refrigerator:
-      freezer:
-    setpoint_limit_map:
-      refrigerator: [34, 38]
-      freezer: [-30, -2] 
-    differential_limit_map:
-      refrigerator:
-      freezer:
+    max_setpoint_limit_map:
+      refrigerator: 38
+      freezer: -2
+    min_setpoint_limit_map:
+      refrigerator: 34
+      freezer: -30
+
+    #default_differential_map:
+    #  refrigerator:
+    #  freezer:
+    #max_differential_limit_map:
+    #  refrigerator:
+    #  freezer:
+    #min_differential_limit_map:
+    #  refrigerator:
+    #  freezer:
 
     byte_order: big
     word_order: little

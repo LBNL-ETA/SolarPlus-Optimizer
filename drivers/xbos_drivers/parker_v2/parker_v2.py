@@ -28,10 +28,13 @@ class ParkerDriver(XBOSProcess):
         self.modbus_device.initialize_modbus()
 
         self._default_time_threshold = self.modbus_config.get("time_threshold_revert_to_default", 14400)
-        self._default_setpoint_map = self.modbus_config.get("default_setpoint_map", {'refrigerator': **, 'freezer': **})
-        self._default_differential_map = self.modbus_config.get("default_differential_map", {'refrigerator': **, 'freezer': **})
-        self._setpoint_limit_map = self.modbus_config.get("setpoint_limit_map", {'refrigerator': **, 'freezer': **})
-        self._differential_limit_map = self.modbus_config.get("differential_limit_map", {'refrigerator': **, 'freezer': **})
+
+        self._default_setpoint_map = self.modbus_config.get("default_setpoint_map", {'refrigerator': 33, 'freezer': -7})
+        self._max_setpoint_limit_map = self.modbus_config.get("max_setpoint_limit_map", {'refrigerator': 38, 'freezer': -2})
+        self._min_setpoint_limit_map = self.modbus_config.get("min_setpoint_limit_map", {'refrigerator': 34, 'freezer': -30})
+
+        #self._default_differential_map = self.modbus_config.get("default_differential_map", {'refrigerator': **, 'freezer': **})
+        #self._differential_limit_map = self.modbus_config.get("differential_limit_map", {'refrigerator': **, 'freezer': **})
 
         self._setpoints = {}
         self._actuation_message_path = ".parkerActuationMessage"
@@ -160,38 +163,45 @@ class ParkerDriver(XBOSProcess):
 
     def change_setpoints(self, device, variable_name, new_value):
         if new_value != None:
-            new_value = round(new_value, 2)
+            new_value = round(new_value, 1)
             if variable_name == 'setpoint':
 
-                if self._setpoint_limit_map[device] > new_value:
-                    new_value = self._setpoint_limit_map[device]
+                if self._max_setpoint_limit_map[device] < new_value:
+                    print("new setpoint = %f more than max limit=%f for %s. changing new setpoint to max setpoint limit"%(new_value, self._max_setpoint_limit_map[device], device))
+                    new_value = self._max_setpoint_limit_map[device]
+
+                if self._min_setpoint_limit_map[device] > new_value:
+                    print("new setpoint = %f less than min limit=%f for %s. changing new setpoint to min setpoint limit" % (new_value, self._min_setpoint_limit_map[device], device))
+                    new_value = self._min_setpoint_limit_map[device]
 
                 register_name = 'setpoint'
                 unit = self.service_name_map[device]
-                current_value = round(self.modbus_device.read_holding_register(register_name=register_name, unit=unit), 2)
+                current_value = round(self.modbus_device.read_holding_register(register_name=register_name, unit=unit)/10, 1)
 
                 if current_value != new_value:
+                    value_to_be_written = int(new_value*10)
                     self.modbus_device.write_register(register_name=register_name, value=new_value, unit=unit)
 
-                    print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f" % (device, variable_name, register_name, current_value, new_value))
+                    print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f, value written=%f" % (device, variable_name, register_name, current_value, new_value, value_to_be_written))
                 else:
                     print("no change in setpoint, not changing")
 
             if variable_name == 'differential':
+                print("not changing differential at this point")
 
-                if self._differential_limit_map[device] > new_value:
-                    new_value = self._differential_limit_map[device]
-
-                register_name = 'r0'
-                unit = self.service_name_map[device]
-                current_value = round(self.modbus_device.read_holding_register(register_name=register_name, unit=unit), 2)
-
-                if current_value != new_value:
-                    self.modbus_device.write_register(register_name=register_name, value=new_value, unit=unit)
-
-                    print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f" % (device, variable_name, register_name, current_value, new_value))
-                else:
-                    print("no change in setpoint, not changing")
+                # if self._differential_limit_map[device] > new_value:
+                #     new_value = self._differential_limit_map[device]
+                #
+                # register_name = 'r0'
+                # unit = self.service_name_map[device]
+                # current_value = round(self.modbus_device.read_holding_register(register_name=register_name, unit=unit)/10, 2)
+                #
+                # if current_value != new_value:
+                #     self.modbus_device.write_register(register_name=register_name, value=new_value, unit=unit)
+                #
+                #     print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f" % (device, variable_name, register_name, current_value, new_value))
+                # else:
+                #     print("no change in setpoint, not changing")
 
     async def _read_and_publish(self, *args):
 
@@ -261,7 +271,7 @@ class ParkerDriver(XBOSProcess):
                     time_until_defrost*=15
 
                 list_of_double_values = ['cabinet_temperature', 'evaporator_temperature', 'auxiliary_temperature', 'C6', 'C7', 'd2', 'd9',
-                                         'active_setpoint', 'r1', 'r2', 'A1', 'A4', 'F1']
+                                         'active_setpoint', 'setpoint', 'r1', 'r2', 'A1', 'A4', 'F1']
 
                 for variable in list_of_double_values:
                     value = output.get(variable, None)
