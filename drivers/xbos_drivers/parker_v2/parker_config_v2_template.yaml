@@ -15,14 +15,14 @@ modbus:
     time_threshold_revert_to_default: 14400
 
     default_setpoint_map:
-      refrigerator:
-      freezer:
+      refrigerator: 33
+      freezer: -7
     default_differential_map:
       refrigerator:
       freezer:
     setpoint_limit_map:
-      refrigerator:
-      freezer:
+      refrigerator: [34, 38]
+      freezer: [-30, -2] 
     differential_limit_map:
       refrigerator:
       freezer:
