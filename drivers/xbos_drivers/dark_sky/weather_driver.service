@@ -2,7 +2,7 @@
 Description=weather driver service
 Requires=wave.service
 Requires=wavemq.service
-
+Requires=ingester.service
 
 [Service]
 After=network.target

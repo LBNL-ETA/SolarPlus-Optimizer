@@ -205,6 +205,18 @@
 ## statement. This service depends on another service (apache_bin) which
 ## is defined above.
 #
+  
+  check process test MATCHING "./ingester"
+     start program = "/bin/systemctl start ingester" with timeout 60 seconds
+     stop program = "/bin/systemctl stop ingester"
+
+  check process test MATCHING "usr/local/bin/wavemq"
+     start program = "/bin/systemctl start wavemq" with timeout 60 seconds
+     stop program = "/bin/systemctl stop wavemq"
+  
+  check process test MATCHING "usr/bin/waved"
+     start program = "/bin/systemctl start wave" with timeout 60 seconds
+     stop program = "/bin/systemctl stop wave"
 
   check process test MATCHING "weather_driver.py"
      start program = "/bin/systemctl start darksky" with timeout 60 seconds

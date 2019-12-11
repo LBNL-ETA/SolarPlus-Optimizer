@@ -1,0 +1,14 @@
+[Unit]
+Description=ingester service
+Requires=wave.service
+Requires=wavemq.service
+
+
+[Service]
+After=network.target
+Type=simple
+ExecStart=/home/solarplus/xboswave/ingester/ingester --config /home/solarplus/xboswave/ingester/ingester-final.yml
+
+[Install]
+WantedBy=multi-user.target
+
