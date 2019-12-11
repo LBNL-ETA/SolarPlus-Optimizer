@@ -1,6 +1,7 @@
 from pyxbos.process import XBOSProcess, b64decode, b64encode, schedule, run_loop
 from pyxbos import xbos_pb2
 from pyxbos import flexstat_pb2
+from pyxbos import parker_pb2
 from pyxbos import nullabletypes_pb2 as types
 import yaml
 import argparse
@@ -38,6 +39,19 @@ class ControlFlagPublisher(XBOSProcess):
                         )
                         await self.publish(self.namespace, topic, True, msg)
                         print("published")
+                elif device_type == "parker_controllers":
+                    topic_list = self.service_name_map[device_type]
+                    for topic in topic_list:
+                        control_flag = self.service_name_map[device_type].get(topic, False)
+                        msg = xbos_pb2.XBOS(
+                            parker_actuation_message=parker_pb2.ParkerActuationMessage(
+                                time=int(time.time() * 1e9),
+                                control_flag=types.Int64(value=control_flag)
+                            )
+                        )
+                        await self.publish(self.namespace, topic, True, msg)
+                        print("published")
+
             except:
                 print("error occured in pushing control signal to device: %s!" % (device_type))
 

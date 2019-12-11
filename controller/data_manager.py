@@ -15,6 +15,7 @@ from pyxbos.wavemq_pb2_grpc import *
 from grpc import insecure_channel
 from pyxbos import xbos_pb2
 from pyxbos import flexstat_pb2
+from pyxbos import parker_pb2
 from pyxbos import nullabletypes_pb2 as types
 import base64
 
@@ -614,9 +615,41 @@ class Data_Manager():
                     elif csp!=None:
                         setpoint = flexstat_pb2.FlexstatSetpoints(change_time=change_time,
                                                                   cooling_setpoint=types.Double(value=csp))
-                    setpoint_list.append(setpoint)
+                    else:
+                        setpoint = None
+
+                    if setpoint != None:
+                        setpoint_list.append(setpoint)
                 msg = xbos_pb2.XBOS(
                     flexstat_actuation_message=flexstat_pb2.FlexstatActuationMessage(
+                        time=int(time.time() * 1e9),
+                        setpoints = setpoint_list
+                    )
+                )
+            elif device.startswith("parker"):
+                for index, row in df.iterrows():
+                    change_time = int(index.value)
+                    device_setpoint = row.get('setpoint', None)
+                    differential = row.get('differential', None)
+
+                    if device_setpoint != None and differential!=None:
+                        setpoint = parker_pb2.ParkerSetpoints(change_time=change_time,
+                                                              setpoint=types.Double(value=device_setpoint),
+                                                              differential=types.Double(value=differential))
+                    elif device_setpoint!=None:
+                        setpoint = parker_pb2.ParkerSetpoints(change_time=change_time,
+                                                              setpoint=types.Double(value=device_setpoint))
+                    elif differential!=None:
+                        setpoint = parker_pb2.ParkerSetpoints(change_time=change_time,
+                                                              differential=types.Double(value=differential))
+                    else:
+                        setpoint=None
+
+                    if setpoint != None:
+                        setpoint_list.append(setpoint)
+
+                msg = xbos_pb2.XBOS(
+                    parker_actuation_message=parker_pb2.ParkerActuationMessage(
                         time=int(time.time() * 1e9),
                         setpoints = setpoint_list
                     )

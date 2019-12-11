@@ -162,7 +162,9 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "devices": {
                 #"flexstat_test/thermostat_east/actuation": {"cooling_setpoint": "Trtu"}
                 "flexstat_test/thermostat_east/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"},
-                "flexstat_test/thermostat_west/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"}
+                "flexstat_test/thermostat_west/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"},
+                "parker_test/refrigerator/actuation": {"setpoint": "Tref"},
+                "parker_test/freezer/actuation": {"setpoint": "Tfre"}
             }
         },
         "variables": {
