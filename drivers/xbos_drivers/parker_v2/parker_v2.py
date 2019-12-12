@@ -287,11 +287,10 @@ class ParkerDriver(XBOSProcess):
                     parker_state = parker_pb2.ParkerState(
                         time = int(time_now*1e9),
                         compressor_working_hours=types.Double(value=output.get('compressor_working_hours', None)),
-                        clear_compressor_working_hours=types.Int64(
-                            value=output.get('clear_compressor_working_hours', None)),
-                        buzzer_control=types.Int64(value=output.get('buzzer_control', None)),
-                        defrost_control=types.Int64(value=output.get('defrost_control', None)),
-                        start_resistors=types.Int64(value=output.get('start_resistors', None)),
+                        # clear_compressor_working_hours=types.Int64(value=output.get('clear_compressor_working_hours', None)),
+                        # buzzer_control=types.Int64(value=output.get('buzzer_control', None)),
+                        # defrost_control=types.Int64(value=output.get('defrost_control', None)),
+                        # start_resistors=types.Int64(value=output.get('start_resistors', None)),
                         on_standby_status=types.Int64(value=output.get('on_standby_status', None)),
                         light_status=types.Int64(value=output.get('light_status', None)),
                         aux_output_status=types.Int64(value=output.get('aux_output_status', None)),
