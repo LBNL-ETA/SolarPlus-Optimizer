@@ -203,308 +203,308 @@ var device_lookup = map[string]func(msg xbospb.XBOS) (float64, bool){
         return 0, false
     },
     "compressor_working_hours": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Compressor_Working_Hours != nil {
-            return float64(msg.ParkerState.Compressor_Working_Hours.Value), true
+        if has_device(msg) && msg.ParkerState.CompressorWorkingHours != nil {
+            return float64(msg.ParkerState.CompressorWorkingHours.Value), true
         }
         return 0, false
     },
     "clear_compressor_working_hours": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Clear_Compressor_Working_Hours != nil {
-            return float64(msg.ParkerState.Clear_Compressor_Working_Hours.Value), true
+        if has_device(msg) && msg.ParkerState.ClearCompressorWorkingHours != nil {
+            return float64(msg.ParkerState.ClearCompressorWorkingHours.Value), true
         }
         return 0, false
     },
     "buzzer_control": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Buzzer_Control != nil {
-            return float64(msg.ParkerState.Buzzer_Control.Value), true
+        if has_device(msg) && msg.ParkerState.BuzzerControl != nil {
+            return float64(msg.ParkerState.BuzzerControl.Value), true
         }
         return 0, false
     },
     "defrost_control": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Defrost_Control != nil {
-            return float64(msg.ParkerState.Defrost_Control.Value), true
+        if has_device(msg) && msg.ParkerState.DefrostControl != nil {
+            return float64(msg.ParkerState.DefrostControl.Value), true
         }
         return 0, false
     },
     "start_resistors": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Start_Resistors != nil {
-            return float64(msg.ParkerState.Start_Resistors.Value), true
+        if has_device(msg) && msg.ParkerState.StartResistors != nil {
+            return float64(msg.ParkerState.StartResistors.Value), true
         }
         return 0, false
     },
     "on_standby_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.On_Standby_Status != nil {
-            return float64(msg.ParkerState.On_Standby_Status.Value), true
+        if has_device(msg) && msg.ParkerState.OnStandbyStatus != nil {
+            return float64(msg.ParkerState.OnStandbyStatus.Value), true
         }
         return 0, false
     },
     "light_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Light_Status != nil {
-            return float64(msg.ParkerState.Light_Status.Value), true
+        if has_device(msg) && msg.ParkerState.LightStatus != nil {
+            return float64(msg.ParkerState.LightStatus.Value), true
         }
         return 0, false
     },
     "aux_output_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Aux_Output_Status != nil {
-            return float64(msg.ParkerState.Aux_Output_Status.Value), true
+        if has_device(msg) && msg.ParkerState.AuxOutputStatus != nil {
+            return float64(msg.ParkerState.AuxOutputStatus.Value), true
         }
         return 0, false
     },
     "next_defrost_counter": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Next_Defrost_Counter != nil {
-            return float64(msg.ParkerState.Next_Defrost_Counter.Value), true
+        if has_device(msg) && msg.ParkerState.NextDefrostCounter != nil {
+            return float64(msg.ParkerState.NextDefrostCounter.Value), true
         }
         return 0, false
     },
     "door_switch_input_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Door_Switch_Input_Status != nil {
-            return float64(msg.ParkerState.Door_Switch_Input_Status.Value), true
+        if has_device(msg) && msg.ParkerState.DoorSwitchInputStatus != nil {
+            return float64(msg.ParkerState.DoorSwitchInputStatus.Value), true
         }
         return 0, false
     },
     "multipurpose_input_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Multipurpose_Input_Status != nil {
-            return float64(msg.ParkerState.Multipurpose_Input_Status.Value), true
+        if has_device(msg) && msg.ParkerState.MultipurposeInputStatus != nil {
+            return float64(msg.ParkerState.MultipurposeInputStatus.Value), true
         }
         return 0, false
     },
     "compressor_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Compressor_Status != nil {
-            return float64(msg.ParkerState.Compressor_Status.Value), true
+        if has_device(msg) && msg.ParkerState.CompressorStatus != nil {
+            return float64(msg.ParkerState.CompressorStatus.Value), true
         }
         return 0, false
     },
     "output_defrost_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Output_Defrost_Status != nil {
-            return float64(msg.ParkerState.Output_Defrost_Status.Value), true
+        if has_device(msg) && msg.ParkerState.OutputDefrostStatus != nil {
+            return float64(msg.ParkerState.OutputDefrostStatus.Value), true
         }
         return 0, false
     },
     "fans_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Fans_Status != nil {
-            return float64(msg.ParkerState.Fans_Status.Value), true
+        if has_device(msg) && msg.ParkerState.FansStatus != nil {
+            return float64(msg.ParkerState.FansStatus.Value), true
         }
         return 0, false
     },
     "output_k4_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Output_K4_Status != nil {
-            return float64(msg.ParkerState.Output_K4_Status.Value), true
+        if has_device(msg) && msg.ParkerState.OutputK4Status != nil {
+            return float64(msg.ParkerState.OutputK4Status.Value), true
         }
         return 0, false
     },
     "cabinet_temperature": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Cabinet_Temperature != nil {
-            return float64(msg.ParkerState.Cabinet_Temperature.Value), true
+        if has_device(msg) && msg.ParkerState.CabinetTemperature != nil {
+            return float64(msg.ParkerState.CabinetTemperature.Value), true
         }
         return 0, false
     },
     "evaporator_temperature": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Evaporator_Temperature != nil {
-            return float64(msg.ParkerState.Evaporator_Temperature.Value), true
+        if has_device(msg) && msg.ParkerState.EvaporatorTemperature != nil {
+            return float64(msg.ParkerState.EvaporatorTemperature.Value), true
         }
         return 0, false
     },
     "auxiliary_temperature": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Auxiliary_Temperature != nil {
-            return float64(msg.ParkerState.Auxiliary_Temperature.Value), true
+        if has_device(msg) && msg.ParkerState.AuxiliaryTemperature != nil {
+            return float64(msg.ParkerState.AuxiliaryTemperature.Value), true
         }
         return 0, false
     },
     "probe1_failure_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Probe1_Failure_Alarm != nil {
-            return float64(msg.ParkerState.Probe1_Failure_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.Probe1FailureAlarm != nil {
+            return float64(msg.ParkerState.Probe1FailureAlarm.Value), true
         }
         return 0, false
     },
     "probe2_failure_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Probe2_Failure_Alarm != nil {
-            return float64(msg.ParkerState.Probe2_Failure_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.Probe2FailureAlarm != nil {
+            return float64(msg.ParkerState.Probe2FailureAlarm.Value), true
         }
         return 0, false
     },
     "probe3_failure_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Probe3_Failure_Alarm != nil {
-            return float64(msg.ParkerState.Probe3_Failure_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.Probe3FailureAlarm != nil {
+            return float64(msg.ParkerState.Probe3FailureAlarm.Value), true
         }
         return 0, false
     },
     "minimum_temperature_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Minimum_Temperature_Alarm != nil {
-            return float64(msg.ParkerState.Minimum_Temperature_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.MinimumTemperatureAlarm != nil {
+            return float64(msg.ParkerState.MinimumTemperatureAlarm.Value), true
         }
         return 0, false
     },
     "maximum_temperture_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Maximum_Temperture_Alarm != nil {
-            return float64(msg.ParkerState.Maximum_Temperture_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.MaximumTempertureAlarm != nil {
+            return float64(msg.ParkerState.MaximumTempertureAlarm.Value), true
         }
         return 0, false
     },
     "condensor_temperature_failure_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Condensor_Temperature_Failure_Alarm != nil {
-            return float64(msg.ParkerState.Condensor_Temperature_Failure_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.CondensorTemperatureFailureAlarm != nil {
+            return float64(msg.ParkerState.CondensorTemperatureFailureAlarm.Value), true
         }
         return 0, false
     },
     "condensor_pre_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Condensor_Pre_Alarm != nil {
-            return float64(msg.ParkerState.Condensor_Pre_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.CondensorPreAlarm != nil {
+            return float64(msg.ParkerState.CondensorPreAlarm.Value), true
         }
         return 0, false
     },
     "door_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Door_Alarm != nil {
-            return float64(msg.ParkerState.Door_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.DoorAlarm != nil {
+            return float64(msg.ParkerState.DoorAlarm.Value), true
         }
         return 0, false
     },
     "multipurpose_input_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Multipurpose_Input_Alarm != nil {
-            return float64(msg.ParkerState.Multipurpose_Input_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.MultipurposeInputAlarm != nil {
+            return float64(msg.ParkerState.MultipurposeInputAlarm.Value), true
         }
         return 0, false
     },
     "compressor_blocked_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Compressor_Blocked_Alarm != nil {
-            return float64(msg.ParkerState.Compressor_Blocked_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.CompressorBlockedAlarm != nil {
+            return float64(msg.ParkerState.CompressorBlockedAlarm.Value), true
         }
         return 0, false
     },
     "power_failure_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Power_Failure_Alarm != nil {
-            return float64(msg.ParkerState.Power_Failure_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.PowerFailureAlarm != nil {
+            return float64(msg.ParkerState.PowerFailureAlarm.Value), true
         }
         return 0, false
     },
     "rtc_error_alarm": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Rtc_Error_Alarm != nil {
-            return float64(msg.ParkerState.Rtc_Error_Alarm.Value), true
+        if has_device(msg) && msg.ParkerState.RtcErrorAlarm != nil {
+            return float64(msg.ParkerState.RtcErrorAlarm.Value), true
         }
         return 0, false
     },
     "energy_saving_regulator_flag": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Energy_Saving_Regulator_Flag != nil {
-            return float64(msg.ParkerState.Energy_Saving_Regulator_Flag.Value), true
+        if has_device(msg) && msg.ParkerState.EnergySavingRegulatorFlag != nil {
+            return float64(msg.ParkerState.EnergySavingRegulatorFlag.Value), true
         }
         return 0, false
     },
     "energy_saving_real_time_regulator_flag": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Energy_Saving_Real_Time_Regulator_Flag != nil {
-            return float64(msg.ParkerState.Energy_Saving_Real_Time_Regulator_Flag.Value), true
+        if has_device(msg) && msg.ParkerState.EnergySavingRealTimeRegulatorFlag != nil {
+            return float64(msg.ParkerState.EnergySavingRealTimeRegulatorFlag.Value), true
         }
         return 0, false
     },
     "service_request_regulator_flag": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Service_Request_Regulator_Flag != nil {
-            return float64(msg.ParkerState.Service_Request_Regulator_Flag.Value), true
+        if has_device(msg) && msg.ParkerState.ServiceRequestRegulatorFlag != nil {
+            return float64(msg.ParkerState.ServiceRequestRegulatorFlag.Value), true
         }
         return 0, false
     },
     "on_standby_regulator_flag": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.On_Standby_Regulator_Flag != nil {
-            return float64(msg.ParkerState.On_Standby_Regulator_Flag.Value), true
+        if has_device(msg) && msg.ParkerState.OnStandbyRegulatorFlag != nil {
+            return float64(msg.ParkerState.OnStandbyRegulatorFlag.Value), true
         }
         return 0, false
     },
     "new_alarm_to_read_regulator_flag": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.New_Alarm_To_Read_Regulator_Flag != nil {
-            return float64(msg.ParkerState.New_Alarm_To_Read_Regulator_Flag.Value), true
+        if has_device(msg) && msg.ParkerState.NewAlarmToReadRegulatorFlag != nil {
+            return float64(msg.ParkerState.NewAlarmToReadRegulatorFlag.Value), true
         }
         return 0, false
     },
     "defrost_status_regulator_flag": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Defrost_Status_Regulator_Flag != nil {
-            return float64(msg.ParkerState.Defrost_Status_Regulator_Flag.Value), true
+        if has_device(msg) && msg.ParkerState.DefrostStatusRegulatorFlag != nil {
+            return float64(msg.ParkerState.DefrostStatusRegulatorFlag.Value), true
         }
         return 0, false
     },
     "active_setpoint": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Active_Setpoint != nil {
-            return float64(msg.ParkerState.Active_Setpoint.Value), true
+        if has_device(msg) && msg.ParkerState.ActiveSetpoint != nil {
+            return float64(msg.ParkerState.ActiveSetpoint.Value), true
         }
         return 0, false
     },
     "time_until_defrost": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Time_Until_Defrost != nil {
-            return float64(msg.ParkerState.Time_Until_Defrost.Value), true
+        if has_device(msg) && msg.ParkerState.TimeUntilDefrost != nil {
+            return float64(msg.ParkerState.TimeUntilDefrost.Value), true
         }
         return 0, false
     },
     "current_defrost_counter": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Current_Defrost_Counter != nil {
-            return float64(msg.ParkerState.Current_Defrost_Counter.Value), true
+        if has_device(msg) && msg.ParkerState.CurrentDefrostCounter != nil {
+            return float64(msg.ParkerState.CurrentDefrostCounter.Value), true
         }
         return 0, false
     },
     "compressor_delay": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Compressor_Delay != nil {
-            return float64(msg.ParkerState.Compressor_Delay.Value), true
+        if has_device(msg) && msg.ParkerState.CompressorDelay != nil {
+            return float64(msg.ParkerState.CompressorDelay.Value), true
         }
         return 0, false
     },
     "num_alarms_in_history": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Num_Alarms_In_History != nil {
-            return float64(msg.ParkerState.Num_Alarms_In_History.Value), true
+        if has_device(msg) && msg.ParkerState.NumAlarmsInHistory != nil {
+            return float64(msg.ParkerState.NumAlarmsInHistory.Value), true
         }
         return 0, false
     },
     "energy_saving_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Energy_Saving_Status != nil {
-            return float64(msg.ParkerState.Energy_Saving_Status.Value), true
+        if has_device(msg) && msg.ParkerState.EnergySavingStatus != nil {
+            return float64(msg.ParkerState.EnergySavingStatus.Value), true
         }
         return 0, false
     },
     "service_request_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Service_Request_Status != nil {
-            return float64(msg.ParkerState.Service_Request_Status.Value), true
+        if has_device(msg) && msg.ParkerState.ServiceRequestStatus != nil {
+            return float64(msg.ParkerState.ServiceRequestStatus.Value), true
         }
         return 0, false
     },
     "resistors_activated_by_aux_key_status": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Resistors_Activated_By_Aux_Key_Status != nil {
-            return float64(msg.ParkerState.Resistors_Activated_By_Aux_Key_Status.Value), true
+        if has_device(msg) && msg.ParkerState.ResistorsActivatedByAuxKeyStatus != nil {
+            return float64(msg.ParkerState.ResistorsActivatedByAuxKeyStatus.Value), true
         }
         return 0, false
     },
     "evaporator_valve_state": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Evaporator_Valve_State != nil {
-            return float64(msg.ParkerState.Evaporator_Valve_State.Value), true
+        if has_device(msg) && msg.ParkerState.EvaporatorValveState != nil {
+            return float64(msg.ParkerState.EvaporatorValveState.Value), true
         }
         return 0, false
     },
     "output_defrost_state": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Output_Defrost_State != nil {
-            return float64(msg.ParkerState.Output_Defrost_State.Value), true
+        if has_device(msg) && msg.ParkerState.OutputDefrostState != nil {
+            return float64(msg.ParkerState.OutputDefrostState.Value), true
         }
         return 0, false
     },
     "output_lux_state": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Output_Lux_State != nil {
-            return float64(msg.ParkerState.Output_Lux_State.Value), true
+        if has_device(msg) && msg.ParkerState.OutputLuxState != nil {
+            return float64(msg.ParkerState.OutputLuxState.Value), true
         }
         return 0, false
     },
     "output_aux_state": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Output_Aux_State != nil {
-            return float64(msg.ParkerState.Output_Aux_State.Value), true
+        if has_device(msg) && msg.ParkerState.OutputAuxState != nil {
+            return float64(msg.ParkerState.OutputAuxState.Value), true
         }
         return 0, false
     },
     "resistors_state": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Resistors_State != nil {
-            return float64(msg.ParkerState.Resistors_State.Value), true
+        if has_device(msg) && msg.ParkerState.ResistorsState != nil {
+            return float64(msg.ParkerState.ResistorsState.Value), true
         }
         return 0, false
     },
     "output_alarm_state": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Output_Alarm_State != nil {
-            return float64(msg.ParkerState.Output_Alarm_State.Value), true
+        if has_device(msg) && msg.ParkerState.OutputAlarmState != nil {
+            return float64(msg.ParkerState.OutputAlarmState.Value), true
         }
         return 0, false
     },
     "second_compressor_state": func(msg xbospb.XBOS) (float64, bool) {
-        if has_device(msg) && msg.ParkerState.Second_Compressor_State != nil {
-            return float64(msg.ParkerState.Second_Compressor_State.Value), true
+        if has_device(msg) && msg.ParkerState.SecondCompressorState != nil {
+            return float64(msg.ParkerState.SecondCompressorState.Value), true
         }
         return 0, false
     },
