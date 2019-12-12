@@ -1,12 +1,13 @@
 [
   {
     "type": "price-tou",
-    "notification-date": "2019-12-06T00:00:00",
-    "start-date": "2019-12-07T00:00:00",
-    "end-date": "2019-12-07T20:00:00",
+    "notification-date": "2019-12-10T00:00:00",
+    "start-date": "2019-12-10T14:00:00",
+    "end-date": "2019-12-10T15:00:00",
     "data":
     {
-      "tariff-json": "openei_tariff/urcea_Commercial_E-19S_TOU_gridlevelSecondary_revised.json"
+      "energy_prices": [0.1, 0.2, 0.3, 0.4],
+      "demand_prices": [0.5, 0.6, 0.7, 0.8]
     }
   }
 ]
