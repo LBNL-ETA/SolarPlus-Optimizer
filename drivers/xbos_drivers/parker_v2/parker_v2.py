@@ -281,11 +281,11 @@ class ParkerDriver(XBOSProcess):
                 # set these for setting defrost times
                 #for variable in ['Hd1', 'Hd2', 'Hd3', 'Hd4', 'Hd5', 'Hd6']:
 
-                time_now = time.time()
+                time_now = time.time() * 1e9
 
                 msg = xbos_pb2.XBOS(
                     parker_state = parker_pb2.ParkerState(
-                        time = int(time_now*1e9),
+                        time = int(time_now),
                         compressor_working_hours=types.Double(value=output.get('compressor_working_hours', None)),
                         # clear_compressor_working_hours=types.Int64(value=output.get('clear_compressor_working_hours', None)),
                         # buzzer_control=types.Int64(value=output.get('buzzer_control', None)),
@@ -399,9 +399,6 @@ class ParkerDriver(XBOSProcess):
                 resource = self.base_resource + "/" + service_name
                 await self.publish(self.namespace, resource, False, msg)
                 print("published at time_now = %s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_now / 1e9))))
-
-                # publishing to parker/refrigerator/* or parker/freezer/*
-                print(self.report(service_name, msg))
             except Exception as e:
                 print("error occured in service_name = %s! reconnecting and continuing, error = %r"%(service_name, e))
                 self.modbus_device.reconnect()
