@@ -38,7 +38,7 @@ class ControlFlagPublisher(XBOSProcess):
                             )
                         )
                         await self.publish(self.namespace, topic, True, msg)
-                        print("published")
+                        print("published on topic = %s"%topic)
                 elif device_type == "parker_controllers":
                     topic_list = self.service_name_map[device_type]
                     for topic in topic_list:
@@ -50,10 +50,11 @@ class ControlFlagPublisher(XBOSProcess):
                             )
                         )
                         await self.publish(self.namespace, topic, True, msg)
-                        print("published")
+                        print("published on topic = %s" % topic)
 
             except:
-                print("error occured in pushing control signal to device: %s!" % (device_type))
+                print("error occured in pushing control signal to device: %s! topic = %s" % (device_type, topic))
+            print()
 
 
 parser = argparse.ArgumentParser()
