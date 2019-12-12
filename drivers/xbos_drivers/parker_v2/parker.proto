@@ -236,5 +236,22 @@ message ParkerState {
     //fan delay after evap drip completes
     //unit: minutes
     Double f3 = 94;
-    //first real time defrost activation time; only if d8=3
+	//first real time defrost activation time; only if d8=3
+	//unit: minutes
+	Double Hd1 = 95;
+	//second real time defrost activation time; only if d8=3
+	//unit: minutes
+	Double Hd2 = 96;
+	//third real time defrost activation time; only if d8=3
+	//unit: minutes
+	Double Hd3 = 97;
+	//fourth real time defrost activation time; only if d8=3
+	//unit: minutes
+	Double Hd4 = 98;
+	//fifth real time defrost activation time; only if d8=3
+	//unit: minutes
+	Double Hd5 = 99;
+	//sixth real time defrost activation time; only if d8=3
+	//unit: minutes
+	Double Hd6 = 100;
 }

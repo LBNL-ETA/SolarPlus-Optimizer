@@ -91,7 +91,7 @@ var device_units = map[string]string{
     "P2": "",
     "P3": "",
     "r0": "C",
-    "r3": "",,
+    "r3": "",
     "C2": "",
     "C3": "",
     "C4": "",
