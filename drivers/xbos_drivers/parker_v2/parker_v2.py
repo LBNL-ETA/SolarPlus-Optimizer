@@ -324,8 +324,8 @@ class ParkerDriver(XBOSProcess):
                         defrost_status_regulator_flag=types.Int64(value=output.get('defrost_status_regulator_flag', None)),
                         active_setpoint=types.Double(value=output.get('active_setpoint', None)),
                         time_until_defrost=types.Double(value=output.get('time_until_defrost', None)),
-                        current_defrost_counter=types.Double(value=output.get('current_defrost_counter', None)),
-                        compressor_delay=types.Double(value=output.get('compressor_delay', None)),
+                        current_defrost_counter=types.Int64(value=output.get('current_defrost_counter', None)),
+                        compressor_delay=types.Int64(value=output.get('compressor_delay', None)),
                         num_alarms_in_history=types.Int64(value=output.get('num_alarms_in_history', None)),
 
                         energy_saving_status=types.Int64(value=output.get('energy_saving_status', None)),
@@ -345,15 +345,14 @@ class ParkerDriver(XBOSProcess):
                         r2=types.Double(value=output.get('r2', None)),
                         r4=types.Double(value=output.get('r4', None)),
 
-                        c0=types.Double(value=output.get('C0', None)),
-                        c1=types.Double(value=output.get('C1', None)),
+                        C0=types.Double(value=output.get('C0', None)),
+                        C1=types.Double(value=output.get('C1', None)),
 
                         d0=types.Double(value=output.get('d0', None)),
                         d3=types.Double(value=output.get('d3', None)),
                         d5=types.Double(value=output.get('d5', None)),
                         d7=types.Double(value=output.get('d7', None)),
                         d8=types.Int64(value=output.get('d8', None)),
-
 
                         A0=types.Int64(value=output.get('A0', None)),
                         A1=types.Double(value=output.get('A1', None)),
@@ -371,7 +370,6 @@ class ParkerDriver(XBOSProcess):
                         F2=types.Int64(value=output.get('F2', None)),
                         F3=types.Double(value=output.get('F3', None)),
 
-
                         # clear_compressor_working_hours=types.Int64(value=output.get('clear_compressor_working_hours', None)),
                         # buzzer_control=types.Int64(value=output.get('buzzer_control', None)),
                         # defrost_control=types.Int64(value=output.get('defrost_control', None)),
@@ -380,14 +378,14 @@ class ParkerDriver(XBOSProcess):
                         P3=types.Int64(value=output.get('P3', None)),
                         r0=types.Double(value=output.get('r0', None)),
                         r3=types.Int64(value=output.get('r3', None)),
-                        c2=types.Double(value=output.get('C2', None)),
-                        c3=types.Double(value=output.get('C3', None)),
-                        c4=types.Double(value=output.get('C4', None)),
-                        c5=types.Double(value=output.get('C5', None)),
-                        c6=types.Double(value=output.get('C6', None)),
-                        c7=types.Double(value=output.get('C7', None)),
-                        c8=types.Double(value=output.get('C8', None)),
-                        c9=types.Double(value=output.get('C9', None)),
+                        C2=types.Double(value=output.get('C2', None)),
+                        C3=types.Double(value=output.get('C3', None)),
+                        C4=types.Double(value=output.get('C4', None)),
+                        C5=types.Double(value=output.get('C5', None)),
+                        C6=types.Double(value=output.get('C6', None)),
+                        C7=types.Double(value=output.get('C7', None)),
+                        C8=types.Double(value=output.get('C8', None)),
+                        C9=types.Double(value=output.get('C9', None)),
                         d1=types.Int64(value=output.get('d1', None)),
                         d2=types.Double(value=output.get('d2', None)),
                         d4=types.Int64(value=output.get('d4', None)),
@@ -397,7 +395,7 @@ class ParkerDriver(XBOSProcess):
                 )
                 resource = self.base_resource + "/" + service_name
                 await self.publish(self.namespace, resource, False, msg)
-                print("published at time_now = %s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_now / 1e9))))
+                print("published at time_now = %s on topic %s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_now / 1e9)), resource))
             except Exception as e:
                 print("error occured in service_name = %s! reconnecting and continuing, error = %r"%(service_name, e))
                 self.modbus_device.reconnect()
