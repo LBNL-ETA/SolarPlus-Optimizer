@@ -43,7 +43,7 @@ modbus:
     bytesize: 8
     parity: E
     baudrate: 9600
-    serial_port: /dev/ttyUSB1
+    serial_port: /dev/ttyUSB3
     OFFSET_REGISTERS: 0
     coil_registers: {}
     discrete_registers: {}
@@ -86,13 +86,13 @@ modbus:
       CA1: [0x603,16int],
       CA2: [0x604,16int],
       CA3: [0x605,16int],
-      p0: [0x606,16int],
-      p1: [0x607,16int],
-      p2: [0x608,16int],
-      p3: [0x609,16int],
-      p4: [0x60A,16int],
-      p5: [0x60B,16int],
-      p6: [0x60C,16int],
+      P0: [0x606,16int],
+      P1: [0x607,16int],
+      P2: [0x608,16int],
+      P3: [0x609,16int],
+      P4: [0x60A,16int],
+      P5: [0x60B,16int],
+      P6: [0x60C,16int],
 
       r0: [0x60E,16int],
       r1: [0x60F,16int],
@@ -122,7 +122,7 @@ modbus:
       d7: [0x625,16int],
       d8: [0x626,16int],
       d9: [0x627,16int],
-      dA: [0x628,16int],
+      da: [0x628,16int],
 
       A0: [0x629,16int],
       A1: [0x62A,16int],
