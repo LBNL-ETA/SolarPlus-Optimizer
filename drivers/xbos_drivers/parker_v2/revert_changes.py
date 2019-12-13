@@ -23,7 +23,7 @@ for device in service_name_map:
     default_value = default_setpoint_map[device]
     if current_value != default_value:
         value_to_be_written = int(default_value * 10)
-        # modbus_device.write_register(register_name=register_name, value=default_value, unit=unit)
+        modbus_device.write_register(register_name=register_name, value=value_to_be_written, unit=unit)
 
         print("device %s, modbus variable=%s, old value = %f, default value = %f, value written=%f" % (device, register_name, current_value, default_value, value_to_be_written))
     else:

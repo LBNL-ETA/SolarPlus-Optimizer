@@ -180,9 +180,12 @@ class ParkerDriver(XBOSProcess):
 
                 if current_value != new_value:
                     value_to_be_written = int(new_value*10)
-                    self.modbus_device.write_register(register_name=register_name, value=new_value, unit=unit)
+                    try:
+                        self.modbus_device.write_register(register_name=register_name, value=value_to_be_written, unit=unit)
+                    except Exception as e:
+                        print("exception happened when writing %d to setpoint for %s, %r"%(value_to_be_written, device, e))
 
-                    print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f, value written=%f" % (device, variable_name, register_name, current_value, new_value, value_to_be_written))
+                    print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f, value written=%d" % (device, variable_name, register_name, current_value, new_value, value_to_be_written))
                 else:
                     print("no change in setpoint, not changing")
 
