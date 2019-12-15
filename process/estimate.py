@@ -18,7 +18,7 @@ final_time = '2019-11-06 10:00:00+00:00' # UTC time
 mopath = 'models/SolarPlus.mo'
 modelpath = 'SolarPlus.Building.Training.Thermal'
 # Model measurements
-meas_list = ['Trtu', 'Tref', 'Tfre']
+meas_list = ['Trtu_west', 'Trtu_east', 'Tref', 'Tfre']
 sample_rate = 300;
 # Initial states (must satisfy optimization constraints)
 Trtu_0 = 295.59 # deg C
@@ -39,7 +39,8 @@ csv_weather = 'controller/validation/weather_input_201911.csv'
 weather = exodata.WeatherFromCSV(csv_weather,vm_weather,geography, tz_name='UTC')
 weather.collect_data(start_time, final_time);
 # Controls
-vm_controls = {'HVAC1_Norm' : ('uCool', units.unit1),
+vm_controls = {'HVAC_West_Norm' : ('uCoolWest', units.unit1),
+               'HVAC_East_Norm' : ('uCoolEast', units.unit1),
                'RefComp_Norm' : ('uRef', units.unit1),
                'FreComp_Split_Norm' : ('uFreCool', units.unit1),
                'uFreDef' : ('uFreDef', units.unit1)}
@@ -57,7 +58,8 @@ parameters.collect_data()
 measurements = dict()
 for meas in meas_list:
     measurements[meas] = {'Sample' : variables.Static('{0}_sample'.format(meas), sample_rate, units.s)};
-vm_measurements = {'temp_rtu_west_k' : ('Trtu', units.K),
+vm_measurements = {'temp_rtu_west_k' : ('Trtu_west', units.K),
+                   'temp_rtu_east_k' : ('Trtu_east', units.K),
                    'ref_k' : ('Tref', units.K),
                    'fre_k' : ('Tfre', units.K)}
 csv_measurements = 'controller/validation/temperature_201911.csv'
@@ -101,7 +103,7 @@ if simulate_initial:
 # Solve
 # --------------------------------------------------------------------------
 # Solve estimation problem
-model.estimate(start_time, final_time, ['Trtu','Tref','Tfre'])
+model.estimate(start_time, final_time, ['Trtu_west','Trtu_east','Tref','Tfre'])
 print(model.display_measurements('Measured'))
 for key in model.parameter_data.keys():
     print(key, model.parameter_data[key]['Value'].display_data())
