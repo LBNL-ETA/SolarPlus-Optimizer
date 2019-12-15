@@ -6,17 +6,18 @@ import os
 config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                          'modelpath' : 'SolarPlus.Building.Optimization.Store',
                          'libraries' : os.getenv('MODELICAPATH'),
-                         'measurements' : ['Trtu', 'Tref', 'Tfre', 'SOC', 'Pbattery'],
-                         'other_outputs' : ['Pnet', 'Prtu', 'Pref', 'Pfre', 'Pbattery', 'Ppv', 'Grtu'],
+                         'measurements' : ['Trtu_west', 'Trtu_east', 'Tref', 'Tfre', 'SOC', 'Pbattery'],
+                         'other_outputs' : ['Pnet', 'Prtu_west', 'Prtu_east', 'Pref', 'Pfre', 'Pbattery', 'Ppv', 'Grtu'],
                          'sample_rate' : 3600,
-                         'parameters' : {'Name':      ['Trtu_0', 'Tref_0', 'Tfre_0', 'SOC_0'],
-                                         'Free':      [False,    False,    False,    False],
-                                         'Value':     [72,       34,        -5,     0.25],
-                                         'Minimum':   [212,      212,      212,      0],
-                                         'Maximum':   [-50,      -50,      -50,      1],
-                                         'Covariance':[0,        0,        0,        0],
-                                         'Unit' :     ['degF',   'degF',   'degF',   '1']},
-                          'init_vm' : {'Trtu_0' : 'Trtu',
+                         'parameters' : {'Name':      ['Trtu_west_0', 'Trtu_east_0', 'Tref_0', 'Tfre_0', 'SOC_0'],
+                                         'Free':      [False,   False,    False,    False,    False],
+                                         'Value':     [70,       70,      33,        -7,     0.25],
+                                         'Minimum':   [0,        0,        0,        -20,      0],
+                                         'Maximum':   [100,      100,     50,      100,      1],
+                                         'Covariance':[0,        0,        0,        0,      0],
+                                         'Unit' :     ['degF',   'degF',   'degF',   'degF', '1']},
+                          'init_vm' : {'Trtu_west_0' : 'Trtu_west',
+                                       'Trtu_east_0' : 'Trtu_east',
                                        'Tref_0' : 'Tref',
                                        'Tfre_0' : 'Tfre',
                                        'SOC_0'  : 'SOC'}},
@@ -30,10 +31,12 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                      'geo' : (40.88,-124.0)},
 
 "control_config" :    {'vm'  : {
-                              'HVAC1_Norm' : ('uCool', units.unit1),
+                              'HVAC_West_Norm' : ('uCoolWest', units.unit1),
+                              'HVAC_East_Norm' : ('uCoolEast', units.unit1),
                               'RefComp_Norm' : ('uRef', units.unit1),
                               'FreComp_Split_Norm' : ('uFreCool', units.unit1),
-                              'uHeat' : ('uHeat', units.unit1),
+                              'uHeat_West' : ('uHeat_West', units.unit1),
+                              'uHeat_East' : ('uHeat_East', units.unit1),
                               'uBattery' : ('uBattery', units.unit1)}},
 
 "constraint_config" : {'vm'  : {
@@ -45,10 +48,14 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 #                              'Tfre_max':('Tfre', 'LTE', units.degC),
                               'SOC_min':('SOC', 'GTE', units.unit1),
                               'SOC_max':('SOC', 'LTE', units.unit1),
-                              'uCool_min':('uCool', 'GTE', units.unit1),
-                              'uCool_max':('uCool', 'LTE', units.unit1),
-                              'uHeat_min':('uHeat', 'GTE', units.unit1),
-                              'uHeat_max':('uHeat', 'LTE', units.unit1),
+                              'uCool_min':('uCoolWest', 'GTE', units.unit1),
+                              'uCool_max':('uCoolWest', 'LTE', units.unit1),
+                              'uHeat_min':('uHeatWest', 'GTE', units.unit1),
+                              'uHeat_max':('uHeatWest', 'LTE', units.unit1),
+                              'uCool_min':('uCoolEast', 'GTE', units.unit1),
+                              'uCool_max':('uCoolEast', 'LTE', units.unit1),
+                              'uHeat_min':('uHeatEast', 'GTE', units.unit1),
+                              'uHeat_max':('uHeatEast', 'LTE', units.unit1),
                               'uBattery_min':('uBattery', 'GTE', units.unit1),
                               'uBattery_max':('uBattery', 'LTE', units.unit1),
                               'uRef_min':('uRef', 'GTE', units.unit1),
@@ -64,15 +71,18 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'pi_d':('pi_d', units.dol_kW),
                               'P_est':('P_est', units.kW)}},
 
-"system_config" :     {'vm'  : {'Tref':('Tref', units.degF),
-                              'Trtu':('Trtu', units.degF),
-                              'Tfre':('Tfre', units.degF)
+"system_config" :     {'vm'  : {
+                                'Trtu_west':('Trtu_west', units.degF),
+                                'Trtu_east':('Trtu_east', units.degF),
+                                'Tref':('Tref', units.degF),
+                                'Tfre':('Tfre', units.degF)
 #                              'SOC':('SOC',units.unit1)
                               }
                        },
 "setpoints_config" :   {'vm': {'uBattery':('uBattery',units.unit1),
                              'Pbattery':('Pbattery',units.W),
-                             'Trtu':('Trtu',units.degF),
+                             'Trtu_west':('Trtu_west',units.degF),
+                             'Trtu_east':('Trtu_east',units.degF),
                              'Tref':('Tref',units.degF),
                              'Tfre':('Tfre',units.degF)
                                }
@@ -101,8 +111,10 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         "variables": {
             "FreComp_Split_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "FreComp_Split_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
             "RefComp_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "RefComp_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "HVAC1_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "HVAC1_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "uHeat": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uHeat", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "HVAC_West_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "HVAC_West_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "HVAC_East_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "HVAC_East_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uHeat_West": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uHeat_West", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uHeat_East": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uHeat_East", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
             "uBattery": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uBattery", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
         }
     },
@@ -143,8 +155,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         "type": "influxdb",
         "variables": {
             "Tref": {"uuid": "5c69b4b6-22a0-561b-801b-72aee17c5a94", "window": "5m", "agg": "mean", "measurement": "timeseries"},
-            #"Trtu_east": {"uuid": "fd200d7e-0c46-53fc-87e4-6c8639b67b94", "window": "5m", "agg": "mean", "measurement": "timeseries"},
-            "Trtu": {"uuid": "7d48d689-5cf8-50fd-98af-22dd9868b379", "window": "5m", "agg": "mean", "measurement": "timeseries"},
+            "Trtu_west": {"uuid": "7d48d689-5cf8-50fd-98af-22dd9868b379", "window": "5m", "agg": "mean", "measurement": "timeseries"},
+            "Trtu_east": {"uuid": "fd200d7e-0c46-53fc-87e4-6c8639b67b94", "window": "5m", "agg": "mean", "measurement": "timeseries"},
             "Tfre": {"uuid": "3f493b8d-0107-569f-8968-433f46de0fec", "window": "5m", "agg": "mean", "measurement": "timeseries"}
 #            "SOC": {"uuid": "86f72439-35a3-4997-a14f-24f8a889b164", "window": "5m", "agg": "mean", "measurement": "timeseries"}
         }
@@ -160,7 +172,11 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                 "type": "csv",
                 "filename": "Shadow/setpoints.csv"
             },
-            "Trtu": {
+            "Trtu_west": {
+                "type": "csv",
+                "filename": "Shadow/setpoints.csv"
+            },
+            "Trtu_east": {
                 "type": "csv",
                 "filename": "Shadow/setpoints.csv"
             },

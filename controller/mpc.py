@@ -162,12 +162,18 @@ class mpc(object):
         setpoints_raw = pd.concat(setpoints_list,axis=1)
         setpoints = setpoints_raw.resample('5T').pad()
         print(setpoints.head())
-        if 'Trtu' in setpoints.columns:
+        if 'Trtu_west' in setpoints.columns:
             # convert K to F
-            setpoints['Trtu'] = (setpoints['Trtu'] - 273.15) * 9/5 + 32
+            setpoints['Trtu_west'] = (setpoints['Trtu_west'] - 273.15) * 9/5 + 32
             # Considering 2 F deadband (between heating and cooling setpoint) in the thermostat
-            setpoints['Trtu_cool'] = setpoints['Trtu'] + 1
-            setpoints['Trtu_heat'] = setpoints['Trtu'] - 1
+            setpoints['Trtu_west_cool'] = setpoints['Trtu_west'] + 1
+            setpoints['Trtu_west_heat'] = setpoints['Trtu_west'] - 1
+        if 'Trtu_east' in setpoints.columns:
+            # convert K to F
+            setpoints['Trtu_east'] = (setpoints['Trtu_east'] - 273.15) * 9/5 + 32
+            # Considering 2 F deadband (between heating and cooling setpoint) in the thermostat
+            setpoints['Trtu_east_cool'] = setpoints['Trtu_east'] + 1
+            setpoints['Trtu_east_heat'] = setpoints['Trtu_east'] - 1
         if 'Tfre' in setpoints.columns:
             setpoints['Tfre'] = (setpoints['Tfre'] - 273.15) * 9/5 + 32
         if 'Tref' in setpoints.columns:
