@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 # --------------------------------------------------------------------------
 # Estimation periods
 start_time = '2019-11-06 08:00:00+00:00' # UTC time
-final_time = '2019-11-06 10:00:00+00:00' # UTC time
+final_time = '2019-11-07 03:00:00+00:00' # UTC time
 # local_time = 'America/Los_Angeles'
 # Model definition
 mopath = 'models/SolarPlus.mo'
@@ -108,7 +108,7 @@ print(model.display_measurements('Measured'))
 for key in model.parameter_data.keys():
     print(key, model.parameter_data[key]['Value'].display_data())
 model.validate(start_time, final_time, 'validate', plot=0)
-for key in ['Trtu','Tref','Tfre']:
+for key in ['Trtu_west','Trtu_east','Tref','Tfre']:
     plt.plot(model.measurements[key]['Simulated'].get_base_data()-273.15, label=key+'_Simulated')
     plt.plot(model.measurements[key]['Measured'].get_base_data()-273.15, label=key+'_Measured')
     plt.legend()
