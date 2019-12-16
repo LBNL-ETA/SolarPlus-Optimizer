@@ -21,9 +21,10 @@ modelpath = 'SolarPlus.Building.Training.Thermal'
 meas_list = ['Trtu_west', 'Trtu_east', 'Tref', 'Tfre']
 sample_rate = 300;
 # Initial states (must satisfy optimization constraints)
-Trtu_0 = 295.59 # deg C
-Tref_0 = 274.48 # deg C
-Tfre_0 = 252.82 # deg C
+Trtu_west_0 = 294.0 # K
+Trtu_east_0 = 294.0 # K
+Tref_0 = 274.48 # K
+Tfre_0 = 252.82 # K
 # Simulate Initial Option
 simulate_initial = False
 # --------------------------------------------------------------------------
