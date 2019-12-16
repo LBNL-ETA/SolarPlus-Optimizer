@@ -7,13 +7,13 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                          'modelpath' : 'SolarPlus.Building.Optimization.Store',
                          'libraries' : os.getenv('MODELICAPATH'),
                          'measurements' : ['Trtu_west', 'Trtu_east', 'Tref', 'Tfre', 'SOC', 'Pbattery'],
-                         'other_outputs' : ['Pnet', 'Prtu_west', 'Prtu_east', 'Pref', 'Pfre', 'Pbattery', 'Ppv', 'Grtu'],
+                         'other_outputs' : ['Pnet', 'Prtu_west', 'Prtu_east', 'Pref', 'Pfre', 'Pbattery', 'Ppv', 'Grtu_west', 'Grtu_east'],
                          'sample_rate' : 3600,
                          'parameters' : {'Name':      ['Trtu_west_0', 'Trtu_east_0', 'Tref_0', 'Tfre_0', 'SOC_0'],
                                          'Free':      [False,   False,    False,    False,    False],
                                          'Value':     [70,       70,      33,        -7,     0.25],
-                                         'Minimum':   [0,        0,        0,        -20,      0],
-                                         'Maximum':   [100,      100,      50,        100,      1],
+                                         'Minimum':   [0,         0,      0,         -20,      0],
+                                         'Maximum':   [100,      100,      50,       100,     1],
                                          'Covariance':[0,        0,        0,         0,      0],
                                          'Unit' :     ['degF',   'degF',   'degF',   'degF', '1']},
                           'init_vm' : {'Trtu_west_0' : 'Trtu_west',
@@ -91,7 +91,6 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
     "site": "blr",
     "source": {
         "csv_files": [
-            # "Shadow/Weather_Forecast.csv",
             "Shadow/Price_Forecast.csv",
             "Shadow/Constraints_Forecast.csv"
         ],
@@ -109,13 +108,13 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
     "control": {
         "type": "csv",
         "variables": {
-            "FreComp_Split_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "FreComp_Split_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "RefComp_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "RefComp_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "HVAC_West_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "HVAC_West_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "HVAC_East_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "HVAC_East_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "uHeat_West": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uHeat_West", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "uHeat_East": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uHeat_East", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "uBattery": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uBattery", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
+            "FreComp_Split_Norm": {"filename": "Shadow/Control_InitialGuess_2_zone.csv", "column": "FreComp_Split_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "RefComp_Norm": {"filename": "Shadow/Control_InitialGuess_2_zone.csv", "column": "RefComp_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "HVAC_West_Norm": {"filename": "Shadow/Control_InitialGuess_2_zone.csv", "column": "HVAC_West_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "HVAC_East_Norm": {"filename": "Shadow/Control_InitialGuess_2_zone.csv", "column": "HVAC_East_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uHeat_West": {"filename": "Shadow/Control_InitialGuess_2_zone.csv", "column": "uHeat_West", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uHeat_East": {"filename": "Shadow/Control_InitialGuess_2_zone.csv", "column": "uHeat_East", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "uBattery": {"filename": "Shadow/Control_InitialGuess_2_zone.csv", "column": "uBattery", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
         }
     },
     "constraint": {

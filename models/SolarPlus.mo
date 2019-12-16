@@ -2513,7 +2513,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{-60,20},{-40,40}})));
 
       Building.Optimization.Store store(
-        Trtu_0(displayUnit="K") = 298.4694438087,
+        Trtu_west_0(displayUnit="K") = 298.4694438087,
+        Trtu_east_0(displayUnit="K")=298.4694438087,
         Tref_0(displayUnit="K") = 276.4833333333,
         Tfre_0(displayUnit="K") = 253.7055555556)
         annotation (Placement(transformation(extent={{0,-4},{20,28}})));
@@ -2535,21 +2536,35 @@ package SolarPlus "This package contains models for MPC control optimization."
 
     equation
       connect(weather.y[4], store.weaTDryBul) annotation (Line(points={{-39,30},{-20,
-              30},{-20,28},{-2,28}}, color={0,0,127}));
-      connect(weather.y[3], store.weaPoaWin) annotation (Line(points={{-39,30},{-20,
-              30},{-20,24},{-2,24}}, color={0,0,127}));
-      connect(weather.y[2], store.weaPoaPv) annotation (Line(points={{-39,30},{-20,30},
-              {-20,20},{-2,20}}, color={0,0,127}));
+              30},{-20,28},{-1.66667,28}},
+                                     color={0,0,127}));
+      connect(weather.y[3], store.weaPoaWin) annotation (Line(points={{-39,30},
+              {-20,30},{-20,24.6316},{-1.66667,24.6316}},
+                                     color={0,0,127}));
+      connect(weather.y[2], store.weaPoaPv) annotation (Line(points={{-39,30},{
+              -20,30},{-20,21.2632},{-1.66667,21.2632}},
+                                 color={0,0,127}));
       connect(Normalized_power_input.y[4], store.uHeatWest) annotation (Line(
-            points={{-39,-10},{-20,-10},{-20,16},{-2,16}}, color={0,0,127}));
+            points={{-39,-10},{-20,-10},{-20,14.5263},{-1.66667,14.5263}},
+                                                           color={0,0,127}));
       connect(Normalized_power_input.y[1], store.uCoolWest) annotation (Line(
-            points={{-39,-10},{-20,-10},{-20,11},{-2,11}}, color={0,0,127}));
+            points={{-39,-10},{-20,-10},{-20,11.1579},{-1.66667,11.1579}},
+                                                           color={0,0,127}));
       connect(Normalized_power_input.y[5], store.uBattery) annotation (Line(
-            points={{-39,-10},{-20,-10},{-20,5.8},{-2,5.8}}, color={0,0,127}));
-      connect(Normalized_power_input.y[3], store.uRef) annotation (Line(points=
-              {{-39,-10},{-20,-10},{-20,0.8},{-2,0.8}}, color={0,0,127}));
+            points={{-39,-10},{-20,-10},{-20,4.42105},{-1.66667,4.42105}},
+                                                             color={0,0,127}));
+      connect(Normalized_power_input.y[3], store.uRef) annotation (Line(points={{-39,-10},
+              {-20,-10},{-20,1.05263},{-1.66667,1.05263}},
+                                                        color={0,0,127}));
       connect(Normalized_power_input.y[2], store.uFreCool) annotation (Line(
-            points={{-39,-10},{-20,-10},{-20,-4},{-2,-4}}, color={0,0,127}));
+            points={{-39,-10},{-20,-10},{-20,-2.31579},{-1.66667,-2.31579}},
+                                                           color={0,0,127}));
+      connect(Normalized_power_input.y[4], store.uHeatEast) annotation (Line(
+            points={{-39,-10},{-20,-10},{-20,17.8947},{-1.66667,17.8947}},
+            color={0,0,127}));
+      connect(Normalized_power_input.y[1], store.uCoolEast) annotation (Line(
+            points={{-39,-10},{-20,-10},{-20,7.78947},{-1.66667,7.78947}},
+            color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
             coordinateSystem(preserveAspectRatio=false)),
         experiment(StopTime=1296000, Interval=300));
