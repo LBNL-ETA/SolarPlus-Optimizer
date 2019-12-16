@@ -4,6 +4,7 @@ thermal.Crtu_west,TRUE,1.00E+06,1.00E+03,1.00E+07,0,J/K
 thermal.Rrtu_east,TRUE,0.0004,0.0001,0.1,0,K/W
 thermal.Rrtu_west,TRUE,0.0004,0.0001,0.1,0,K/W
 thermal.Rwest_east,TRUE,0.00001,0.0,0.01,0,K/W
+thermal.Rref_fre,TRUE,0.018,0.00001,0.1,0,K/W
 thermal.Cref,TRUE,1.00E+06,1.00E+03,1.00E+07,0,J/K
 thermal.Rref,TRUE,0.007,0.0001,0.1,0,K/W
 thermal.Cfre,TRUE,3.00E+06,1.00E+03,1.00E+07,0,J/K

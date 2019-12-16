@@ -932,17 +932,17 @@ package SolarPlus "This package contains models for MPC control optimization."
           RTUEastCoolingCap=24910,
           RTUWestCoolingCOP=2.59,
           RTUEastCoolingCOP=2.59,
-          Rrtu_west=0.0005,
-          Rrtu_east=0.0005,
-          Rwest_east=1e-6,
-          Crtu_west=0.5e6,
-          Crtu_east=0.5e6,
-          Cref=1e7,
-          Rref=0.01,
-          Cfre=1e7,
-          Rfre=0.013,
-          Rref_fre=0.018),
-        multiSum(k={1,1,1,1,1,1/4,1,1/4}),
+          Rrtu_west=0.1,
+          Rrtu_east=0.00148,
+          Rwest_east=0.0009,
+          Crtu_west=1e7,
+          Crtu_east=1e7,
+          Cref=9961771,
+          Rref=0.00366,
+          Cfre=1932359,
+          Rfre=0.1,
+          Rref_fre=0.000477),
+        multiSum(k={1,1,1,1,1,1}),
         Battery(eta=0.88));
       parameter Modelica.SIunits.Temperature TSpRtuEast;
       parameter Modelica.SIunits.Temperature TSpRtuWest;
@@ -1043,8 +1043,8 @@ package SolarPlus "This package contains models for MPC control optimization."
       connect(uBattery, Battery.u) annotation (Line(points={{-120,-110},{-86,
               -110},{-86,-50},{-42,-50}},
                                     color={0,0,127}));
-      connect(add.u1, TrtuWest) annotation (Line(points={{-42,-162},{-48,-162},{-48,
-              -80},{110,-80}},      color={0,0,127}));
+      connect(add.u1, Trtu_west) annotation (Line(points={{-42,-162},{-48,-162},
+              {-48,-80},{110,-80}}, color={0,0,127}));
       connect(add.y, squareTrtu.u1) annotation (Line(points={{-19,-168},{-4,-168},{-4,
               -167.2},{13.4,-167.2}},    color={0,0,127}));
       connect(squareTrtu.y, multiSum1.u[1]) annotation (Line(points={{20.3,-169},{32,
@@ -1087,8 +1087,6 @@ package SolarPlus "This package contains models for MPC control optimization."
               -90,40},{-90,17.7},{-40.7,17.7}}, color={0,0,127}));
       connect(multiSum.y, add3.u1) annotation (Line(points={{81.02,-60},{88,-60},{88,
               -128},{60,-128},{60,-194},{68,-194}},     color={0,0,127}));
-      connect(multiSum2.y, Pnet) annotation (Line(points={{89.02,-30},{92,-30},{92,-60},
-              {110,-60}},          color={0,0,127}));
       connect(gainPVGen.y, multiSum2.u[1]) annotation (Line(points={{32.6,100},{74,100},
               {74,-26.4},{76,-26.4}},          color={0,0,127}));
       connect(multiSum2.u[2], Pref) annotation (Line(points={{76,-27.6},{70,-27.6},{
@@ -1097,10 +1095,10 @@ package SolarPlus "This package contains models for MPC control optimization."
               68,20},{110,20}},         color={0,0,127}));
       connect(multiSum2.u[4], Pbattery) annotation (Line(points={{76,-30},{66,-30},{
               66,0},{110,0}},           color={0,0,127}));
-      connect(multiSum2.u[5], PrtuWest) annotation (Line(points={{76,-31.2},{72,-31.2},
-              {72,80},{110,80}},        color={0,0,127}));
-      connect(thermal.Pload, multiSum2.u[6]) annotation (Line(points={{-19.3,13.7},{
-              28,13.7},{28,-32.4},{76,-32.4}},
+      connect(multiSum2.u[5], Prtu_west) annotation (Line(points={{76,-31.2},{
+              72,-31.2},{72,80},{110,80}}, color={0,0,127}));
+      connect(thermal.Pload, multiSum2.u[6]) annotation (Line(points={{-19.3,
+              13.7},{24,13.7},{24,-32},{50,-32},{50,-32.4},{76,-32.4}},
                                             color={0,0,127}));
       connect(uHeatEast, thermal.uHeatEast) annotation (Line(points={{-120,-50},
               {-96,-50},{-96,-26},{-76,-26},{-76,10.1},{-40.7,10.1}}, color={0,
@@ -1109,16 +1107,18 @@ package SolarPlus "This package contains models for MPC control optimization."
               {-72,-80},{-72,7.7},{-40.7,7.7}}, color={0,0,127}));
       connect(TSetRtuEast.y, add4.u2) annotation (Line(points={{-58,-120},{-54,-120},
               {-54,-126},{-42,-126}}, color={0,0,127}));
-      connect(add4.u1, TrtuEast) annotation (Line(points={{-42,-114},{-54,-114},{-54,
-              -100},{110,-100}}, color={0,0,127}));
+      connect(add4.u1, Trtu_east) annotation (Line(points={{-42,-114},{-54,-114},
+              {-54,-100},{110,-100}}, color={0,0,127}));
       connect(add4.y, squareTrtu1.u1) annotation (Line(points={{-19,-120},{-10,-120},
               {-10,-129.2},{13.4,-129.2}}, color={0,0,127}));
       connect(add4.y, squareTrtu1.u2) annotation (Line(points={{-19,-120},{-10,-120},
               {-10,-132.8},{13.4,-132.8}}, color={0,0,127}));
       connect(squareTrtu1.y, multiSum1.u[4]) annotation (Line(points={{20.3,-131},{36,
               -131},{36,-205.2},{44,-205.2},{44,-211.15}}, color={0,0,127}));
-      connect(multiSum2.u[7], PrtuEast) annotation (Line(points={{76,-33.6},{58,-33.6},
-              {58,60},{110,60}}, color={0,0,127}));
+      connect(multiSum2.u[7], Prtu_east) annotation (Line(points={{76,-33.6},{
+              64,-33.6},{64,60},{110,60}}, color={0,0,127}));
+      connect(multiSum2.y, Pnet) annotation (Line(points={{89.02,-30},{94,-30},
+              {94,-60},{110,-60}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Bitmap(extent={{-90,-110},{92,-4}}, fileName=
                   "modelica://SolarPlus/StoreFigure.png"),
@@ -1417,7 +1417,7 @@ package SolarPlus "This package contains models for MPC control optimization."
                 -20,-80},{-20,40},{-12,40}}, color={0,0,127}));
         connect(Ppv, store.Ppv) annotation (Line(points={{110,100},{20,100},{20,
                 60},{11,60}}, color={0,0,127}));
-        connect(store.PrtuWest, Prtu) annotation (Line(points={{11,58},{24,58},
+        connect(store.Prtu_west, Prtu) annotation (Line(points={{11,58},{24,58},
                 {24,80},{110,80}}, color={0,0,127}));
         connect(Pref, store.Pref) annotation (Line(points={{110,60},{28,60},{28,
                 56},{11,56}}, color={0,0,127}));
@@ -1427,7 +1427,7 @@ package SolarPlus "This package contains models for MPC control optimization."
                 20},{36,52},{11,52}}, color={0,0,127}));
         connect(store.Pnet, Pnet) annotation (Line(points={{11,44},{32,44},{32,
                 -60},{110,-60}}, color={0,0,127}));
-        connect(store.TrtuWest, Trtu) annotation (Line(points={{11,42},{28,42},
+        connect(store.Trtu_west, Trtu) annotation (Line(points={{11,42},{28,42},
                 {28,-80},{110,-80}}, color={0,0,127}));
         connect(SOC, store.SOC) annotation (Line(points={{110,-100},{24,-100},{
                 24,40},{11,40}}, color={0,0,127}));
@@ -1439,7 +1439,7 @@ package SolarPlus "This package contains models for MPC control optimization."
                 -50},{-90,-50},{-90,-34},{-62,-34}}, color={0,0,127}));
         connect(uRefDef.y, ref_control.uFreDef) annotation (Line(points={{-99,
                 -150},{-80,-150},{-80,-4},{-62,-4}}, color={0,0,127}));
-        connect(store.GrtuWest, Grtu) annotation (Line(points={{11,48},{54,48},
+        connect(store.Grtu_west, Grtu) annotation (Line(points={{11,48},{54,48},
                 {54,0},{110,0}}, color={0,0,127}));
         connect(weaPoaPv, store.weaPoaPv) annotation (Line(points={{-120,114},{
                 -22,114},{-22,56},{-12,56}}, color={0,0,127}));
@@ -1764,7 +1764,7 @@ package SolarPlus "This package contains models for MPC control optimization."
           connect(Ppv, store.Ppv) annotation (Line(points={{130,140},{40,140},{
                   40,58.4},{11,58.4}},
                                 color={0,0,127}));
-          connect(store.PrtuWest, Prtu_west) annotation (Line(points={{11,56.4},
+          connect(store.Prtu_west, Prtu_west) annotation (Line(points={{11,56.4},
                   {44,56.4},{44,120},{130,120}}, color={0,0,127}));
           connect(Pref, store.Pref) annotation (Line(points={{130,80},{52,80},{
                   52,52.4},{11,52.4}},
@@ -1778,7 +1778,7 @@ package SolarPlus "This package contains models for MPC control optimization."
           connect(store.Pnet, Pnet) annotation (Line(points={{11,42.2},{52,42.2},
                   {52,-20},{130,-20}},
                                    color={0,0,127}));
-          connect(store.TrtuWest, Trtu_west) annotation (Line(points={{11,40.2},
+          connect(store.Trtu_west, Trtu_west) annotation (Line(points={{11,40.2},
                   {48,40.2},{48,-40},{130,-40}}, color={0,0,127}));
           connect(SOC, store.SOC) annotation (Line(points={{130,-78},{44,-78},{
                   44,36.2},{11,36.2}},
@@ -1802,7 +1802,7 @@ package SolarPlus "This package contains models for MPC control optimization."
                                                color={0,0,127}));
           connect(uCoolEast, store.uCoolEast) annotation (Line(points={{-140,
                   -40},{-106,-40},{-106,41},{-11,41}}, color={0,0,127}));
-          connect(store.PrtuEast, Prtu_east) annotation (Line(points={{11,54.4},
+          connect(store.Prtu_east, Prtu_east) annotation (Line(points={{11,54.4},
                   {48,54.4},{48,100},{130,100}}, color={0,0,127}));
           connect(squareHeat2.y, gainHeat2.u) annotation (Line(points={{44.3,
                   -119},{49.4,-119}},                           color={0,0,127}));
@@ -1814,7 +1814,7 @@ package SolarPlus "This package contains models for MPC control optimization."
           connect(gainHeat2.y, sumJ.u[8]) annotation (Line(points={{56.3,-119},
                   {70,-119},{70,-161.575},{84,-161.575},{84,-162.8}},   color={
                   0,0,127}));
-          connect(store.TrtuEast, Trtu_east) annotation (Line(points={{11,38.2},
+          connect(store.Trtu_east, Trtu_east) annotation (Line(points={{11,38.2},
                   {46,38.2},{46,-60},{130,-60}}, color={0,0,127}));
           connect(store.Pnet_pen, sumJ.u[9]) annotation (Line(points={{11,29},{
                   28,29},{28,-114},{76,-114},{76,-159.475},{84,-159.475},{84,
@@ -1861,12 +1861,13 @@ package SolarPlus "This package contains models for MPC control optimization."
         connect(store.uFreDef, squareDischarge2.u1) annotation (Line(points={{-11,32},
                 {-74,32},{-74,-192},{-24,-192},{-24,-191.2},{37.4,-191.2}},
               color={0,0,127}));
-        connect(store.GrtuWest, Grtu_west) annotation (Line(points={{11,46.2},{
-                32,46.2},{32,46},{54,46},{54,20},{130,20}}, color={0,0,127}));
-        connect(store.GrtuEast, Grtu_east) annotation (Line(points={{11,44.2},{
-                38,44.2},{38,0},{130,0}}, color={0,0,127}));
-        connect(uHeatEast, store.uHeatEast) annotation (Line(points={{-140,-10},{-116,
-                -10},{-116,44},{-11,44}}, color={0,0,127}));
+        connect(store.Grtu_west, Grtu_west) annotation (Line(points={{11,46.2},
+                {32,46.2},{32,46},{54,46},{54,20},{130,20}}, color={0,0,127}));
+        connect(store.Grtu_east, Grtu_east) annotation (Line(points={{11,44.2},
+                {38,44.2},{38,0},{130,0}}, color={0,0,127}));
+        connect(uHeatEast, store.uHeatEast) annotation (Line(points={{-140,-10},
+                {-112,-10},{-112,44},{-11,44}},
+                                          color={0,0,127}));
         connect(uHeatEast, squareHeat2.u1) annotation (Line(points={{-140,-10},
                 {-60,-10},{-60,-117.2},{37.4,-117.2}},
                                              color={0,0,127}));
@@ -1901,9 +1902,9 @@ package SolarPlus "This package contains models for MPC control optimization."
               points={{-99,0},{-88,0},{-88,56},{-52,56}},   color={0,0,127}));
         connect(singleStageHeatingController.y, store.uHeatWest) annotation (
             Line(points={{-29,54},{-22,54},{-22,8},{-12,8}}, color={0,0,127}));
-        connect(store.TrtuWest, singleStageHeatingController.Tmeas) annotation (
-           Line(points={{11,2},{14,2},{14,34},{-56,34},{-56,46},{-52,46}},
-              color={0,0,127}));
+        connect(store.Trtu_west, singleStageHeatingController.Tmeas)
+          annotation (Line(points={{11,2},{14,2},{14,34},{-56,34},{-56,46},{-52,
+                46}}, color={0,0,127}));
         connect(uFreDef, squareDischarge2.u1) annotation (Line(points={{-120,
                 -180},{-96,-180},{-96,-202},{20,-202},{20,-201.2},{41.4,-201.2}},
               color={0,0,127}));
@@ -1913,7 +1914,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         connect(singleStageHeatingController.y, squareHeat.u1) annotation (Line(
               points={{-29,54},{-22,54},{-22,-152},{20,-152},{20,-151.2},{41.4,
                 -151.2}}, color={0,0,127}));
-        connect(store.GrtuWest, Grtu) annotation (Line(points={{11,8},{80,8},{
+        connect(store.Grtu_west, Grtu) annotation (Line(points={{11,8},{80,8},{
                 80,0},{110,0}}, color={0,0,127}));
       end StoreSim;
     end Optimization;
@@ -1941,7 +1942,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealOutput SOC "Battery state of charge"
           annotation (Placement(transformation(extent={{100,-130},{120,-110}}),
               iconTransformation(extent={{100,-148},{120,-128}})));
-        Modelica.Blocks.Interfaces.RealOutput TrtuWest
+        Modelica.Blocks.Interfaces.RealOutput Trtu_west
           "Rtu zone air temperature" annotation (Placement(transformation(
                 extent={{100,-90},{120,-70}}), iconTransformation(extent={{100,
                   -108},{120,-88}})));
@@ -1950,7 +1951,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealOutput Ppv "Power generated by PV system"
           annotation (Placement(transformation(extent={{100,90},{120,110}}),
               iconTransformation(extent={{100,74},{120,94}})));
-        Modelica.Blocks.Interfaces.RealOutput PrtuWest
+        Modelica.Blocks.Interfaces.RealOutput Prtu_west
           "RTU electrical power consumption" annotation (Placement(
               transformation(extent={{100,70},{120,90}}), iconTransformation(
                 extent={{100,54},{120,74}})));
@@ -1969,9 +1970,9 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealOutput Tfre "Freezer air temperature"
         annotation (Placement(transformation(extent={{100,-170},{120,-150}}),
               iconTransformation(extent={{100,-188},{120,-168}})));
-        Modelica.Blocks.Math.MultiSum multiSum(nu=8)
+        Modelica.Blocks.Math.MultiSum multiSum(nu=6)
         annotation (Placement(transformation(extent={{68,-66},{80,-54}})));
-        Modelica.Blocks.Interfaces.RealOutput GrtuWest "RTU gas power"
+        Modelica.Blocks.Interfaces.RealOutput Grtu_west "RTU gas power"
           annotation (Placement(transformation(extent={{100,-30},{120,-10}}),
               iconTransformation(extent={{100,-48},{120,-28}})));
         Batteries.Simple Battery(
@@ -1979,25 +1980,25 @@ package SolarPlus "This package contains models for MPC control optimization."
           P_cap=10900,
           SOC_0=SOC_0)
           annotation (Placement(transformation(extent={{-40,-60},{-20,-40}})));
-        Modelica.Blocks.Interfaces.RealOutput PrtuEast
+        Modelica.Blocks.Interfaces.RealOutput Prtu_east
           "RTU electrical power consumption" annotation (Placement(
               transformation(extent={{100,50},{120,70}}), iconTransformation(
                 extent={{100,34},{120,54}})));
-        Modelica.Blocks.Interfaces.RealOutput GrtuEast "RTU gas power"
+        Modelica.Blocks.Interfaces.RealOutput Grtu_east "RTU gas power"
           annotation (Placement(transformation(extent={{100,-50},{120,-30}}),
               iconTransformation(extent={{100,-68},{120,-48}})));
-        Modelica.Blocks.Interfaces.RealOutput TrtuEast
+        Modelica.Blocks.Interfaces.RealOutput Trtu_east
           "Rtu zone air temperature" annotation (Placement(transformation(
                 extent={{100,-110},{120,-90}}), iconTransformation(extent={{100,
                   -128},{120,-108}})));
       equation
-        connect(thermal.Trtu_west, TrtuWest) annotation (Line(points={{-19.3,
+        connect(thermal.Trtu_west, Trtu_west) annotation (Line(points={{-19.3,
                 19.3},{10,19.3},{10,-80},{110,-80}}, color={0,0,127}));
         connect(pv.Pgen, gainPVGen.u) annotation (Line(points={{-18.8,80},{-10,
                 80},{-10,100},{18.8,100}},                 color={0,0,127}));
         connect(gainPVGen.y, Ppv) annotation (Line(points={{32.6,100},{110,100}},
                                  color={0,0,127}));
-        connect(thermal.Prtu_west, PrtuWest) annotation (Line(points={{-19.3,
+        connect(thermal.Prtu_west, Prtu_west) annotation (Line(points={{-19.3,
                 17.1},{-4,17.1},{-4,80},{110,80}}, color={0,0,127}));
         connect(thermal.Tref, Tref) annotation (Line(points={{-19.3,6.5},{8,6.5},
                 {8,-140},{110,-140}},            color={0,0,127}));
@@ -2008,42 +2009,35 @@ package SolarPlus "This package contains models for MPC control optimization."
                          color={0,0,127}));
         connect(thermal.Tfre, Tfre) annotation (Line(points={{-19.3,2.5},{6,2.5},
                 {6,-160},{110,-160}},            color={0,0,127}));
-        connect(multiSum.u[1], PrtuWest) annotation (Line(points={{68,-56.325},
-                {44,-56.325},{44,80},{110,80}}, color={0,0,127}));
-        connect(multiSum.u[2], Pref) annotation (Line(points={{68,-57.375},{58,
-                -57.375},{58,-58},{48,-58},{48,40},{110,40}},
+        connect(multiSum.u[1], Prtu_west) annotation (Line(points={{68,-56.5},{
+                44,-56.5},{44,80},{110,80}}, color={0,0,127}));
+        connect(multiSum.u[2], Pref) annotation (Line(points={{68,-57.9},{58,
+                -57.9},{58,-58},{48,-58},{48,40},{110,40}},
                                 color={0,0,127}));
-        connect(multiSum.u[3], Pfre) annotation (Line(points={{68,-58.425},{62,
-                -58.425},{62,-58},{50,-58},{50,20},{110,20}},
+        connect(multiSum.u[3], Pfre) annotation (Line(points={{68,-59.3},{62,
+                -59.3},{62,-58},{50,-58},{50,20},{110,20}},
                                                  color={0,0,127}));
-        connect(multiSum.u[4], Pbattery) annotation (Line(points={{68,-59.475},
-                {52,-59.475},{52,0},{110,0}},
+        connect(multiSum.u[4], Pbattery) annotation (Line(points={{68,-60.7},{
+                52,-60.7},{52,0},{110,0}},
                                         color={0,0,127}));
         connect(gainPVGen.y, multiSum.u[5]) annotation (Line(points={{32.6,100},
-                {42,100},{42,-60.525},{68,-60.525}},
-                                                 color={0,0,127}));
-        connect(thermal.Grtu_west, GrtuWest) annotation (Line(points={{-19.3,
+                {42,100},{42,-62.1},{68,-62.1}}, color={0,0,127}));
+        connect(thermal.Grtu_west, Grtu_west) annotation (Line(points={{-19.3,
                 15.3},{40,15.3},{40,-20},{110,-20}}, color={0,0,127}));
-        connect(multiSum.u[6], GrtuWest) annotation (Line(points={{68,-61.575},
-                {62,-61.575},{62,-62},{54,-62},{54,-20},{110,-20}}, color={0,0,
-                127}));
         connect(Battery.SOC, SOC) annotation (Line(points={{-18.8,-46},{-5.4,
                 -46},{-5.4,-120},{110,-120}},
                                          color={0,0,127}));
         connect(Battery.Preal, Pbattery) annotation (Line(points={{-18.8,-54},{
                 20,-54},{20,0},{110,0}},   color={0,0,127}));
-        connect(thermal.Trtu_east, TrtuEast) annotation (Line(points={{-19.3,
+        connect(thermal.Trtu_east, Trtu_east) annotation (Line(points={{-19.3,
                 11.9},{30,11.9},{30,-100},{110,-100}}, color={0,0,127}));
-        connect(thermal.Prtu_east, PrtuEast) annotation (Line(points={{-19.3,
+        connect(thermal.Prtu_east, Prtu_east) annotation (Line(points={{-19.3,
                 10.1},{-2,10.1},{-2,60},{110,60}}, color={0,0,127}));
-        connect(thermal.Grtu_east, GrtuEast) annotation (Line(points={{-19.3,
+        connect(thermal.Grtu_east, Grtu_east) annotation (Line(points={{-19.3,
                 8.3},{16,8.3},{16,-40},{110,-40}}, color={0,0,127}));
-        connect(thermal.Prtu_east, multiSum.u[7]) annotation (Line(points={{
-                -19.3,10.1},{-2,10.1},{-2,60},{46,60},{46,-66},{64,-66},{64,
-                -62.625},{68,-62.625}}, color={0,0,127}));
-        connect(thermal.Grtu_east, multiSum.u[8]) annotation (Line(points={{
-                -19.3,8.3},{16,8.3},{16,-40},{56,-40},{56,-63.675},{68,-63.675}},
-              color={0,0,127}));
+        connect(thermal.Prtu_east, multiSum.u[6]) annotation (Line(points={{-19.3,
+                10.1},{-2,10.1},{-2,60},{46,60},{46,-66},{64,-66},{64,-63.5},{
+                68,-63.5}},             color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-220},
                   {100,100}}),                                      graphics={
                 Rectangle(
@@ -2076,7 +2070,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         parameter Modelica.SIunits.Power RefCoolingCOP = 3 "Cooling COP of refrigerator" annotation(Dialog(group = "Refrigerator"));
         parameter Modelica.SIunits.Temperature Tref_0 = 3.5+273.15 "Initial temperature of refrigerator" annotation(Dialog(group = "Refrigerator"));
         parameter Modelica.SIunits.HeatCapacity Cfre=1e6 "Heat capacity of freezer zone" annotation(Dialog(group = "Freezer"));
-        parameter Modelica.SIunits.ThermalResistance Rfre=0.005 "Thermal resistance of freezer zone to RTU zone" annotation(Dialog(group = "Freezer"));
+        parameter Modelica.SIunits.ThermalResistance Rfre=0.005 "Thermal resistance of freezer zone to RTU east zone" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreCoolingCap = 6096 "Cooling capacity of freezer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreHeatingCap = 3500 "Defrost heating capacity of freezer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreHeatingEff = 0.99 "Heating efficiency of freezer" annotation(Dialog(group = "Freezer"));
@@ -2357,8 +2351,8 @@ package SolarPlus "This package contains models for MPC control optimization."
           annotation (Line(points={{-9.8,30},{140,30}}, color={191,0,0}));
         connect(senTrtu_east.T, Trtu_east) annotation (Line(points={{160,30},{
                 180,30},{180,40},{210,40}}, color={0,0,127}));
-        connect(RTU_east.PCool, Prtu_east) annotation (Line(points={{-119,-58},
-                {-76,-58},{-76,-54},{40,-54},{40,0},{210,0}}, color={0,0,127}));
+        connect(RTU_east.PCool, Prtu_east) annotation (Line(points={{-119,-58},{-76,-58},
+                {-76,-30},{38,-30},{38,0},{210,0}},           color={0,0,127}));
         connect(RTU_east.PHeat, Grtu_east) annotation (Line(points={{-119,-48},
                 {-60,-48},{-60,-40},{210,-40}}, color={0,0,127}));
         connect(preTout.port, rtuZone_east.port_adj) annotation (Line(points={{
@@ -2482,9 +2476,9 @@ package SolarPlus "This package contains models for MPC control optimization."
       connect(fre_control.y, store.uFreCool) annotation (Line(points={{-39,-26},
                 {-28,-26},{-28,28},{-12,28}},
                                             color={0,0,127}));
-        connect(store.TrtuWest, rtu_cool_control.Tmeas) annotation (Line(points=
-               {{11,42},{14,42},{14,22},{-68,22},{-68,30},{-62,30}}, color={0,0,
-                127}));
+        connect(store.Trtu_west, rtu_cool_control.Tmeas) annotation (Line(
+              points={{11,42},{14,42},{14,22},{-68,22},{-68,30},{-62,30}},
+              color={0,0,127}));
         connect(rtu_cool_control.y, store.uCoolWest) annotation (Line(points={{
                 -39,34},{-32,34},{-32,44},{-12,44}}, color={0,0,127}));
       connect(rtu_heat_control.Tmeas, rtu_cool_control.Tmeas) annotation (Line(
