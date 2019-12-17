@@ -16,44 +16,53 @@ class ControlFlagPublisher(XBOSProcess):
 
         self.namespace = b64decode(cfg['namespace'])
         self._rate = cfg['publish_rate']
-        self.service_name_map = cfg['service_name_map']
+        self.service_name_map = {}
+        self.publish_times = {}
 
         schedule(self.call_periodic(self._rate, self.read_and_publish, runfirst=True))
 
     async def read_and_publish(self, *args):
         with open(self.config_file) as fp:
-            config = yaml.safe_load(fp)
-        self.service_name_map = config['xbos'].get('service_name_map', {})
+            config = yaml.safe_load(fp)['xbos'].get('service_name_map', {})
 
-        for device_type in self.service_name_map:
+        for topic in config:
+            new_flag = config.get(topic)
+            publish = False
+
+            if topic in self.service_name_map:
+                existing_flag = self.service_name_map[topic]
+                if new_flag != existing_flag:
+                    publish = True
+                    self.service_name_map[topic] = new_flag
+                else:
+                    if (time.time() - self.publish_times[topic]) >= self._rate:
+                        publish = True
+            else:
+                publish = True
+                self.service_name_map[topic] = new_flag
+
             try:
-                if device_type == "thermostats":
-                    topic_list = self.service_name_map[device_type]
-                    for topic in topic_list:
-                        control_flag = self.service_name_map[device_type].get(topic, False)
+                if publish:
+                    if topic.startswith("flexstat"):
                         msg = xbos_pb2.XBOS(
                             flexstat_actuation_message=flexstat_pb2.FlexstatActuationMessage(
                                 time=int(time.time() * 1e9),
-                                control_flag=types.Int64(value=control_flag)
+                                control_flag=types.Int64(value=new_flag)
                             )
                         )
-                        await self.publish(self.namespace, topic, True, msg)
-                        print("published on topic = %s"%topic)
-                elif device_type == "parker_controllers":
-                    topic_list = self.service_name_map[device_type]
-                    for topic in topic_list:
-                        control_flag = self.service_name_map[device_type].get(topic, False)
+                    elif topic.startswith("parker"):
                         msg = xbos_pb2.XBOS(
                             parker_actuation_message=parker_pb2.ParkerActuationMessage(
                                 time=int(time.time() * 1e9),
-                                control_flag=types.Int64(value=control_flag)
+                                control_flag=types.Int64(value=new_flag)
                             )
                         )
-                        await self.publish(self.namespace, topic, True, msg)
-                        print("published on topic = %s" % topic)
 
-            except:
-                print("error occured in pushing control signal to device: %s! topic = %s" % (device_type, topic))
+                    await self.publish(self.namespace, topic, True, msg)
+                    print("published %r on topic = %s" % (new_flag, topic))
+                    self.publish_times[topic] = time.time()
+            except Exception as e:
+                print("error occured in pushing control signal to device: %s! error= %r" % (device_type, e))
             print()
 
 
