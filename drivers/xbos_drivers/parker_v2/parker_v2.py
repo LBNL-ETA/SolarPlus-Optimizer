@@ -85,7 +85,7 @@ class ParkerDriver(XBOSProcess):
             if control_flag != None:
                 if not control_flag and self.device_control_flag.get(device, False):
                     self.change_setpoints(device=device, variable_name='setpoint', new_value=self._default_setpoint_map[device])
-                    self.change_setpoints(device=device, variable_name='differential', new_value=self._default_differential_map[device])
+                    # self.change_setpoints(device=device, variable_name='differential', new_value=self._default_differential_map[device])
 
                 self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
@@ -181,6 +181,7 @@ class ParkerDriver(XBOSProcess):
                 if current_value != new_value:
                     value_to_be_written = int(new_value*10)
                     try:
+                        print("writting to %s, value=%d, unit=%d"%(register_name, value_to_be_written, unit))
                         self.modbus_device.write_register(register_name=register_name, value=value_to_be_written, unit=unit)
                     except Exception as e:
                         print("exception happened when writing %d to setpoint for %s, %r"%(value_to_be_written, device, e))
