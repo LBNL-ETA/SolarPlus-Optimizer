@@ -158,9 +158,8 @@ class DREventManager:
                 x['startdate'] <= st and x['enddate'] >= et)]
 
         if type_dr == 'dr-prices':
-            avail_events = [ev['data_dr'][(ev['data_dr'].index >= st) & (ev['data_dr'].index <= et)].to_json() for ev in
+            avail_events = [ev['data_dr'][(ev['data_dr'].index >= st) & (ev['data_dr'].index <= et)] for ev in
                             avail_events]
-        # If type_dr == 'dr-limit' then no need to filter based on index because ev['data_dr'] is not a dataframe
 
         return avail_events
 

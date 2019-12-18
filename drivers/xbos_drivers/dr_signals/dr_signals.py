@@ -1,12 +1,10 @@
 import argparse
 import datetime
-import json
 import logging
 import os
 import time
 from datetime import timedelta
 
-import numpy as np
 import pandas as pd
 import yaml
 from pyxbos import dr_signals_pb2
@@ -15,7 +13,7 @@ from pyxbos.driver import *
 
 from drevent_manager import DREventManager, read_from_json
 
-# CONFIG VARIABLES
+# Global variable
 FORECAST_FREQUENCY = '15min'
 
 
@@ -23,6 +21,14 @@ class DRSignalsDriver(Driver):
     CUSTOM_EVENTS_FILE = 'dr_custom_events.json'
     DEFAULT_EVENTS_FILE = 'dr_default_events.json'
     NUM_CUSTOM_EVENTS = 0
+
+    dr_mode_signal_type_mapping = {
+        'none': 0,
+        'dr-limit': 1,
+        'dr-shed': 2,
+        'dr-shift': 3,
+        'dr-track': 4
+    }
 
     # Logging
     FORMAT = '%(asctime)-15s %(message)s'
@@ -49,60 +55,10 @@ class DRSignalsDriver(Driver):
         """
         if event_type in ['price-tou', 'price-rtp']:
             return 'dr-prices'
-        elif event_type == 'dr-limit':
-            return 'dr-limit'
+        elif event_type in ['dr-limit', "dr-shed", "dr-shift", "dr-track"]:
+            return event_type
         else:
             raise ValueError('Event type does not correspond to a valid DR_MODE')
-
-    @staticmethod
-    def extract_json(json_result):
-        """
-
-        Parameters
-        ----------
-        json_result : json
-            JSON from get_dr_signal()
-
-        Returns
-        -------
-        list(list), list(list), datetime, datetime
-            Price energy list, Price demand list, event start date, event end date
-        """
-        price_energy_list = []
-        for timestamp, price in json_result['customer_energy_charge'].items():
-            price_energy_list.append([timestamp, price])
-
-        price_demand_list = []
-        for timestamp, price in json_result['customer_demand_charge_tou'].items():
-            price_demand_list.append([timestamp, price])
-
-        assert len(price_energy_list) == len(price_demand_list)
-
-        custom_st = datetime.datetime.fromtimestamp(int(price_energy_list[0][0]) / 1000)
-        custom_et = datetime.datetime.fromtimestamp(int(price_energy_list[-1][0]) / 1000)
-
-        return price_energy_list, price_demand_list, custom_st, custom_et
-
-    @staticmethod
-    def extract_dataframe(df):
-        """ Convert price dataframe to list of list.
-
-        Parameters
-        ----------
-        df  : pd.DataFrame()
-            Dataframe from get_default_dr_signal()
-
-        Returns
-        -------
-        list, list
-            List of energy prices, list of demand prices
-        """
-        a = df.index.astype(np.int64).tolist()
-        b = df['customer_energy_charge'].tolist()
-        c = df['customer_demand_charge_tou'].tolist()
-        list_energy = [list(x) for x in zip(a, b)]
-        list_demand = [list(x) for x in zip(a, c)]
-        return list_energy, list_demand
 
     def setup(self, cfg):
         self.base_resource = cfg['base_resource']
@@ -110,9 +66,6 @@ class DRSignalsDriver(Driver):
         # Keeps track of how further into the future should the forecast be
         # Value is in number of hours
         self.FORECAST_PERIOD = cfg['forecast_period']
-
-        # Keeps track of the frequency of the forecast
-        self.FORECAST_FREQUENCY = cfg['forecast_frequency']
 
         # Store the default values for min and max power
         self.default_pmin = cfg['pmin']
@@ -158,10 +111,10 @@ class DRSignalsDriver(Driver):
         """
         if (start is not None) and (end is not None):
             time_frame = (start, end)
-            list_events = self.dr_manager.get_available_events(type_dr, time_frame)
-            if not list_events:
+            result = self.dr_manager.get_available_events(type_dr, time_frame)
+            if not result:
                 return None
-            return json.dumps(list_events)
+            return result
         else:
             raise ValueError('start and/or end is None.')
 
@@ -249,12 +202,9 @@ class DRSignalsDriver(Driver):
             return None
         else:
             self.logger.info('dr-limit custom event')
-            json_result = json.loads(result)
-            json_result = json_result[0]
-
-            pmax = json_result['data_dr']
-            custom_st = datetime.datetime.strptime(json_result['startdate'], '%Y-%m-%dT%H:%M:%S')
-            custom_et = datetime.datetime.strptime(json_result['enddate'], '%Y-%m-%dT%H:%M:%S')
+            pmax = result[0]['data_dr']
+            custom_st = datetime.datetime.strptime(result[0]['startdate'], '%Y-%m-%dT%H:%M:%S')
+            custom_et = datetime.datetime.strptime(result[0]['enddate'], '%Y-%m-%dT%H:%M:%S')
 
             return [(custom_st, custom_et), pmax]
 
@@ -283,12 +233,9 @@ class DRSignalsDriver(Driver):
             return None
         else:
             self.logger.info('dr-shed custom event')
-            json_result = json.loads(result)
-            json_result = json_result[0]
-
-            pmax = json_result['data_dr']
-            custom_st = datetime.datetime.strptime(json_result['startdate'], '%Y-%m-%dT%H:%M:%S')
-            custom_et = datetime.datetime.strptime(json_result['enddate'], '%Y-%m-%dT%H:%M:%S')
+            pmax = result[0]['data_dr']
+            custom_st = datetime.datetime.strptime(result[0]['startdate'], '%Y-%m-%dT%H:%M:%S')
+            custom_et = datetime.datetime.strptime(result[0]['enddate'], '%Y-%m-%dT%H:%M:%S')
 
             return [(custom_st, custom_et), baseline + pmax]
 
@@ -310,7 +257,7 @@ class DRSignalsDriver(Driver):
             [[(start_date, end_date), max_power]...] for power-take and power-relax.
         """
         baseline = self.get_baseline()
-        result = self.get_dr_signal('dr-shed',
+        result = self.get_dr_signal('dr-shift',
                                     curr_time.strftime('%Y-%m-%dT%H:%M:%SZ'),
                                     end_time.strftime('%Y-%m-%dT%H:%M:%SZ'))
 
@@ -319,15 +266,12 @@ class DRSignalsDriver(Driver):
             return None
         else:
             self.logger.info('dr-shift custom event')
-            json_result = json.loads(result)
-            json_result = json_result[0]
-
-            ptake = json_result['data_dr']['power-take']
-            prelax = json_result['data_dr']['power-relax']
-            ptake_st = datetime.datetime.strptime(json_result['startdate']['start-date-take'], '%Y-%m-%dT%H:%M:%S')
-            ptake_et = datetime.datetime.strptime(json_result['enddate']['end-date-take'], '%Y-%m-%dT%H:%M:%S')
-            prelax_st = datetime.datetime.strptime(json_result['startdate']['start-date-relax'], '%Y-%m-%dT%H:%M:%S')
-            prelax_et = datetime.datetime.strptime(json_result['enddate']['end-date-relax'], '%Y-%m-%dT%H:%M:%S')
+            ptake = result[0]['data_dr']['power-take']
+            prelax = result[0]['data_dr']['power-relax']
+            ptake_st = datetime.datetime.strptime(result[0]['startdate']['start-date-take'], '%Y-%m-%dT%H:%M:%S')
+            ptake_et = datetime.datetime.strptime(result[0]['enddate']['end-date-take'], '%Y-%m-%dT%H:%M:%S')
+            prelax_st = datetime.datetime.strptime(result[0]['startdate']['start-date-relax'], '%Y-%m-%dT%H:%M:%S')
+            prelax_et = datetime.datetime.strptime(result[0]['enddate']['end-date-relax'], '%Y-%m-%dT%H:%M:%S')
 
             return [[(ptake_st, ptake_et), baseline + ptake], [(prelax_st, prelax_et), baseline + prelax]]
 
@@ -346,7 +290,7 @@ class DRSignalsDriver(Driver):
         list(tuple, list(float), float)
             [[(start_date, end_date), [power...], delta]
         """
-        result = self.get_dr_signal('dr-shed',
+        result = self.get_dr_signal('dr-track',
                                     curr_time.strftime('%Y-%m-%dT%H:%M:%SZ'),
                                     end_time.strftime('%Y-%m-%dT%H:%M:%SZ'))
 
@@ -355,13 +299,10 @@ class DRSignalsDriver(Driver):
             return None
         else:
             self.logger.info('dr-track custom event')
-            json_result = json.loads(result)
-            json_result = json_result[0]
-
-            power = json_result['data_dr']['profile']
-            delta = json_result['data_dr']['delta']
-            custom_st = datetime.datetime.strptime(json_result['startdate'], '%Y-%m-%dT%H:%M:%S')
-            custom_et = datetime.datetime.strptime(json_result['enddate'], '%Y-%m-%dT%H:%M:%S')
+            power = result[0]['data_dr']['profile']
+            delta = result[0]['data_dr']['delta']
+            custom_st = datetime.datetime.strptime(result[0]['startdate'], '%Y-%m-%dT%H:%M:%S')
+            custom_et = datetime.datetime.strptime(result[0]['enddate'], '%Y-%m-%dT%H:%M:%S')
 
             return [(custom_st, custom_et), power, delta]
 
@@ -377,11 +318,11 @@ class DRSignalsDriver(Driver):
 
         Returns
         -------
-        list(list)
-            [[timestamp, pmin, pmax]...]
+        pd.DataFrame()
+            Dataframe containing timestamp, power (same as pmax), pmin, pmax and dr-mode.
         """
         result = []
-        if self.FORECAST_FREQUENCY == '15min':
+        if FORECAST_FREQUENCY == '15min':
             step = timedelta(minutes=15)
         else:
             raise NotImplementedError('Forecast freq = 15min only.')
@@ -391,32 +332,34 @@ class DRSignalsDriver(Driver):
         shift_pmax = self.get_shift(curr_time, end_time)
         track_pmax = self.get_track(curr_time, end_time)
 
-        if not track_pmax:
-            if limit_pmax:
-                diff = (limit_pmax[0][1] - limit_pmax[0][0]).total_seconds() / 60
-                for date in (limit_pmax[0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
-                    result.append([int(date.timestamp() * 10e6), self.default_pmin, limit_pmax[1]])
-            if shed_pmax:
-                diff = (shed_pmax[0][1] - shed_pmax[0][0]).total_seconds() / 60
-                for date in (shed_pmax[0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
-                    result.append([int(date.timestamp() * 10e6), self.default_pmin, shed_pmax[1]])
-            if shift_pmax:
-                diff = (shift_pmax[0][0][1] - shift_pmax[0][0][0]).total_seconds() / 60
-                for date in (shift_pmax[0][0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
-                    result.append([int(date.timestamp() * 10e6), self.default_pmin, shift_pmax[0][1]])
+        # The below code works on the assumption that no custom events have overlapping times.
 
-                diff = (shift_pmax[1][0][1] - shift_pmax[1][0][0]).total_seconds() / 60
-                for date in (shift_pmax[1][0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
-                    result.append([int(date.timestamp() * 10e6), self.default_pmin, shift_pmax[1][1]])
+        if limit_pmax:
+            diff = (limit_pmax[0][1] - limit_pmax[0][0]).total_seconds() / 60
+            for date in (limit_pmax[0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
+                result.append([date, limit_pmax[1], self.default_pmin, limit_pmax[1], 'dr-limit'])
+        if shed_pmax:
+            diff = (shed_pmax[0][1] - shed_pmax[0][0]).total_seconds() / 60
+            for date in (shed_pmax[0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
+                result.append([date, shed_pmax[1], self.default_pmin, shed_pmax[1], 'dr-shed'])
+        if shift_pmax:
+            diff = (shift_pmax[0][0][1] - shift_pmax[0][0][0]).total_seconds() / 60
+            for date in (shift_pmax[0][0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
+                result.append([date, shift_pmax[0][1], self.default_pmin, shift_pmax[0][1], 'dr-shift'])
 
-        else:  # If there's an event for dr-track, then ignore all other events
-            diff = (track_pmax[0][1] - shed_pmax[0][0]).total_seconds() / 60
+            diff = (shift_pmax[1][0][1] - shift_pmax[1][0][0]).total_seconds() / 60
+            for date in (shift_pmax[1][0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
+                result.append([date, shift_pmax[1][1], self.default_pmin, shift_pmax[1][1], 'dr-shift'])
+        if track_pmax:
+            diff = (track_pmax[0][1] - track_pmax[0][0]).total_seconds() / 60
             pmin = track_pmax[1] - track_pmax[2]
             pmax = track_pmax[1] + track_pmax[2]
-            for timestamp in (track_pmax[0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
-                result.append([timestamp, pmin, pmax])
+            for date in (track_pmax[0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
+                result.append([date, track_pmax[1], pmin, pmax, 'dr-track'])
 
-        return result
+        power_df = pd.DataFrame(result, columns=['timestamp', 'power', 'pmin', 'pmax', 'dr-mode'])
+        power_df.set_index('timestamp', inplace=True)
+        return power_df
 
     def get_price(self, curr_time, end_time):
         """ Gets the energy and demand price forecast.
@@ -441,33 +384,63 @@ class DRSignalsDriver(Driver):
         # Revert to default event
         if not result:
             self.logger.info('dr-price default event')
-            default_result = self.get_default_dr_signal('dr-prices', curr_time_formatted, end_time_formatted)
-            final_energy, final_demand = self.extract_dataframe(default_result['data_dr'])
+            price_df = self.get_default_dr_signal('dr-prices', curr_time_formatted, end_time_formatted)
+            return price_df['data_dr'][['customer_energy_charge', 'customer_demand_charge_tou']]
 
         # Custom event
         else:
             self.logger.info('dr-price custom event')
-            json_result = json.loads(result)
-            json_result = json.loads(json_result[0])
 
-            final_energy, final_demand, custom_st, custom_et = self.extract_json(json_result)
+            # custom_st(et) are pandas.Timestamp
+            custom_st, custom_et = result[0].index[0], result[0].index[-1]
+            price_df = result[0]
 
             if custom_st > curr_time:
                 default_result = self.get_default_dr_signal('dr-prices',
                                                             curr_time_formatted,
                                                             custom_st.strftime('%Y-%m-%dT%H:%M:%SZ'))
-                energy_price1, demand_price2 = self.extract_dataframe(default_result['data_dr'])
-                final_energy = energy_price1 + final_energy
-                final_demand = demand_price2 + final_demand
+                price_df = pd.concat([default_result['data_dr'], price_df])
             if custom_et < end_time:
                 default_result = self.get_default_dr_signal('dr-prices',
                                                             custom_et.strftime('%Y-%m-%dT%H:%M:%SZ'),
                                                             end_time_formatted)
-                energy_price2, demand_price2 = self.extract_dataframe(default_result['data_dr'])
-                final_energy = final_energy + energy_price2
-                final_demand = final_demand + demand_price2
+                price_df = pd.concat([price_df, default_result['data_dr']])
 
-        return final_energy, final_demand
+        return price_df[['customer_energy_charge', 'customer_demand_charge_tou']]
+
+    def extract_df_row(self, row):
+        """ Extract row into array of results for publishing message on wavemq.
+
+        Parameters
+        ----------
+        row     : pd.DataFrame() row
+            Dataframe row.
+
+        Returns
+        -------
+        list
+            List containing the proto field data in the correct order.
+        """
+        result = []
+
+        result.append(row['customer_energy_charge'])
+        result.append(row['customer_demand_charge_tou'])
+        result.append(self.dr_mode_signal_type_mapping[row['dr-mode']])
+
+        if row['dr-mode'] == 'none':
+            result += [-1, -1, -1, -1]
+        elif row['dr-mode'] == 'dr-limit':
+            result += [row['power'], -1, -1, -1]
+        elif row['dr-mode'] == 'dr-shed':
+            result += [-1, row['power'], -1, -1]
+        elif row['dr-mode'] == 'dr-shift':
+            result += [-1, -1, row['power'], -1]
+        elif row['dr-mode'] == 'dr-track':
+            result += [-1, -1, -1, row['power']]
+        else:
+            raise ValueError
+
+        return result
 
     def read(self, requestid=None):
 
@@ -481,27 +454,68 @@ class DRSignalsDriver(Driver):
         curr_time = datetime.datetime.now()
         end_time = curr_time + timedelta(hours=self.FORECAST_PERIOD)
 
-        price_energy, price_demand = self.get_price(curr_time, end_time)
-        power = self.get_power(curr_time, end_time)
+        df_price = self.get_price(curr_time, end_time)
+        df_power = self.get_power(curr_time, end_time)
 
-        df1 = pd.DataFrame(price_energy, columns=['timestamp', 'energy'])
-        df2 = pd.DataFrame(price_demand, columns=['timestamp', 'demand'])
-        df1.set_index('timestamp', inplace=True)
-        df2.set_index('timestamp', inplace=True)
-        df = df1.join(df2, how='outer')
+        print('df_price: \n', df_price.head())
+        print('power: \n', df_power.head())
 
-        df3 = pd.DataFrame(power, columns=['timestamp', 'pmin', 'pmax'])
-        df3.set_index('timestamp', inplace=True)
-        df = df.join(df3, how='outer')
-        df['pmin'].fillna(1, inplace=True)
-        df['pmax'].fillna(23, inplace=True)
+        df = df_price.join(df_power)
+        df['pmin'].fillna(self.default_pmin, inplace=True)
+        df['pmax'].fillna(self.default_pmax, inplace=True)
+        df['dr-mode'].fillna('none', inplace=True)
+
+        print('df: \n', df.head())
 
         msg_list = []
         for index, row in df.iterrows():
+            result = self.extract_df_row(row)
             msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
-                forecast_time=int(index),
-                price_energy=types.Double(value=row['energy']),
-                price_demand=types.Double(value=row['demand']),
+                forecast_time=int(index.timestamp()),
+                price_energy=types.Double(value=result[0]),
+                price_demand=types.Double(value=result[1]),
+                signal_type=types.Uint64(value=result[2]),  # 0 - none, 1 - limit, 2 - shed, 3 - shift, 4 - track
+                power_limit=types.Double(value=result[3]),
+                power_shed=types.Double(value=result[4]),
+                power_shift=types.Double(value=result[5]),
+                power_track=types.Double(value=result[6])
+            )
+            msg_list.append(msg)
+
+        message = xbos_pb2.XBOS(
+            drsigpred=dr_signals_pb2.DRSignalsPrediction(
+                time=int(time.time() * 1e9),
+                predictions=msg_list
+            )
+        )
+
+        self.report('resource1', message)
+
+        """
+        msg_list = []
+        for index, row in df.iterrows():
+            msg = constrainsts_pb2.___.___(
+                forecast_time=int(index.timestamp()),
+                pmin=types.Double(value=row['pmin']),
+                pmax=types.Double(value=row['pmax'])
+            )
+            msg_list.append(msg)
+            
+        message = xbos_pb2.XBOS(
+            drsigpred=constrainsts_pb2.___(
+                time=int(time.time() * 1e9),
+                ...
+            )
+        )
+        """
+
+        """ Original
+        msg_list = []
+        for index, row in df.iterrows():
+            msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
+                forecast_time=int(index.timestamp()),
+                price_energy=types.Double(value=row['customer_energy_charge']),
+                price_demand=types.Double(value=row['customer_demand_charge_tou']),
                 pmin=types.Double(value=row['pmin']),
                 pmax=types.Double(value=row['pmax'])
             )
@@ -510,11 +524,11 @@ class DRSignalsDriver(Driver):
         message = xbos_pb2.XBOS(
             drsigpred=dr_signals_pb2.DRSignalsPrediction(
                 time=int(time.time() * 1e9),
-                signal_type=0,
+                signal_type=0, # 0 - price, 1 - drlimit...
                 predictions=msg_list
             )
         )
-        self.report('resource1', message)
+        """
 
 
 if __name__ == '__main__':
