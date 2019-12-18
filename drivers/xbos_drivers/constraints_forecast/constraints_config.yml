@@ -1,0 +1,9 @@
+waved: localhost:777
+wavemq: localhost:4516
+base_resource: constraints_test
+rate: 10 # units = sec
+entity: constraints.ent
+namespace:
+id: constraints_forecast_driver
+csv_file: 'Constraints_Forecast.csv'
+forecast_period: 48
