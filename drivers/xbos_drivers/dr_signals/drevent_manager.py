@@ -3,6 +3,7 @@ __author__ = 'Olivier Van Cutsem, Pranav Gupta'
 import json
 import os
 from datetime import timedelta
+from dateutil.parser import parse
 
 import electricitycostcalculator
 import pandas as pd
@@ -48,36 +49,8 @@ class DREventManager:
 
         self.FORECAST_FREQUENCY = freq
 
-    @staticmethod
-    def get_df_powerconstraints(l_timeframe, l_power_constraint):
-        """ Create and fill a pandas dataframe with power information between multiple timeframe.
-
-        Parameters
-        ----------
-        l_timeframe         : list(tuple)
-            [(startdate, enddate)...]
-        l_power_constraint  : dict
-            Power data.
-
-        Returns
-        -------
-        pd.DataFrame()
-            Dataframe with power data.
-
-        """
-        df = None
-        for timeframe, power_constraint in zip(l_timeframe, l_power_constraint):
-            st, et = timeframe
-            index = pd.date_range(st, et, freq=DEFAULT_DT)
-            new_df = pd.DataFrame(data=len(index) * [power_constraint], index=index, columns=['power'])
-            if df is None:
-                df = new_df
-            else:
-                df.append(new_df)
-        return df
-
     def add_default_dr_events(self, type_dr, dr_raw_data):
-        """  Add all the default DR events to DREventManager.
+        """  Add default DR event to DREventManager.
 
         Parameters
         ----------
@@ -110,8 +83,6 @@ class DREventManager:
             Type of DR mode.
         time_frame  : tuple
             (start_date, end_date)
-        filename    : str
-            Full path of the file containing default event data.
 
         Returns
         -------
@@ -192,29 +163,51 @@ class DREventManager:
             ret_dict['type_dr'] = type_dr
             ret_dict['startdate'] = raw_data["start-date"]
             ret_dict['enddate'] = raw_data["end-date"]
+
             if type_dr == 'dr-track':
-                ret_dict['data_dr'] = raw_data['profile']
+                st, et = parse(raw_data["start-date"]), parse(raw_data["end-date"])
+                step = (et - st).total_seconds() / (60 * 15)
+                if len(raw_data['profile']) == step:
+                    data = {
+                        'profile': raw_data['profile'],
+                        'delta': raw_data['delta']
+                    }
+                    ret_dict['data_dr'] = data
+                else:
+                    raise ValueError('dr-track profile should contain the exact number of elements from start-date to '
+                                     'end-date in 15min frequency')
             else:
                 ret_dict['data_dr'] = raw_data['power']
 
         elif type_dr == 'dr-shift':
             raw_data = raw_data["data"]
+            if (raw_data['end-date-take'] != raw_data['start-date-relax']) and (raw_data['end-date-relax'] != raw_data[
+                'start-date-take']):
+                raise ValueError('the dr-shift take and relax events should be contiguous, i.e. the end date of one '
+                                 'should be equal to the start date of another')
+            else:
+                # This is for when get_available_events() filters by startdate and enddate
+                st1, st2 = parse(raw_data["start-date-take"]), parse(raw_data["start-date-relax"])
+                et1, et2 = parse(raw_data["end-date-take"]), parse(raw_data["end-date-relax"])
+                ret_dict['startdate'] = raw_data["start-date-take"] if st1 < st2 else raw_data["start-date-relax"]
+                ret_dict['enddate'] = raw_data["end-date-take"] if et1 > et2 else raw_data["end-date-relax"]
 
-            start_date = {
-                'start-date-take': raw_data["start-date-take"],
-                'start-date-relax': raw_data["start-date-relax"]
-            }
-            end_date = {
-                'end-date-take': raw_data["end-date-take"],
-                'end-date-relax': raw_data["end-date-relax"]
-            }
-            power = {
-                'power-take': raw_data['power-take'],
-                'power-relax': raw_data['power-relax']
-            }
-            ret_dict['startdate'] = start_date
-            ret_dict['enddate'] = end_date
-            ret_dict['data_dr'] = power
+                start_date = {
+                    'start-date-take': raw_data["start-date-take"],
+                    'start-date-relax': raw_data["start-date-relax"]
+                }
+                end_date = {
+                    'end-date-take': raw_data["end-date-take"],
+                    'end-date-relax': raw_data["end-date-relax"]
+                }
+                power = {
+                    'power-take': raw_data['power-take'],
+                    'power-relax': raw_data['power-relax']
+                }
+                ret_dict['type_dr'] = type_dr
+                ret_dict['startdate-take_relax'] = start_date
+                ret_dict['enddate-take_relax'] = end_date
+                ret_dict['data_dr'] = power
 
         else:
             raise ValueError('type_dr is none of valid DR Modes.')
@@ -254,8 +247,9 @@ class DREventManager:
                 if self.FORECAST_FREQUENCY == '15min':
                     timestep = TariffElemPeriod.QUARTERLY
                 else:
-                    print('price has hourly timestep...')
-                    timestep = TariffElemPeriod.HOURLY
+                    raise NotImplementedError('Only 15min frequency works for now.')
+                    # print('price has hourly timestep...')
+                    # timestep = TariffElemPeriod.HOURLY
 
                 start_date_sig = parse(start_date)
                 end_date_sig = parse(end_date)
@@ -267,7 +261,7 @@ class DREventManager:
                 delta_sec = (et - st).total_seconds()
 
                 if self.FORECAST_FREQUENCY == '15min':
-                    step = timedelta(minutes=15)  # CHECK: add self.FORECAST_FREQUENCY HERE
+                    step = timedelta(minutes=15)
                 else:
                     raise NotImplementedError('Only 15min frequency works for now.')
                 assert len(raw_json_data['energy_prices']) == (delta_sec / step.total_seconds())
@@ -287,7 +281,7 @@ class DREventManager:
             return price_df
 
         elif type_tariff == 'price-rtp':
-            print('Type of Tariff = price-rtp')
+            raise NotImplementedError('price-rtp')
             # st, et = date_period
             # index = pd.date_range(st, et, freq=DEFAULT_DT)
             # return pd.DataFrame(data=raw_json_data, index=index)
