@@ -106,7 +106,7 @@ class ParkerDriver(XBOSProcess):
         if control_flag != None:
             if not control_flag  and self.device_control_flag.get(device, False):
                 self.change_setpoints(device=device, variable_name='setpoint', new_value=self._default_setpoint_map[device])
-                self.change_setpoints(device=device, variable_name='differential', new_value=self._default_differential_map[device])
+                # self.change_setpoints(device=device, variable_name='differential', new_value=self._default_differential_map[device])
             self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
         if setpoints != None:
@@ -127,7 +127,7 @@ class ParkerDriver(XBOSProcess):
                     # CASE1: if the time_now is more than 4 hours before the 1st setpoint in the list of setpoints; set default setpoints
                     # CASE2: if the last time mpc published the setpoints (first change_time of setpoints is approximately the same time as the time MPC ran) is at least 4 hours before time_now, set defaults setpoints
                     setpoint = self._default_setpoint_map[device]
-                    differential = self._default_differential_map[device]
+                    # differential = self._default_differential_map[device]
                     print("CASE 1/2")
                 elif time_now < first_change_time:
                     setpoint = setpoint_dict[first_change_time].get('setpoint', None)
@@ -147,7 +147,7 @@ class ParkerDriver(XBOSProcess):
                         if (time_now - last_change_time) > self._default_time_threshold:
                             # CASE4: time now is at least 4 hours ahead of the last time MPC published the setpoints, set to default setpoints
                             setpoint = self._default_setpoint_map[device]
-                            differential = self._default_differential_map[device]
+                            # differential = self._default_differential_map[device]
                             print("CASE 4")
                         else:
                             # CASE5: time_now is less that 4 hours ahead of the last setpoint forecase, do nothing
