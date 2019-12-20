@@ -6,14 +6,18 @@ from datetime import timedelta
 
 import pandas as pd
 import yaml
+from drevent_manager import DREventManager, read_from_json
+from pyxbos import constraints_forecast_pb2
 from pyxbos import dr_signals_pb2
 from pyxbos import xbos_pb2
 from pyxbos.driver import *
 from pyxbos.process import XBOSProcess, b64decode, schedule, run_loop
 
-from drevent_manager import DREventManager, read_from_json
-
-""" NOTE - Current assumption of driver includes that no two custom events have overlapping times. """
+""" NOTE,
+1. Current assumption of driver includes that no two custom events have overlapping times. 
+2. Times in the json files are in local time.
+3. dr-shed and dr-shift events are not published because the baseline hasn't been implemented yet.
+"""
 
 # Global variable
 FORECAST_FREQUENCY = '15min'
@@ -29,6 +33,7 @@ class DRSignalsDriver(XBOSProcess):
         cfg     : str
             Configuration file.
         """
+        super().__init__(cfg)
 
         self.CUSTOM_EVENTS_FILE = 'dr_custom_events.json'
         self.DEFAULT_EVENTS_FILE = 'dr_default_events.json'
@@ -51,7 +56,8 @@ class DRSignalsDriver(XBOSProcess):
         # DR events information and state, to keep track of change and trigger new ones
         self.dr_manager = DREventManager(freq=FORECAST_FREQUENCY)
 
-        self.base_resource = cfg['base_resource']
+        self.base_resource1 = cfg['base_resource1']  # dr_signals
+        self.base_resource2 = cfg['base_resource2']  # constraints (pmin and pmax)
         self.namespace = b64decode(cfg['namespace'])
 
         # Keeps track of how further into the future should the forecast be
@@ -510,7 +516,11 @@ class DRSignalsDriver(XBOSProcess):
         # print('df: \n', df.head())
         # df.to_csv('temp.csv')
 
-        msg_list = []
+        tim = int(time.time() * 1e9)
+
+        # Publish to dr_signals
+        # Uncomment once self.get_baseline() works
+        msg_list1 = []
         for index, row in df.iterrows():
             result = self.extract_df_row(row)
             msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
@@ -519,38 +529,39 @@ class DRSignalsDriver(XBOSProcess):
                 price_demand=types.Double(value=result[1]),
                 signal_type=types.Uint64(value=result[2]),  # 0 - none, 1 - limit, 2 - shed, 3 - shift, 4 - track
                 power_limit=types.Double(value=result[3]),
-                power_shed=types.Double(value=result[4]),
-                power_shift=types.Double(value=result[5]),
+                # power_shed=types.Double(value=result[4]),
+                # power_shift=types.Double(value=result[5]),
                 power_track=types.Double(value=result[6])
             )
-            msg_list.append(msg)
+            msg_list1.append(msg)
 
-        message = xbos_pb2.XBOS(
+        message1 = xbos_pb2.XBOS(
             drsigpred=dr_signals_pb2.DRSignalsPrediction(
-                time=int(time.time() * 1e9),
-                predictions=msg_list
+                time=tim,
+                predictions=msg_list1
             )
         )
 
-        await self.publish(self.namespace, self.base_resource, False, message)
+        await self.publish(self.namespace, self.base_resource1, False, message1)
 
-        """
-        msg_list = []
+        # Publish to constraints forecast
+        msg_list2 = []
         for index, row in df.iterrows():
-            msg = constrainsts_pb2.___.___(
+            msg = constraints_forecast_pb2.ConstraintsForecast.Constraints(
                 forecast_time=int(index.timestamp()),
-                pmin=types.Double(value=row['pmin']),
-                pmax=types.Double(value=row['pmax'])
+                PMin=types.Double(value=row['pmin']),
+                PMax=types.Double(value=row['pmax'])
             )
-            msg_list.append(msg)
-            
-        message = xbos_pb2.XBOS(
-            drsigpred=constrainsts_pb2.___(
-                time=int(time.time() * 1e9),
-                ...
+            msg_list2.append(msg)
+
+        message2 = xbos_pb2.XBOS(
+            constraints_forecast=constraints_forecast_pb2.ConstraintsForecast(
+                time=tim,
+                constraints_predictions=msg_list2
             )
         )
-        """
+
+        await self.publish(self.namespace, self.base_resource2, False, message2)
 
 
 if __name__ == '__main__':

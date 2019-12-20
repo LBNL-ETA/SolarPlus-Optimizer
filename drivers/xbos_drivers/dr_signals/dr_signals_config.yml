@@ -1,7 +1,8 @@
 waved: localhost:777
 wavemq: localhost:4516
-base_resource: dr_signals_test
-rate: 5 #units=sec
+base_resource1: dr_signals_test
+base_resource2: constraints_forecast_test
+rate: 2 # units = sec
 entity: drsignals.ent
 namespace:
 id: dr-signals-driver
