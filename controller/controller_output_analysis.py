@@ -3,35 +3,26 @@
 
 # ## This notebook is to analyze the output results of MPCPy for the Solar+ project
 
-# In[1]:
-
-
 import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 from itertools import cycle
 
-
 # ### Measured meter power
-
-# In[74]:
-
-
-meter = pd.read_csv('validation/meter_readings_20190917T1155.csv',index_col=0)
+filepath = os.path.dirname(os.path.abspath(__file__))
+meter_file = 'validation/meter_readings_20190917T1155.csv'
+meter = pd.read_csv(os.path.join(filepath,meter_file),index_col=0)
 meter.index = pd.to_datetime(meter.index,utc=True)
 meter = meter.tz_convert('America/Los_Angeles')
 sample_rate = '15T'
 meter = meter.resample(sample_rate).mean()
 
-
 # ### PG&E billing data
-
-# In[91]:
-
-
-bill_201908 = pd.read_csv('validation/PlayStation777 IntervalData Jun-Sep2019/Historical_20190801-20190831.csv',index_col='Time')
-bill_201909 = pd.read_csv('validation/PlayStation777 IntervalData Jun-Sep2019/Historical_20190901-20190923.csv',index_col='Time')
+bill_file_201908 = 'validation/PlayStation777 IntervalData Jun-Sep2019/Historical_20190801-20190831.csv'
+bill_file_201909 = 'validation/PlayStation777 IntervalData Jun-Sep2019/Historical_20190901-20190923.csv'
+bill_201908 = pd.read_csv(os.path.join(filepath,bill_file_201908),index_col='Time')
+bill_201909 = pd.read_csv(os.path.join(filepath,bill_file_201909),index_col='Time')
 # remove the duplicated second half of the data with usage value=0
 bill_201908 = bill_201908[0:len(bill_201908)/2]
 bill_201909 = bill_201909[0:len(bill_201909)/2]
@@ -39,17 +30,9 @@ bill_201909 = bill_201909[0:len(bill_201909)/2]
 bill = pd.concat([bill_201908, bill_201909])
 bill.index = pd.to_datetime(bill.index).tz_localize('America/Los_Angeles')
 
-
-# In[92]:
-
-
 bill_power = bill['Usage Value']/15*60
 start_meter = bill_power.index[0]
 end_meter = bill_power.index[-1]
-
-
-# In[104]:
-
 
 meter_power = meter['building_main_Demand']/1000
 plt.figure()
@@ -60,39 +43,27 @@ meter_power.plot(label='meter')
 plt.legend()
 plt.ylabel('Power [kW]');
 
-
-# In[109]:
-
-
 delta_P = bill_power.loc[start_meter:end_meter] - meter_power
 delta_P.plot(label='Absolute power difference [kW]')
 plt.legend()
 plt.figure()
 delta_per = (bill_power.loc[start_meter:end_meter] - meter_power)/meter_power*100
-delta.plot(label='Relative difference [%]')
+delta_per.plot(label='Relative difference [%]')
 plt.legend()
-
+# plt.show()
 
 # ### Print optimization statistics
 
-# In[2]:
-
-
-run_period = '2019-10'
-filepath = "./output"
-
-
-# In[12]:
-
-
+run_period = '2020-01'
+outpath = os.path.join(filepath,'output')
 plt.rcParams.update({'font.size': 16})
 opt_stats = []
-for i in os.listdir(filepath):
-    file = os.path.join(filepath,i)
+for i in os.listdir(outpath):
+    file = os.path.join(outpath,i)
     if os.path.isfile(file) and 'optimal_statistics_'+run_period in i:
         with open(file) as files:
             lineList = files.readlines()
-            if len(lineList) > 0:                
+            if len(lineList) > 0:
                 opt_stats.append(lineList[-1].split(', '))
 
 opt_stats = pd.DataFrame(opt_stats)
@@ -111,32 +82,21 @@ plt.ylabel('Time [min]')
 plt.figure(2)
 opt_stats['iterative nb'].plot(figsize=(16,4),title='Iteration number')
 
-
-# In[10]:
-
-
 pd.set_option('display.max_rows', 1003)
-opt_stats
-
+print(opt_stats)
 
 # ### Measured temperatures
-
-# In[4]:
-
-
-thermostat = pd.read_csv('validation/thermostat_readings_20190917T1155.csv',index_col=0)
+thermostat_file = 'validation/thermostat_readings_20190917T1155.csv'
+thermostat = pd.read_csv(os.path.join(filepath,thermostat_file),index_col=0)
 thermostat.index = pd.to_datetime(thermostat.index)
 thermostat = thermostat.resample(sample_rate).mean()
-#start_time = '2019-09-01 00:00:00'
-thermostat_range = thermostat.loc[start_time:end_time]
+start_time = '2019-09-01 00:00:00'
+thermostat_range = thermostat.loc[start_time:]
 
-parker = pd.read_csv('validation/parker_controller_readings_20190917T1155.csv',index_col=0)
+parker_file = 'validation/parker_controller_readings_20190917T1155.csv'
+parker = pd.read_csv(os.path.join(filepath, parker_file),index_col=0)
 parker.index = pd.to_datetime(parker.index)
 parker_range = parker.loc[start_time:]
-
-
-# In[7]:
-
 
 plt.rcParams["figure.figsize"] = [16,4]
 #thermostat_range['thermostat_west_space_temp'].plot(legend=True)
@@ -145,9 +105,6 @@ thermostat_range.head(10)
 
 
 # ### Predicted temperatures
-
-# In[20]:
-
 
 plt.rcParams["figure.figsize"] = [20,4]
 plt.rcParams.update({'font.size': 16})
@@ -164,7 +121,7 @@ for i in os.listdir(filepath):
                 HVAC = (df[column]-273.15)*9/5+32
                 plt.plot(df[column].index, HVAC, linestyle='solid')
                 plt.title('HVAC west temperature')
-                plt.ylabel('$\degree$F')   
+                plt.ylabel('$\degree$F')
                 # plt.ylim([72.5,76.5])
                 #thermostat_range['thermostat_west_space_temp'].plot(linestyle='dotted')
                 plt.grid(linestyle='dotted')
@@ -177,7 +134,7 @@ for i in os.listdir(filepath):
                 plt.title('Refrigerator temperature')
                 plt.ylabel('$\degree$F')
                 plt.grid(linestyle='--')
-                
+
         plt.figure(3)
         for column in df.columns:
             if column == 'Tfre':
@@ -186,7 +143,7 @@ for i in os.listdir(filepath):
                 plt.title('Freezer temperature')
                 plt.ylabel('$\degree$F')
                 plt.grid(linestyle='--')
-                
+
         plt.figure(4)
         for column in df.columns:
             if column == 'SOC':
@@ -198,9 +155,6 @@ for i in os.listdir(filepath):
 
 
 # ### Predicted HVAC power
-
-# In[ ]:
-
 
 plt.rcParams["figure.figsize"] = [16,4]
 plt.rcParams.update({'font.size': 16})
@@ -216,15 +170,12 @@ for i in os.listdir(filepath):
             if column == 'Prtu':
                 plt.plot(df[column].index, df[column])
                 plt.title('HVAC power')
-                plt.ylabel('W')    
+                plt.ylabel('W')
                 # meter_range['hvac_west_comp_Demand'].plot()
                 plt.grid(linestyle='--')
 
 
-# ### Plot predicted control trajectory 
-
-# In[42]:
-
+# ### Plot predicted control trajectory
 
 plt.rcParams["figure.figsize"] = [16,4]
 plt.rcParams.update({'font.size': 16})
@@ -252,7 +203,7 @@ for i in os.listdir(filepath):
                 plt.title('heating control')
                 #thermostat_range['thermostat_west_space_temp'].plot(linestyle='dotted')
                 plt.grid(linestyle='dotted')
-                
+
         plt.figure(3)
         for column in df.columns:
             if column == 'uRef':
@@ -261,7 +212,7 @@ for i in os.listdir(filepath):
                 plt.title('Normalized refrigerator power')
                 #thermostat_range['thermostat_west_space_temp'].plot(linestyle='dotted')
                 plt.grid(linestyle='dotted')
-                        
+
         plt.figure(4)
         for column in df.columns:
             if column == 'uFreCool':
@@ -270,8 +221,8 @@ for i in os.listdir(filepath):
                 plt.title('Normalized freezer power')
                 #thermostat_range['thermostat_west_space_temp'].plot(linestyle='dotted')
                 plt.grid(linestyle='dotted')
-                
-                    
+
+
         plt.figure(5)
         for column in df.columns:
             if column == 'uBattery':
@@ -283,9 +234,6 @@ for i in os.listdir(filepath):
 
 
 # ### Plot other outputs
-
-# In[19]:
-
 
 plt.rcParams["figure.figsize"] = [16,4]
 plt.rcParams.update({'font.size': 16})
@@ -338,10 +286,3 @@ for i in os.listdir(filepath):
                 df[column].plot()
                 plt.title('PV power [W]')
                 plt.grid(linestyle='--')
-
-
-# In[ ]:
-
-
-
-

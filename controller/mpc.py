@@ -505,6 +505,7 @@ class mpc(object):
         opt_options = opt_object.get_optimization_options()
         opt_options['n_e'] = 24*4
         opt_options['IPOPT_options']['tol'] = 1e-10
+        opt_options["IPOPT_options"]["max_iter"] = 300
         opt_object.set_optimization_options(opt_options)
 
         return opt_object

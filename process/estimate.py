@@ -11,8 +11,10 @@ from matplotlib import pyplot as plt
 # Setup
 # --------------------------------------------------------------------------
 # Estimation periods
-start_time = '2019-11-06 08:00:00+00:00' # UTC time
-final_time = '2019-11-07 03:00:00+00:00' # UTC time
+start_time = '2019-11-06 10:00:00+00:00' # UTC time
+final_time = '2019-11-06 19:00:00+00:00' # UTC time
+start_time_validate = '2019-11-07 15:00:00+00:00'
+final_time_validate = '2019-11-07 17:00:00+00:00'
 # local_time = 'America/Los_Angeles'
 # Model definition
 mopath = 'models/SolarPlus.mo'
@@ -84,6 +86,12 @@ model = models.Modelica(models.JModelica,
                         tz_name = weather.tz_name)
 # --------------------------------------------------------------------------
 
+emulation = systems.EmulationFromFMU(measurements,
+                                     moinfo=moinfo,
+                                     weather_data = weather.data,
+                                     control_data = controls.data,
+                                     tz_name = weather.tz_name)
+
 # Simulate Initial Guess
 # --------------------------------------------------------------------------
 if simulate_initial:
@@ -105,13 +113,20 @@ if simulate_initial:
 # --------------------------------------------------------------------------
 # Solve estimation problem
 model.estimate(start_time, final_time, ['Trtu_west','Trtu_east','Tref','Tfre'])
-print(model.display_measurements('Measured'))
-for key in model.parameter_data.keys():
-    print(key, model.parameter_data[key]['Value'].display_data())
-model.validate(start_time, final_time, 'validate', plot=0)
+# print(model.display_measurements('Measured'))
+
+emulation.collect_measurements(start_time_validate, final_time_validate)
+model.measurements = emulation.measurements
+model.validate(start_time_validate, final_time_validate, 'validate', plot=0)
 for key in ['Trtu_west','Trtu_east','Tref','Tfre']:
     plt.plot(model.measurements[key]['Simulated'].get_base_data()-273.15, label=key+'_Simulated')
     plt.plot(model.measurements[key]['Measured'].get_base_data()-273.15, label=key+'_Measured')
     plt.legend()
 plt.show()
+
+for key in ['Trtu_west','Trtu_east','Tref','Tfre']:
+    print(model.RMSE[key].display_data())
+
+for key in model.parameter_data.keys():
+    print(key, model.parameter_data[key]['Value'].display_data())
 # --------------------------------------------------------------------------
