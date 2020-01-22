@@ -241,8 +241,12 @@ class Data_Manager():
             ts: int
                 latest timestamp when the forecasts came in
         '''
-        return self.influx_client.query(
-            "select last(value), time from timeseries where \"uuid\"=\'%s\' "%uuid)[measurement].index.values[0].astype('uint64')
+        res = self.influx_client.query(
+            "select last(value), time from timeseries where \"uuid\"=\'%s\' and time > now() - 14m "%uuid)
+        if not measurement in res:
+            res = self.influx_client.query(
+                "select last(value), time from timeseries where \"uuid\"=\'%s\' " % uuid)
+        return res[measurement].index.values[0].astype('uint64')
 
 
     def get_section_data_from_influx(self, config, start_time=None, end_time=None, forecast=False):
