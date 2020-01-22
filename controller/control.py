@@ -11,7 +11,7 @@ import os
 import datetime
 import time
 import pandas as pd
-import mpc_config_control as mpc_config
+import mpc_config
 from mpc import mpc
 
 def run():

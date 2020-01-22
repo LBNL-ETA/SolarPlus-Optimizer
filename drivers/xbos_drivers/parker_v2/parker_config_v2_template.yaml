@@ -21,7 +21,7 @@ modbus:
       refrigerator: 38
       freezer: -2
     min_setpoint_limit_map:
-      refrigerator: 34
+      refrigerator: 33
       freezer: -30
 
     #default_differential_map:

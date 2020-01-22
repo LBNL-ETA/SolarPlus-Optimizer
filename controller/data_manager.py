@@ -8,16 +8,19 @@ import requests
 import json
 import time
 
-# xboswave packages
-from pyxbos.eapi_pb2 import *
-from pyxbos.wavemq_pb2 import *
-from pyxbos.wavemq_pb2_grpc import *
-from grpc import insecure_channel
-from pyxbos import xbos_pb2
-from pyxbos import flexstat_pb2
-from pyxbos import parker_pb2
-from pyxbos import nullabletypes_pb2 as types
-import base64
+try:
+    # xboswave packages
+    from pyxbos.eapi_pb2 import *
+    from pyxbos.wavemq_pb2 import *
+    from pyxbos.wavemq_pb2_grpc import *
+    from grpc import insecure_channel
+    from pyxbos import xbos_pb2
+    from pyxbos import flexstat_pb2
+    from pyxbos import parker_pb2
+    from pyxbos import nullabletypes_pb2 as types
+    import base64
+except ImportError:
+    print("not importing xbos packages")
 
 class Data_Manager():
 
@@ -271,8 +274,12 @@ class Data_Manager():
             ts: int
                 latest timestamp when the forecasts came in
         '''
-        return self.influx_client.query(
-            "select last(value), time from timeseries where \"uuid\"=\'%s\' "%uuid)[measurement].index.values[0].astype('uint64')
+        res = self.influx_client.query(
+            "select last(value), time from timeseries where \"uuid\"=\'%s\' and time > now() - 17m "%uuid)
+        if not measurement in res:
+            res = self.influx_client.query(
+                "select last(value), time from timeseries where \"uuid\"=\'%s\' " % uuid)
+        return res[measurement].index.values[0].astype('uint64')
 
 
     def get_section_data_from_influx(self, config, start_time=None, end_time=None, forecast=False):

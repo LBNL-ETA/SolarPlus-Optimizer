@@ -86,12 +86,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Shadow/Constraints_Forecast.csv"
         ],
         "influxdb": {"config_filename":"database_client/config.yaml",
-                     "section": "database"},
-        "xbos": {
-            "namespace": "",
-            "wavemq": "localhost:4516",
-            "entity": "data_manager.ent"
-        }
+                     "section": "database"}
     },
     "weather": {
         "type": "influxdb",
@@ -157,15 +152,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 
     "data_sink": {
         "setpoints": {
-            "type": "csv|xbos",
-            "filename": "Shadow/setpoints.csv",
-            "devices": {
-                #"flexstat_test/thermostat_east/actuation": {"cooling_setpoint": "Trtu"}
-                "flexstat_test/thermostat_east/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"},
-                "flexstat_test/thermostat_west/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"},
-                "parker_test/refrigerator/actuation": {"setpoint": "Tref"},
-                "parker_test/freezer/actuation": {"setpoint": "Tfre"}
-            }
+            "type": "csv",
+            "filename": "Shadow/setpoints.csv"
         },
         "variables": {
             "Pbattery": {

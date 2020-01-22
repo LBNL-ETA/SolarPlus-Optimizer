@@ -181,6 +181,8 @@ class ParkerDriver(XBOSProcess):
                 if current_value != new_value:
                     value_to_be_written = int(new_value*10)
                     try:
+                        ## adding a synchronous sleep
+                        time.sleep(5)
                         print("writting to %s, value=%d, unit=%d"%(register_name, value_to_be_written, unit))
                         self.modbus_device.write_register(register_name=register_name, value=value_to_be_written, unit=unit)
                     except Exception as e:
