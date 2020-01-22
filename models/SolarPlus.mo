@@ -932,16 +932,16 @@ package SolarPlus "This package contains models for MPC control optimization."
           RTUEastCoolingCap=24910,
           RTUWestCoolingCOP=2.59,
           RTUEastCoolingCOP=2.59,
-          Rrtu_west=0.1,
-          Rrtu_east=0.00148,
-          Rwest_east=100,
-          Crtu_west=1e7,
-          Crtu_east=1e7,
-          Cref=9961771,
-          Rref=0.00366,
-          Cfre=1932359,
-          Rfre=0.1,
-          Rref_fre=0.000477),
+          Rrtu_west=0.0005,
+          Rrtu_east=0.0005,
+          Rwest_east=0.01,
+          Crtu_west=1e6,
+          Crtu_east=1e6,
+          Cref=1e7,
+          Rref=0.01,
+          Cfre=1e7,
+          Rfre=0.013,
+          Rref_fre=0.018),
         multiSum(k={1,1,1,1,1,1,1/4,1/4}, nu=8),
         Battery(eta=0.88));
       parameter Modelica.SIunits.Temperature TSpRtuEast;
@@ -972,7 +972,8 @@ package SolarPlus "This package contains models for MPC control optimization."
       "Cooling signal input for freezer"
       annotation (Placement(transformation(extent={{-140,-240},{-100,-200}}),
             iconTransformation(extent={{-120,-220},{-100,-200}})));
-      Modelica.Blocks.Math.MultiSum multiSum1(k={0,0,0,0}, nu=4)
+      Modelica.Blocks.Math.MultiSum multiSum1(k={1.5,1.5,0,0},
+                                                           nu=4)
         annotation (Placement(transformation(extent={{44,-214},{56,-202}})));
       Modelica.Blocks.Math.Product squareTrtu
       annotation (Placement(transformation(extent={{14,-172},{20,-166}})));
