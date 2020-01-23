@@ -44,13 +44,15 @@ Running the controller in shadow mode involves starting the MPC controller to re
 
 ## Running the MPC controller
 
-This involves starting the MPC controller to retrieve real time data from the InfluxDB database, run the optimization and send the generated setpoints to the actual devices. It uses XBOS's (wavemq)[https://github.com/immesys/wavemq] message bus to publish the new setpoints.
+This involves starting the MPC controller to retrieve real time data from the InfluxDB database, run the optimization and send the generated setpoints to the actual devices. It uses XBOS's [wavemq](https://github.com/immesys/wavemq) message bus to publish the new setpoints.
 
 1. ``$ make run`` to start the Docker container and enter its terminal.  Note that the Docker image must be built already (see ``Build the Docker Image`` above).
 
 2. Rename the ``mpc_control_config_template.py`` to ``mpc_config.py`` in the ``controller/`` folder and make necessary changes to configure the XBOS setup (there are placeholders in the template)
 
-3. ``$ python controller/control.py`` to run the controller
+3. Copy the generated [``pyxbos/``](https://github.com/gtfierro/xboswave/tree/master/python/pyxbos/pyxbos) folder from [xboswave](github.com/gtfierro/xboswave) repository to the main directory
+
+4. ``$ python controller/control.py`` to run the controller
 
 ## Edits, Enhancements, and New Features
 Large edits, enhancements, new features, and bug fixes should be made on separate branches from the master, and merged to the master only after completion. Do this by the following process:
