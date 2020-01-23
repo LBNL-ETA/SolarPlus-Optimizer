@@ -5,6 +5,7 @@
 from mpcpy import units
 import os
 
+tz_computer = 'UTC'
 config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                          'modelpath' : 'SolarPlus.Building.Optimization.Store',
                          'libraries' : os.getenv('MODELICAPATH'),

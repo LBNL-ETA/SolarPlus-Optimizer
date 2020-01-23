@@ -12,12 +12,10 @@ import datetime
 import time
 import pandas as pd
 import mpc_config
+from mpc_config import tz_computer
 from mpc import mpc
 
 def run():
-    #tz_computer = 'America/Los_Angeles'
-    tz_computer = 'UTC'
-
     # Setup
     # ==============================================================================
     controller = 'mpc'
@@ -79,15 +77,6 @@ def run():
 if __name__ == '__main__':
     minute = -1
     while True:
-        try:
-            run()
-            time.sleep(300)
-            print("run passed")
-        except Exception as e:
-            print("error: ",e)
-            raise e
-
-        '''
         time.sleep(1)
         t = datetime.datetime.now()
         print(t)
@@ -98,4 +87,3 @@ if __name__ == '__main__':
                 print('Run ended ok.')
             except:
                 print('Run ended in error.')
-        '''
