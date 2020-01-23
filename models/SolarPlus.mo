@@ -972,8 +972,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       "Cooling signal input for freezer"
       annotation (Placement(transformation(extent={{-140,-240},{-100,-200}}),
             iconTransformation(extent={{-120,-220},{-100,-200}})));
-      Modelica.Blocks.Math.MultiSum multiSum1(k={1.5,1.5,0,0},
-                                                           nu=4)
+      Modelica.Blocks.Math.MultiSum multiSum1(k={2,2,0,0}, nu=4)
         annotation (Placement(transformation(extent={{44,-214},{56,-202}})));
       Modelica.Blocks.Math.Product squareTrtu
       annotation (Placement(transformation(extent={{14,-172},{20,-166}})));
@@ -1083,12 +1082,12 @@ package SolarPlus "This package contains models for MPC control optimization."
               -90,40},{-90,17.7},{-40.7,17.7}}, color={0,0,127}));
       connect(gainPVGen.y, multiSum2.u[1]) annotation (Line(points={{32.6,100},{74,100},
               {74,-26.4},{76,-26.4}},          color={0,0,127}));
-      connect(multiSum2.u[2], Pref) annotation (Line(points={{76,-27.6},{70,-27.6},{
-              70,40},{110,40}},         color={0,0,127}));
-      connect(multiSum2.u[3], Pfre) annotation (Line(points={{76,-28.8},{68,-28.8},{
-              68,20},{110,20}},         color={0,0,127}));
-      connect(multiSum2.u[4], Pbattery) annotation (Line(points={{76,-30},{66,-30},{
-              66,0},{110,0}},           color={0,0,127}));
+      connect(multiSum2.u[2], Pref) annotation (Line(points={{76,-27.6},{68,
+              -27.6},{68,40},{110,40}}, color={0,0,127}));
+      connect(multiSum2.u[3], Pfre) annotation (Line(points={{76,-28.8},{66,
+              -28.8},{66,20},{110,20}}, color={0,0,127}));
+      connect(multiSum2.u[4], Pbattery) annotation (Line(points={{76,-30},{64,
+              -30},{64,0},{110,0}},     color={0,0,127}));
       connect(multiSum2.u[5], Prtu_west) annotation (Line(points={{76,-31.2},{
               72,-31.2},{72,80},{110,80}}, color={0,0,127}));
       connect(thermal.Pload, multiSum2.u[6]) annotation (Line(points={{-19.3,
@@ -1108,7 +1107,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       connect(add1.y, squareTrtu1.u2) annotation (Line(points={{-19,-120},{-10,
               -120},{-10,-132.8},{13.4,-132.8}}, color={0,0,127}));
       connect(multiSum2.u[7], Prtu_east) annotation (Line(points={{76,-33.6},{
-              64,-33.6},{64,60},{110,60}}, color={0,0,127}));
+              70,-33.6},{70,60},{110,60}}, color={0,0,127}));
       connect(multiSum2.y, Pnet) annotation (Line(points={{89.02,-30},{94,-30},
               {94,-60},{110,-60}}, color={0,0,127}));
       connect(multiSum.u[7], Grtu_west) annotation (Line(points={{68,-60},{58,
