@@ -12,7 +12,7 @@ from datetime import timedelta
 import pandas as pd
 import numpy as np
 from controller.mpc import mpc
-import mpc_config
+import mpc_simulation_config as mpc_config
 from emulator import emulator
 import pytz
 

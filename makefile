@@ -3,7 +3,7 @@ IMG_NAME=solarplusoptimizer
 COMMAND_RUN=docker run \
           --name mpcpy \
           --detach=false \
-          --net="host" \
+          --network="host" \
           -e DISPLAY=${DISPLAY} \
           -v /tmp/.X11-unix:/tmp/.X11-unix \
           --rm \

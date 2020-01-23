@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+# rename this to mpc_config.py while doing actual controls
+
 from mpcpy import units
 import os
 
+tz_computer = 'UTC'
 config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                          'modelpath' : 'SolarPlus.Building.Optimization.Store',
                          'libraries' : os.getenv('MODELICAPATH'),
@@ -86,7 +89,12 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Shadow/Constraints_Forecast.csv"
         ],
         "influxdb": {"config_filename":"database_client/config.yaml",
-                     "section": "database"}
+                     "section": "database"},
+        "xbos": {
+            "namespace": "<namespace_hash>",
+            "wavemq": "localhost:4516",
+            "entity": "<data_manager_entity>"
+        }
     },
     "weather": {
         "type": "influxdb",
@@ -152,8 +160,14 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 
     "data_sink": {
         "setpoints": {
-            "type": "csv",
-            "filename": "Shadow/setpoints.csv"
+            "type": "csv|xbos",
+            "filename": "Shadow/setpoints.csv",
+            "devices": {
+                "<thermostat_topic>/thermostat_east/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"},
+                "<thermostat_topic>/thermostat_west/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"},
+                "<refrigeration_topic>/refrigerator/actuation": {"setpoint": "Tref"},
+                "<refrigeration_topic>/freezer/actuation": {"setpoint": "Tfre"}
+            }
         },
         "variables": {
             "Pbattery": {

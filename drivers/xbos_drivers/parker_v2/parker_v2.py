@@ -28,10 +28,13 @@ class ParkerDriver(XBOSProcess):
         self.modbus_device.initialize_modbus()
 
         self._default_time_threshold = self.modbus_config.get("time_threshold_revert_to_default", 14400)
-        self._default_setpoint_map = self.modbus_config.get("default_setpoint_map", {'refrigerator': **, 'freezer': **})
-        self._default_differential_map = self.modbus_config.get("default_differential_map", {'refrigerator': **, 'freezer': **})
-        self._setpoint_limit_map = self.modbus_config.get("setpoint_limit_map", {'refrigerator': **, 'freezer': **})
-        self._differential_limit_map = self.modbus_config.get("differential_limit_map", {'refrigerator': **, 'freezer': **})
+
+        self._default_setpoint_map = self.modbus_config.get("default_setpoint_map", {'refrigerator': 33, 'freezer': -7})
+        self._max_setpoint_limit_map = self.modbus_config.get("max_setpoint_limit_map", {'refrigerator': 38, 'freezer': -2})
+        self._min_setpoint_limit_map = self.modbus_config.get("min_setpoint_limit_map", {'refrigerator': 34, 'freezer': -30})
+
+        #self._default_differential_map = self.modbus_config.get("default_differential_map", {'refrigerator': **, 'freezer': **})
+        #self._differential_limit_map = self.modbus_config.get("differential_limit_map", {'refrigerator': **, 'freezer': **})
 
         self._setpoints = {}
         self._actuation_message_path = ".parkerActuationMessage"
@@ -82,7 +85,7 @@ class ParkerDriver(XBOSProcess):
             if control_flag != None:
                 if not control_flag and self.device_control_flag.get(device, False):
                     self.change_setpoints(device=device, variable_name='setpoint', new_value=self._default_setpoint_map[device])
-                    self.change_setpoints(device=device, variable_name='differential', new_value=self._default_differential_map[device])
+                    # self.change_setpoints(device=device, variable_name='differential', new_value=self._default_differential_map[device])
 
                 self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
@@ -103,7 +106,7 @@ class ParkerDriver(XBOSProcess):
         if control_flag != None:
             if not control_flag  and self.device_control_flag.get(device, False):
                 self.change_setpoints(device=device, variable_name='setpoint', new_value=self._default_setpoint_map[device])
-                self.change_setpoints(device=device, variable_name='differential', new_value=self._default_differential_map[device])
+                # self.change_setpoints(device=device, variable_name='differential', new_value=self._default_differential_map[device])
             self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
         if setpoints != None:
@@ -124,7 +127,7 @@ class ParkerDriver(XBOSProcess):
                     # CASE1: if the time_now is more than 4 hours before the 1st setpoint in the list of setpoints; set default setpoints
                     # CASE2: if the last time mpc published the setpoints (first change_time of setpoints is approximately the same time as the time MPC ran) is at least 4 hours before time_now, set defaults setpoints
                     setpoint = self._default_setpoint_map[device]
-                    differential = self._default_differential_map[device]
+                    # differential = self._default_differential_map[device]
                     print("CASE 1/2")
                 elif time_now < first_change_time:
                     setpoint = setpoint_dict[first_change_time].get('setpoint', None)
@@ -144,7 +147,7 @@ class ParkerDriver(XBOSProcess):
                         if (time_now - last_change_time) > self._default_time_threshold:
                             # CASE4: time now is at least 4 hours ahead of the last time MPC published the setpoints, set to default setpoints
                             setpoint = self._default_setpoint_map[device]
-                            differential = self._default_differential_map[device]
+                            # differential = self._default_differential_map[device]
                             print("CASE 4")
                         else:
                             # CASE5: time_now is less that 4 hours ahead of the last setpoint forecase, do nothing
@@ -160,38 +163,51 @@ class ParkerDriver(XBOSProcess):
 
     def change_setpoints(self, device, variable_name, new_value):
         if new_value != None:
-            new_value = round(new_value, 2)
+            new_value = round(new_value, 1)
             if variable_name == 'setpoint':
 
-                if self._setpoint_limit_map[device] > new_value:
-                    new_value = self._setpoint_limit_map[device]
+                if self._max_setpoint_limit_map[device] < new_value:
+                    print("new setpoint = %f more than max limit=%f for %s. changing new setpoint to max setpoint limit"%(new_value, self._max_setpoint_limit_map[device], device))
+                    new_value = self._max_setpoint_limit_map[device]
+
+                if self._min_setpoint_limit_map[device] > new_value:
+                    print("new setpoint = %f less than min limit=%f for %s. changing new setpoint to min setpoint limit" % (new_value, self._min_setpoint_limit_map[device], device))
+                    new_value = self._min_setpoint_limit_map[device]
 
                 register_name = 'setpoint'
                 unit = self.service_name_map[device]
-                current_value = round(self.modbus_device.read_holding_register(register_name=register_name, unit=unit), 2)
+                current_value = round(self.modbus_device.read_holding_register(register_name=register_name, unit=unit)/10, 1)
 
                 if current_value != new_value:
-                    self.modbus_device.write_register(register_name=register_name, value=new_value, unit=unit)
+                    value_to_be_written = int(new_value*10)
+                    try:
+                        ## adding a synchronous sleep
+                        time.sleep(5)
+                        print("writting to %s, value=%d, unit=%d"%(register_name, value_to_be_written, unit))
+                        self.modbus_device.write_register(register_name=register_name, value=value_to_be_written, unit=unit)
+                    except Exception as e:
+                        print("exception happened when writing %d to setpoint for %s, %r"%(value_to_be_written, device, e))
 
-                    print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f" % (device, variable_name, register_name, current_value, new_value))
+                    print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f, value written=%d" % (device, variable_name, register_name, current_value, new_value, value_to_be_written))
                 else:
                     print("no change in setpoint, not changing")
 
             if variable_name == 'differential':
+                print("not changing differential at this point")
 
-                if self._differential_limit_map[device] > new_value:
-                    new_value = self._differential_limit_map[device]
-
-                register_name = 'r0'
-                unit = self.service_name_map[device]
-                current_value = round(self.modbus_device.read_holding_register(register_name=register_name, unit=unit), 2)
-
-                if current_value != new_value:
-                    self.modbus_device.write_register(register_name=register_name, value=new_value, unit=unit)
-
-                    print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f" % (device, variable_name, register_name, current_value, new_value))
-                else:
-                    print("no change in setpoint, not changing")
+                # if self._differential_limit_map[device] > new_value:
+                #     new_value = self._differential_limit_map[device]
+                #
+                # register_name = 'r0'
+                # unit = self.service_name_map[device]
+                # current_value = round(self.modbus_device.read_holding_register(register_name=register_name, unit=unit)/10, 2)
+                #
+                # if current_value != new_value:
+                #     self.modbus_device.write_register(register_name=register_name, value=new_value, unit=unit)
+                #
+                #     print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f" % (device, variable_name, register_name, current_value, new_value))
+                # else:
+                #     print("no change in setpoint, not changing")
 
     async def _read_and_publish(self, *args):
 
@@ -261,7 +277,7 @@ class ParkerDriver(XBOSProcess):
                     time_until_defrost*=15
 
                 list_of_double_values = ['cabinet_temperature', 'evaporator_temperature', 'auxiliary_temperature', 'C6', 'C7', 'd2', 'd9',
-                                         'active_setpoint', 'r1', 'r2', 'A1', 'A4', 'F1']
+                                         'active_setpoint', 'setpoint', 'r1', 'r2', 'A1', 'A4', 'F1']
 
                 for variable in list_of_double_values:
                     value = output.get(variable, None)
@@ -271,66 +287,56 @@ class ParkerDriver(XBOSProcess):
                 # set these for setting defrost times
                 #for variable in ['Hd1', 'Hd2', 'Hd3', 'Hd4', 'Hd5', 'Hd6']:
 
-                time_now = time.time()
+                time_now = time.time() * 1e9
 
                 msg = xbos_pb2.XBOS(
                     parker_state = parker_pb2.ParkerState(
-                        time = int(time_now*1e9),
+                        time = int(time_now),
                         compressor_working_hours=types.Double(value=output.get('compressor_working_hours', None)),
-                        clear_compressor_working_hours=types.Int64(
-                            value=output.get('clear_compressor_working_hours', None)),
-                        buzzer_control=types.Int64(value=output.get('buzzer_control', None)),
-                        defrost_control=types.Int64(value=output.get('defrost_control', None)),
-                        start_resistors=types.Int64(value=output.get('start_resistors', None)),
                         on_standby_status=types.Int64(value=output.get('on_standby_status', None)),
                         light_status=types.Int64(value=output.get('light_status', None)),
                         aux_output_status=types.Int64(value=output.get('aux_output_status', None)),
                         next_defrost_counter=types.Double(value=output.get('next_defrost_counter', None)),
+
                         door_switch_input_status=types.Int64(value=output.get('door_switch_input_status', None)),
-                        multipurpose_input_status=types.Int64(
-                            value=output.get('multipurpose_input_status', None)),
+                        multipurpose_input_status=types.Int64(value=output.get('multipurpose_input_status', None)),
                         compressor_status=types.Int64(value=output.get('compressor_status', None)),
                         output_defrost_status=types.Int64(value=output.get('output_defrost_status', None)),
                         fans_status=types.Int64(value=output.get('fans_status', None)),
                         output_k4_status=types.Int64(value=output.get('output_k4_status', None)),
+
                         cabinet_temperature=types.Double(value=output.get('cabinet_temperature', None)),
                         evaporator_temperature=types.Double(value=output.get('evaporator_temperature', None)),
                         auxiliary_temperature=types.Double(value=output.get('auxiliary_temperature', None)),
+
                         probe1_failure_alarm=types.Int64(value=output.get('probe1_failure_alarm', None)),
                         probe2_failure_alarm=types.Int64(value=output.get('probe2_failure_alarm', None)),
                         probe3_failure_alarm=types.Int64(value=output.get('probe3_failure_alarm', None)),
-                        minimum_temperature_alarm=types.Int64(
-                            value=output.get('minimum_temperature_alarm', None)),
+                        minimum_temperature_alarm=types.Int64(value=output.get('minimum_temperature_alarm', None)),
                         maximum_temperture_alarm=types.Int64(value=output.get('maximum_temperture_alarm', None)),
-                        condensor_temperature_failure_alarm=types.Int64(
-                            value=output.get('condensor_temperature_failure_alarm', None)),
+                        condensor_temperature_failure_alarm=types.Int64(value=output.get('condensor_temperature_failure_alarm', None)),
                         condensor_pre_alarm=types.Int64(value=output.get('condensor_pre_alarm', None)),
                         door_alarm=types.Int64(value=output.get('door_alarm', None)),
                         multipurpose_input_alarm=types.Int64(value=output.get('multipurpose_input_alarm', None)),
                         compressor_blocked_alarm=types.Int64(value=output.get('compressor_blocked_alarm', None)),
                         power_failure_alarm=types.Int64(value=output.get('power_failure_alarm', None)),
                         rtc_error_alarm=types.Int64(value=output.get('rtc_error_alarm', None)),
-                        energy_saving_regulator_flag=types.Int64(
-                            value=output.get('energy_saving_regulator_flag', None)),
-                        energy_saving_real_time_regulator_flag=types.Int64(
-                            value=output.get('energy_saving_real_time_regulator_flag', None)),
-                        service_request_regulator_flag=types.Int64(
-                            value=output.get('service_request_regulator_flag', None)),
-                        on_standby_regulator_flag=types.Int64(
-                            value=output.get('on_standby_regulator_flag', None)),
-                        new_alarm_to_read_regulator_flag=types.Int64(
-                            value=output.get('new_alarm_to_read_regulator_flag', None)),
-                        defrost_status_regulator_flag=types.Int64(
-                            value=output.get('defrost_status_regulator_flag', None)),
+
+                        energy_saving_regulator_flag=types.Int64(value=output.get('energy_saving_regulator_flag', None)),
+                        energy_saving_real_time_regulator_flag=types.Int64(value=output.get('energy_saving_real_time_regulator_flag', None)),
+                        service_request_regulator_flag=types.Int64(value=output.get('service_request_regulator_flag', None)),
+                        on_standby_regulator_flag=types.Int64(value=output.get('on_standby_regulator_flag', None)),
+                        new_alarm_to_read_regulator_flag=types.Int64(value=output.get('new_alarm_to_read_regulator_flag', None)),
+                        defrost_status_regulator_flag=types.Int64(value=output.get('defrost_status_regulator_flag', None)),
                         active_setpoint=types.Double(value=output.get('active_setpoint', None)),
                         time_until_defrost=types.Double(value=output.get('time_until_defrost', None)),
-                        current_defrost_counter=types.Double(value=output.get('current_defrost_counter', None)),
-                        compressor_delay=types.Double(value=output.get('compressor_delay', None)),
+                        current_defrost_counter=types.Int64(value=output.get('current_defrost_counter', None)),
+                        compressor_delay=types.Int64(value=output.get('compressor_delay', None)),
                         num_alarms_in_history=types.Int64(value=output.get('num_alarms_in_history', None)),
+
                         energy_saving_status=types.Int64(value=output.get('energy_saving_status', None)),
                         service_request_status=types.Int64(value=output.get('service_request_status', None)),
-                        resistors_activated_by_aux_key_status=types.Int64(
-                            value=output.get('resistors_activated_by_aux_key_status', None)),
+                        resistors_activated_by_aux_key_status=types.Int64(value=output.get('resistors_activated_by_aux_key_status', None)),
                         evaporator_valve_state=types.Int64(value=output.get('evaporator_valve_state', None)),
                         output_defrost_state=types.Int64(value=output.get('output_defrost_state', None)),
                         output_lux_state=types.Int64(value=output.get('output_lux_state', None)),
@@ -338,61 +344,64 @@ class ParkerDriver(XBOSProcess):
                         resistors_state=types.Int64(value=output.get('resistors_state', None)),
                         output_alarm_state=types.Int64(value=output.get('output_alarm_state', None)),
                         second_compressor_state=types.Int64(value=output.get('second_compressor_state', None)),
+
                         setpoint=types.Double(value=output.get('setpoint', None)),
 
-                        r0=types.Double(value=output.get('r0', None)),
                         r1=types.Double(value=output.get('r1', None)),
                         r2=types.Double(value=output.get('r2', None)),
-                        r3=types.Int64(value=output.get('r3', None)),
                         r4=types.Double(value=output.get('r4', None)),
 
-                        c0=types.Double(value=output.get('c0', None)),
-                        c1=types.Double(value=output.get('c1', None)),
-                        c2=types.Double(value=output.get('c2', None)),
-                        c3=types.Double(value=output.get('c3', None)),
-                        c4=types.Double(value=output.get('c4', None)),
-                        c5=types.Double(value=output.get('c5', None)),
-                        c6=types.Double(value=output.get('c6', None)),
-                        c7=types.Double(value=output.get('c7', None)),
-                        c8=types.Double(value=output.get('c8', None)),
-                        c9=types.Double(value=output.get('c9', None)),
+                        C0=types.Double(value=output.get('C0', None)),
+                        C1=types.Double(value=output.get('C1', None)),
 
                         d0=types.Double(value=output.get('d0', None)),
-                        d1=types.Int64(value=output.get('d1', None)),
-                        d2=types.Double(value=output.get('d2', None)),
                         d3=types.Double(value=output.get('d3', None)),
-                        d4=types.Int64(value=output.get('d4', None)),
                         d5=types.Double(value=output.get('d5', None)),
                         d7=types.Double(value=output.get('d7', None)),
                         d8=types.Int64(value=output.get('d8', None)),
+
+                        A0=types.Int64(value=output.get('A0', None)),
+                        A1=types.Double(value=output.get('A1', None)),
+                        A2=types.Int64(value=output.get('A2', None)),
+                        A3=types.Int64(value=output.get('A3', None)),
+                        A4=types.Double(value=output.get('A4', None)),
+                        A5=types.Int64(value=output.get('A5', None)),
+                        A6=types.Double(value=output.get('A6', None)),
+                        A7=types.Double(value=output.get('A7', None)),
+                        A8=types.Double(value=output.get('A8', None)),
+                        A9=types.Double(value=output.get('A9', None)),
+
+                        F0=types.Int64(value=output.get('F0', None)),
+                        F1=types.Double(value=output.get('F1', None)),
+                        F2=types.Int64(value=output.get('F2', None)),
+                        F3=types.Double(value=output.get('F3', None)),
+
+                        # clear_compressor_working_hours=types.Int64(value=output.get('clear_compressor_working_hours', None)),
+                        # buzzer_control=types.Int64(value=output.get('buzzer_control', None)),
+                        # defrost_control=types.Int64(value=output.get('defrost_control', None)),
+                        # start_resistors=types.Int64(value=output.get('start_resistors', None)),
+                        P2=types.Int64(value=output.get('P2', None)),
+                        P3=types.Int64(value=output.get('P3', None)),
+                        r0=types.Double(value=output.get('r0', None)),
+                        r3=types.Int64(value=output.get('r3', None)),
+                        C2=types.Double(value=output.get('C2', None)),
+                        C3=types.Double(value=output.get('C3', None)),
+                        C4=types.Double(value=output.get('C4', None)),
+                        C5=types.Double(value=output.get('C5', None)),
+                        C6=types.Double(value=output.get('C6', None)),
+                        C7=types.Double(value=output.get('C7', None)),
+                        C8=types.Double(value=output.get('C8', None)),
+                        C9=types.Double(value=output.get('C9', None)),
+                        d1=types.Int64(value=output.get('d1', None)),
+                        d2=types.Double(value=output.get('d2', None)),
+                        d4=types.Int64(value=output.get('d4', None)),
                         d9=types.Double(value=output.get('d9', None)),
                         da=types.Double(value=output.get('da', None)),
-
-                        a0=types.Int64(value=output.get('a0', None)),
-                        a1=types.Double(value=output.get('a1', None)),
-                        a2=types.Int64(value=output.get('a2', None)),
-                        a3=types.Int64(value=output.get('a3', None)),
-                        a4=types.Double(value=output.get('a4', None)),
-                        a5=types.Int64(value=output.get('a5', None)),
-                        a6=types.Double(value=output.get('a6', None)),
-                        a7=types.Double(value=output.get('a7', None)),
-                        a8=types.Double(value=output.get('a8', None)),
-                        a9=types.Double(value=output.get('a9', None)),
-
-                        f0=types.Int64(value=output.get('f0', None)),
-                        f1=types.Double(value=output.get('f1', None)),
-                        f2=types.Int64(value=output.get('f2', None)),
-                        f3=types.Double(value=output.get('f3', None)),
-                        p2=types.Int64(value=output.get('p2', None)),
-                        p3=types.Int64(value=output.get('p3', None)),
                     )
                 )
                 resource = self.base_resource + "/" + service_name
                 await self.publish(self.namespace, resource, False, msg)
-                print("published at time_now = %s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_now / 1e9))))
-
-                # publishing to parker/refrigerator/* or parker/freezer/*
-                print(self.report(service_name, msg))
+                print("published at time_now = %s on topic %s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_now / 1e9)), resource))
             except Exception as e:
                 print("error occured in service_name = %s! reconnecting and continuing, error = %r"%(service_name, e))
                 self.modbus_device.reconnect()

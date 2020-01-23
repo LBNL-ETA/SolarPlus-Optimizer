@@ -1,2 +1,4 @@
-!*.yaml
+!*_template.yaml
 !*.py
+*_config.yaml
+*_config_v2.yaml

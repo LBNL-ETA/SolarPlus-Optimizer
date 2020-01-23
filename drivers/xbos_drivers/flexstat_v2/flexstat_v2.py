@@ -438,7 +438,7 @@ base_resource = xbosConfig.get('base_resource')
 service_name_map = xbosConfig.get('service_name_map')
 entity = xbosConfig.get('entity')
 rate = xbosConfig.get('publish_rate', 60)
-driver_id = xbosConfig.get('id', 'flexstat-driver')
+driver_id = xbosConfig.get('id', 'wattnode-driver')
 check_setpoint_rate = xbosConfig.get('check_setpoint_rate', 30)
 thermostat_config = driverConfig.get('thermostat_config')
 
