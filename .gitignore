@@ -31,6 +31,10 @@ controller/validation/*
 ####################
 *.mop
 
+# MPC config files
+####################
+*/mpc_config.py
+
 # Results files
 ###############
 process/results/*
@@ -46,4 +50,5 @@ process/results/*
 *.ent
 
 # Jupyter notebook files
+########################
 *.ipynb_checkpoints
