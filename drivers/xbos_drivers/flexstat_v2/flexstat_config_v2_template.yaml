@@ -1,7 +1,7 @@
 xbos:
     waved: localhost:777
     wavemq: localhost:4516
-    base_resource: flexstat
+    base_resource:
     publish_rate: 60
     check_setpoint_rate: 30
     entity: 
@@ -15,9 +15,15 @@ thermostat_config:
   bacnet_network_mask: <>.5/16
   bacnet_router_address: <>.254
   bbmd_ttl: 600
-  time_threshold_revert_to_default: 3600
-  default_heating_setpoint: 60
-  default_cooling_setpoint: 74
+  time_threshold_revert_to_default: 14400
+  default_heating_setpoint_map:
+    thermostat_west: 70
+    thermostat_east: 70
+  default_cooling_setpoint_map:
+    thermostat_west: 75
+    thermostat_east: 74
+  heating_setpoint_limit: 60
+  cooling_setpoint_limit: 78
   ip_addresses: [<>.10, <>.11]
   bacnet_device_ids: [1, 1]
   point_map:
@@ -29,6 +35,8 @@ thermostat_config:
     unocc_heating_setpt: UNOCC HEATING SETPT
     occ_min_clg_setpt: OCC MIN CLG SETPT
     occ_max_htg_setpt: OCC MAX HTG SETPT
+    stage_delay: STAGE DELAY
+    fan_shutoff_delay: FAN SHUTOFF DELAY
     override_timer: OVERRIDE TIMER
     occ_cooling_setpt: OCC COOLING SETPT
     occ_heating_setpt: OCC HEATING SETPT
@@ -45,12 +53,32 @@ thermostat_config:
     heating_prop: HEATING PROP
     cooling_intg: COOLING INTG
     heating_intg: HEATING INTG
+    app_main_type: APP MAIN TYPE
+    app_sub_type: APP SUB TYPE
+    fan_control_type: FAN CONTROL TYPE
+    oa_damper_option: O.A. DAMPER OPTION
+    system_mode: SYSTEM MODE
+    fan_speed_output: FAN SPEED OUTPUT
+    ui_mode: UI MODE
+    temperature_reference: TEMPERATURE REFERENCE
     fan: FAN
+    cool_1: COOL 1
+    cool_2: COOL 2
+    heat_1: HEAT 1
+    bo_05: BO_05
+    bo_06: BO_06
     occupancy_mode: OCCUPANCY MODE
     setpt_override_mode: SETPT OVERRIDE MODE
+    economizer_mode: ECONOMIZER MODE
+    low_limit_condition: LOW LIMIT CONDITION
     fan_alarm: FAN ALARM
     fan_need: FAN NEED
     heating_cooling_mode: HEATING/COOLING MODE
     occ_fan_auto_on: OCC FAN AUTO/ON
     unocc_fan_auto_on: UNOCC FAN AUTO/ON
+    f_c_flag: F/C FLAG
     fan_status: FAN STATUS
+    ui_system_mode_active: UI SYSTEM MODE ACTIVE
+    opt_start_enable: OPT START ENABLE
+    setback_oat_lockout: SETBACK OAT LOCKOUT
+    htg_call_fan: HTG CALL FAN

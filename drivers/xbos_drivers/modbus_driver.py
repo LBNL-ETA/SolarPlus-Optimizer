@@ -307,8 +307,7 @@ class Modbus_Driver(object):
             print("Bad type")
             exit()
         payload = builder.build()
-        self.client.write_registers(self.holding_register_dict[register_name][0],
-            payload, skip_encode=True, unit = self.UNIT_ID)
+        self.client.write_registers(self.holding_register_dict[register_name][0], payload, skip_encode=True, unit = unit)
 
     def write_coil(self,register,value, unit=None):
         """
@@ -610,6 +609,20 @@ class Modbus_Driver(object):
         response = self.decode_input_register(self.holding_register_dict[register_name][0],
             self.holding_register_dict[register_name][1])
         return response
+
+    def read_holding_register(self,register_name, unit=None):
+        if register_name in self.holding_registers[unit]:
+            if (len(self.holding_registers[unit][register_name]) == 3):
+                # Check Read/Write Flag
+                if (self.holding_registers[unit][register_name][2].find('R') != -1):
+                    value = self.decode_register(self.holding_registers[unit][register_name][0], self.holding_registers[unit][register_name][1], unit)
+            else:
+                # Register list does not contain a Read/Write Flag assume R
+                value = self.decode_register(self.holding_registers[unit][register_name][0], self.holding_registers[unit][register_name][1], unit)
+        else:
+            value = -999
+
+        return value
 
 
     def get_data(self,unit=None):

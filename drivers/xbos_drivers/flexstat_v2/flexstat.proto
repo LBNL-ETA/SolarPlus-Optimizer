@@ -2,118 +2,183 @@ syntax = "proto3";
 package xbospb;
 import "nullabletypes.proto";
 
+
+message Flexstat {
+    FlexstatState flexstat_state = 1;
+    FlexstatActuationMessage flexstat_actuation_message = 2;
+}
+
 message FlexstatActuationMessage {
-	uint64 time = 1;
-	repeated FlexstatSetpoints setpoints = 2;
+    uint64 time = 1;
+    Int64 control_flag = 2;
+    repeated FlexstatSetpoints setpoints = 3;
 }
 
 message FlexstatSetpoints {
-	uint64 change_time = 1;
-	Double heating_setpoint = 2;
-	Double cooling_setpoint = 3;
+    uint64 change_time = 1;
+    Double heating_setpoint = 2;
+    Double cooling_setpoint = 3;
 }
 
 message FlexstatState {
-	//space temperature reading
-	//unit: F
-	Double space_temp_sensor = 1;
-	//minimum P value for of the PI control
-	//unit: F
-	Double minimum_proportional = 2;
-	//active cooling setpoint
-	//unit: F
-	Double active_cooling_setpt = 3;
-	//active heating setpoint
-	//unit: F
-	Double active_heating_setpt = 4;
-	//cooling setpoint during unoccupied times
-	//unit: F
-	Double unocc_cooling_setpt = 5;
-	//heating setpoint during unoccupied times
-	//unit: F
-	Double unocc_heating_setpt = 6;
-	//minimum cooling setpoint during occupied times
-	//unit: F
-	Double occ_min_clg_setpt = 7;
-	//maximum heating setpoint during occupied times
-	//unit: F
-	Double occ_max_htg_setpt = 8;
-	//override timer
-	//unit: hours
-	Double override_timer = 9;
-	//cooling setpoint during occupied times
-	//unit: F
-	Double occ_cooling_setpt = 10;
-	//heating setpoint during occupied times
-	//unit: F
-	Double occ_heating_setpt = 11;
-	//setpoint for the current mode (heating or cooling)
-	//unit: F
-	Double current_mode_setpt = 12;
-	//setpoint from the user interface on the thermostat
-	//unit: F
-	Double ui_setpt = 13;
-	//cooling need
-	//unit: F
-	Double cooling_need = 14;
-	//heating need
-	//unit: F
-	Double heating_need = 15;
-	//minimum cooling setpoint during unoccupied times
-	//unit: F
-	Double unocc_min_clg_setpt = 16;
-	//maximum heating setpoint during unoccupied times
-	//unit: F
-	Double unocc_max_htg_setpt = 17;
-	//minimum difference between heating and cooling setpoint
-	//unit: F
-	Double min_setpt_diff = 18;
-	//minimum setpoint limit
-	//unit: F
-	Double min_setpt_limit = 19;
-	//space temperature reading
-	//unit: F
-	Double space_temp = 20;
-	//cooling P value of the PI control
-	//unit: F
-	Double cooling_prop = 21;
-	//heating P value of the PI control
-	//unit: F
-	Double heating_prop = 22;
-	//cooling I value of the PI control
-	//unit: per hour
-	Double cooling_intg = 23;
-	//heating I value of the PI control
-	//unit: per hour
-	Double heating_intg = 24;
-	//is fan on or off
-	//unit: T/F
-	Int64 fan = 25;
-	//is occupied or not
-	//unit: T/F
-	Int64 occupancy_mode = 26;
-	//is setpoint override on or off
-	//unit: T/F
-	Int64 setpt_override_mode = 27;
-	//is there a fan alaram happening
-	//unit: T/F
-	Int64 fan_alarm = 28;
-	//is there a need for fan right now
-	//unit: T/F
-	Int64 fan_need = 29;
-	//is the hvac system in heating mode or not
-	//unit: T/F
-	Int64 heating_cooling_mode = 30;
-	//during occupied times, is fan on auto mode or on mode
-	//unit: T/F
-	Int64 occ_fan_auto_on = 31;
-	//during unoccupied times, is fan on auto mode or on mode
-	//unit: T/F
-	Int64 unocc_fan_auto_on = 32;
-	//fan status
-	//unit: T/F
-	Int64 fan_status = 33;
-	//epoch time
-	//unit: seconds
-	uint64 time = 34;
+    //epoch time
+    //unit: seconds
+    uint64 time=1;
+    //Integral space temperature sensor
+    //unit: F
+    Double space_temp_sensor = 2;
+    //Minimum allowed cooling or heating proportional value
+    //unit: F
+    Double minimum_proportional = 3;
+    //Currently active cooling setpoint
+    //unit: F
+    Double active_cooling_setpt = 4;
+    //Currently active heating setpoint
+    //unit: F
+    Double active_heating_setpt = 5;
+    //Unoccupied Cooling Setpoint
+    //unit: F
+    Double unocc_cooling_setpt = 6;
+    //Unoccupied Heating Setpoint
+    //unit: F
+    Double unocc_heating_setpt = 7;
+    //Occupied Minimum Cooling Setpoint
+    //unit: F
+    Double occ_min_clg_setpt = 8;
+    //Occupied Maximum Heating Setpoint
+    //unit: F
+    Double occ_max_htg_setpt = 9;
+    //Time of delay between stage
+    //unit: minutes
+    Double stage_delay = 10;
+    //Time fan will run after reaching setpoint
+    //unit: seconds
+    Double fan_shutoff_delay = 11;
+    //Occupancy Override Time
+    //unit: hours
+    Double override_timer = 12;
+    //Occupied Cooling Setpoint
+    //unit: F
+    Double occ_cooling_setpt = 13;
+    //Occupied Heating Setpoint
+    //unit: F
+    Double occ_heating_setpt = 14;
+    //Setpoint that the FlexStat is currently controlling to.
+    //unit: F
+    Double current_mode_setpt = 15;
+    //Setpoint that the UI displays and changes.
+    //unit: F
+    Double ui_setpt = 16;
+    //Cooling demand need
+    //unit: percent
+    Double cooling_need = 17;
+    //Heating demand need
+    //unit: percent
+    Double heating_need = 18;
+    //Unoccupied Minimum Cooling Setpoint
+    //unit: F
+    Double unocc_min_clg_setpt = 19;
+    //Unoccupied Maximum Heating Setpoint
+    //unit: F
+    Double unocc_max_htg_setpt = 20;
+    //Minimum Setpoint differential
+    //unit: F
+    Double min_setpt_diff = 21;
+    //Minimum Setpoint differential limit
+    //unit: F
+    Double min_setpt_limit = 22;
+    //Space Temperature
+    //unit: F
+    Double space_temp = 23;
+    //Cooling Loop proportional
+    //unit: F
+    Double cooling_prop = 24;
+    //Heating Loop proportional
+    //unit: F
+    Double heating_prop = 25;
+    //Cooling Loop integral
+    //unit: per hour
+    Double cooling_intg = 26;
+    //Heating Loop integral
+    //unit: per hour
+    Double heating_intg = 27;
+    //Main Function Of Controller (0: NOT CONFIGURED; 1: AIR HANDLER; 2: ROOF TOP; 3: FAN COIL; 4: HEAT PUMP)
+    Int64 app_main_type = 28;
+    //Sub Function of Application (0: 1H / 1C; 1: 1H / 2C; 2: 2H / 1C; 3: 2H / 2C)
+    Int64 app_sub_type = 29;
+    //Type Of Fan Operation (0: CONSTANT SPEED)
+    Int64 fan_control_type = 30;
+    //Outside Air Damper Option (0: NONE; 1: MODULATING; 2: EN/DIS)
+    Int64 oa_damper_option = 31;
+    //Mode of FlexStat Operation (0: AUTO; 1: HEATING; 2: COOLING; 3: OFF)
+    Int64 system_mode = 32;
+    //Controls whether the fan speed is fixed or automatic control (0: NOT USED)
+    Int64 fan_speed_output = 33;
+    //Selects User Interface behavior (0: STANDARD; 1: HOSPITALITY; 2: LOCKED UI)
+    Int64 ui_mode = 34;
+    //Input reference for space temperature (0: ONBOARD; 1: REMOTE; 2: AVERAGE; 3: HIGHEST; 4: LOWEST)
+    Int64 temperature_reference = 35;
+    //Fan Control
+    //unit: T/F
+    Int64 fan = 36;
+    //Cool #1
+    //unit: T/F
+    Int64 cool_1 = 37;
+    //Cool #2
+    //unit: T/F
+    Int64 cool_2 = 38;
+    //Heat #1
+    //unit: T/F
+    Int64 heat_1 = 39;
+    //Relay #5
+    //unit: T/F
+    Int64 bo_05 = 40;
+    //Relay #6
+    //unit: T/F
+    Int64 bo_06 = 41;
+    //Occupancy mode
+    //unit: T/F
+    Int64 occupancy_mode = 42;
+    //set point override mode
+    //unit: T/F
+    Int64 setpt_override_mode = 43;
+    //Economizer Mode
+    //unit: T/F
+    Int64 economizer_mode = 44;
+    //Low Limit Alarm Condition
+    //unit: T/F
+    Int64 low_limit_condition = 45;
+    //Fan Alarm Condition
+    //unit: T/F
+    Int64 fan_alarm = 46;
+    //need for fan
+    //unit: T/F
+    Int64 fan_need = 47;
+    //Heating/Cooling Mode
+    //unit: T/F
+    Int64 heating_cooling_mode = 48;
+    //Determines whether fan is continuous or cycles in occ mode
+    //unit: T/F
+    Int64 occ_fan_auto_on = 49;
+    //Determines whether fan is continuous or cycles in unocc mode
+    //unit: T/F
+    Int64 unocc_fan_auto_on = 50;
+    //Selects Fahrenheit or Celsius temperature scale
+    //unit: T/F
+    Int64 f_c_flag = 51;
+    //Fan Status
+    //unit: T/F
+    Int64 fan_status = 52;
+    //UI System mode active
+    //unit: T/F
+    Int64 ui_system_mode_active = 53;
+    //Optimum Start enable
+    //unit: T/F
+    Int64 opt_start_enable = 54;
+    //Setback OAT Lockout contol
+    //unit: T/F
+    Int64 setback_oat_lockout = 55;
+    //Heating call for fan
+    //unit: T/F
+    Int64 htg_call_fan = 56;
 }

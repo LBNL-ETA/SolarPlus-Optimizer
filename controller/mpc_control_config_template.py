@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+# rename this to mpc_config.py while doing actual controls
+
 from mpcpy import units
 import os
 
+tz_computer = 'UTC'
 config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                          'modelpath' : 'SolarPlus.Building.Optimization.Store',
                          'libraries' : os.getenv('MODELICAPATH'),
@@ -86,16 +89,13 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Shadow/Constraints_Forecast.csv"
         ],
         "influxdb": {"config_filename":"database_client/config.yaml",
-                     "section": "database"}
+                     "section": "database"},
+        "xbos": {
+            "namespace": "<namespace_hash>",
+            "wavemq": "localhost:4516",
+            "entity": "<data_manager_entity>"
+        }
     },
-    # "weather": {
-    #     "type": "csv",
-    #     "variables": {
-    #         "Outdoor": {"filename": "Shadow/Weather_Forecast.csv", "column": "Outdoor", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-    #         "poa_pv": {"filename": "Shadow/Weather_Forecast.csv", "column": "poa_pv", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"},
-    #         "poa_win": {"filename": "Shadow/Weather_Forecast.csv", "column": "poa_win", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
-    #     }
-    # },
     "weather": {
         "type": "influxdb",
         "variables": {
@@ -151,6 +151,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         "type": "influxdb",
         "variables": {
             "Tref": {"uuid": "5c69b4b6-22a0-561b-801b-72aee17c5a94", "window": "5m", "agg": "mean", "measurement": "timeseries"},
+            #"Trtu_east": {"uuid": "fd200d7e-0c46-53fc-87e4-6c8639b67b94", "window": "5m", "agg": "mean", "measurement": "timeseries"},
             "Trtu": {"uuid": "7d48d689-5cf8-50fd-98af-22dd9868b379", "window": "5m", "agg": "mean", "measurement": "timeseries"},
             "Tfre": {"uuid": "3f493b8d-0107-569f-8968-433f46de0fec", "window": "5m", "agg": "mean", "measurement": "timeseries"}
 #            "SOC": {"uuid": "86f72439-35a3-4997-a14f-24f8a889b164", "window": "5m", "agg": "mean", "measurement": "timeseries"}
@@ -159,8 +160,14 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
 
     "data_sink": {
         "setpoints": {
-            "type": "csv",
-            "filename": "Shadow/setpoints.csv"
+            "type": "csv|xbos",
+            "filename": "Shadow/setpoints.csv",
+            "devices": {
+                "<thermostat_topic>/thermostat_east/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"},
+                "<thermostat_topic>/thermostat_west/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"},
+                "<refrigeration_topic>/refrigerator/actuation": {"setpoint": "Tref"},
+                "<refrigeration_topic>/freezer/actuation": {"setpoint": "Tfre"}
+            }
         },
         "variables": {
             "Pbattery": {
