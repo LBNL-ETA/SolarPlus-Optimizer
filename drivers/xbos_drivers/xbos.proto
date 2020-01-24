@@ -61,7 +61,7 @@ message XBOS {
   FlexstatActuationMessage flexstat_actuation_message = 154;
   ParkerActuationMessage parker_actuation_message = 155;
   DRSignalsPrediction drsigpred = 156;
-  ConstraintsForecast constraints_forecast = 157; 
+  ConstraintForecast constraints_forecast = 157; 
 
   //System Status Fields
   BasicServerStatus BasicServerStatus = 200;
