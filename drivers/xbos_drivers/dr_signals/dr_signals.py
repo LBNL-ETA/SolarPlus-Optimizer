@@ -59,7 +59,7 @@ class DRSignalsDriver(XBOSProcess):
         self.base_resource1 = cfg['base_resource1']  # dr_signals
         self.base_resource2 = cfg['base_resource2']  # constraints (pmin and pmax)
         self.namespace = b64decode(cfg['namespace'])
-
+ 
         # Keeps track of how further into the future should the forecast be
         # Value is in number of hours
         self.FORECAST_PERIOD = cfg['forecast_period']
@@ -514,7 +514,7 @@ class DRSignalsDriver(XBOSProcess):
         df.index = df.index.round(FORECAST_FREQUENCY)
 
         # print('df: \n', df.head())
-        # df.to_csv('temp.csv')
+        df.to_csv('temp.csv')
 
         tim = int(time.time() * 1e9)
 
@@ -542,12 +542,12 @@ class DRSignalsDriver(XBOSProcess):
             )
         )
 
-        await self.publish(self.namespace, self.base_resource1, False, message1)
+        await self.publish(self.namespace, self.base_resource1 + '/' + '1', False, message1)
 
         # Publish to constraints forecast
         msg_list2 = []
         for index, row in df.iterrows():
-            msg = constraints_forecast_pb2.ConstraintsForecast.Constraints(
+            msg = constraints_forecast_pb2.ConstraintForecast.Constraints(
                 forecast_time=int(index.timestamp()),
                 PMin=types.Double(value=row['pmin']),
                 PMax=types.Double(value=row['pmax'])
@@ -555,13 +555,13 @@ class DRSignalsDriver(XBOSProcess):
             msg_list2.append(msg)
 
         message2 = xbos_pb2.XBOS(
-            constraints_forecast=constraints_forecast_pb2.ConstraintsForecast(
+            constraints_forecast=constraints_forecast_pb2.ConstraintForecast(
                 time=tim,
                 constraints_predictions=msg_list2
             )
         )
-
-        await self.publish(self.namespace, self.base_resource2, False, message2)
+        print(message2)
+        await self.publish(self.namespace, self.base_resource2 + '/' + '1', False, message2)
 
 
 if __name__ == '__main__':
@@ -578,3 +578,4 @@ if __name__ == '__main__':
     dr_signal_driver = DRSignalsDriver(driverConfig)
     # dr_signal_driver.begin()
     run_loop()
+

@@ -80,7 +80,7 @@ class ConstraintsForecastDriver(XBOSProcess):
 
         msg_list = []
         for date in (curr_time + timedelta(minutes=n) for n in range(0, int(diff), 15)):
-            msg = constraints_forecast_pb2.ConstraintsForecast.Constraints(
+            msg = constraints_forecast_pb2.ConstraintForecast.Constraints(
                 forecast_time=int(date.timestamp()),
                 TRtuMax=types.Double(value=self.Trtu_max),
                 TRtuMin=types.Double(value=self.Trtu_min),
@@ -111,13 +111,13 @@ class ConstraintsForecastDriver(XBOSProcess):
             msg_list.append(msg)
 
         message = xbos_pb2.XBOS(
-            constraints_forecast=constraints_forecast_pb2.ConstraintsForecast(
+            constraints_forecast=constraints_forecast_pb2.ConstraintForecast(
                 time=int(time.time() * 1e9),
                 constraints_predictions=msg_list
             )
         )
 
-        #await self.publish(self.namespace, self.base_resource, False, message)
+        await self.publish(self.namespace, self.base_resource + '/' + '1', False, message)
 
 
 if __name__ == '__main__':
@@ -133,3 +133,4 @@ if __name__ == '__main__':
     logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')
     constraints_forecast_driver = ConstraintsForecastDriver(driverConfig)
     run_loop()
+

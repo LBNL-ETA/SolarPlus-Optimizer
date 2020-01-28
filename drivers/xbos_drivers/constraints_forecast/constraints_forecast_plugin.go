@@ -58,7 +58,8 @@ func ingest_time_series(value float64, name string, toInflux types.ExtractedTime
 	toInflux.Tags = map[string]string{
 		"unit":            device_units[name],
 		"name":            name,
-		"prediction_time": fmt.Sprintf("%d", prediction_time/1e9),
+		//"prediction_time": fmt.Sprintf("%d", prediction_time/1e9),
+		"prediction_time": fmt.Sprintf("%d", prediction_time),
 		"prediction_step": fmt.Sprintf("%d", step),
 	}
 	//This add function is passed in from the ingester and when it is executed
@@ -291,3 +292,4 @@ func Extract(uri types.SubscriptionURI, msg xbospb.XBOS, add func(types.Extracte
     }
 	return nil
 }
+

@@ -16,7 +16,6 @@ func has_device(msg xbospb.XBOS) bool {
 var device_units = map[string]string {
     "time":                 "nanoseconds",
     "signal_type":          "int",
-
 	"price_energy":         "$/kWh",
     "price_demand":         "$/kW",
 	"power_limit":          "kW",
@@ -38,7 +37,8 @@ func ingest_time_series(value float64, name string, toInflux types.ExtractedTime
 	toInflux.Tags = map[string]string{
 		"unit":            device_units[name],
 		"name":            name,
-		"prediction_time": fmt.Sprintf("%d", prediction_time/1e9),
+		//"prediction_time": fmt.Sprintf("%d", prediction_time/1e9),
+		"prediction_time": fmt.Sprintf("%d", prediction_time),
 		"prediction_step": fmt.Sprintf("%d", step),
 	}
 	//This add function is passed in from the ingester and when it is executed
@@ -99,6 +99,7 @@ func Extract(uri types.SubscriptionURI, msg xbospb.XBOS, add func(types.Extracte
                 }
             }
 
+            /*
             if _prediction.PowerShed != nil {
                 err := ingest_time_series(float64(_prediction.PowerShed.Value),
                     "power_shed", extracted, add, prediction_time, step, uri)
@@ -114,6 +115,7 @@ func Extract(uri types.SubscriptionURI, msg xbospb.XBOS, add func(types.Extracte
                     return err
                 }
             }
+            */
 
             if _prediction.PowerTrack != nil {
                 err := ingest_time_series(float64(_prediction.PowerTrack.Value),
