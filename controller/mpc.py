@@ -245,10 +245,10 @@ class mpc(object):
                 time = self.model.display_measurements('Measured')[self.init_vm[par]].index[-1]
                 if par == 'Tfre_0':
                     if self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1] > 10:
-                        value = 0
+                        value = -1
                 if par == 'Tref_0':
                     if self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1] > 36.5:
-                        value = 34
+                        value = 36
                 print('State {0} set to value {1} from measurement at time {2}.'.format(self.init_vm[par], value, time))
             else:
                 value = 0.5
