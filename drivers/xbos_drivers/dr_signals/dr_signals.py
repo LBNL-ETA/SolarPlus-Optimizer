@@ -523,16 +523,31 @@ class DRSignalsDriver(XBOSProcess):
         msg_list1 = []
         for index, row in df.iterrows():
             result = self.extract_df_row(row)
-            msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
-                forecast_time=int(index.timestamp()),
-                price_energy=types.Double(value=result[0]),
-                price_demand=types.Double(value=result[1]),
-                signal_type=types.Uint64(value=result[2]),  # 0 - none, 1 - limit, 2 - shed, 3 - shift, 4 - track
-                power_limit=types.Double(value=result[3]),
-                # power_shed=types.Double(value=result[4]),
-                # power_shift=types.Double(value=result[5]),
-                power_track=types.Double(value=result[6])
-            )
+            if result[2] == 4: # track event
+                msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
+                    forecast_time=int(index.timestamp()),
+                    price_energy=types.Double(value=result[0]),
+                    price_demand=types.Double(value=result[1]),
+                    signal_type=types.Uint64(value=result[2]),  # 0 - none, 1 - limit, 2 - shed, 3 - shift, 4 - track
+                    power_track=types.Double(value=result[6])
+                )
+            elif result[2] == 0: # no event
+                msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
+                    forecast_time=int(index.timestamp()),
+                    price_energy=types.Double(value=result[0]),
+                    price_demand=types.Double(value=result[1]),
+                    signal_type=types.Uint64(value=result[2]),  # 0 - none, 1 - limit, 2 - shed, 3 - shift, 4 - track
+                )
+            else:
+                msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
+                    forecast_time=int(index.timestamp()),
+                    price_energy=types.Double(value=result[0]),
+                    price_demand=types.Double(value=result[1]),
+                    signal_type=types.Uint64(value=result[2]),  # 0 - none, 1 - limit, 2 - shed, 3 - shift, 4 - track
+                    power_limit=types.Double(value=result[3]),
+                    # power_shed=types.Double(value=result[4]),
+                    # power_shift=types.Double(value=result[5]),
+                )
             msg_list1.append(msg)
 
         message1 = xbos_pb2.XBOS(
@@ -542,13 +557,13 @@ class DRSignalsDriver(XBOSProcess):
             )
         )
 
-        await self.publish(self.namespace, self.base_resource1 + '/' + '1', False, message1)
+        await self.publish(self.namespace, self.base_resource1, False, message1)
 
         # Publish to constraints forecast
         msg_list2 = []
         for index, row in df.iterrows():
             msg = constraints_forecast_pb2.ConstraintForecast.Constraints(
-                forecast_time=int(index.timestamp()),
+                forecast_time=int(index.tz_localize('US/Pacific').tz_convert('UTC').timestamp()),
                 PMin=types.Double(value=row['pmin']),
                 PMax=types.Double(value=row['pmax'])
             )
@@ -560,8 +575,9 @@ class DRSignalsDriver(XBOSProcess):
                 constraints_predictions=msg_list2
             )
         )
-        print(message2)
-        await self.publish(self.namespace, self.base_resource2 + '/' + '1', False, message2)
+        print('mes2: ', message2)
+        await self.publish(self.namespace, self.base_resource2, False, message2)
+        print('base_res2: ', self.base_resource2)
 
 
 if __name__ == '__main__':
