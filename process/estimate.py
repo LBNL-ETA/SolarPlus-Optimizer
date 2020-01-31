@@ -12,9 +12,11 @@ from matplotlib import pyplot as plt
 # --------------------------------------------------------------------------
 # Estimation periods
 start_time = '2019-11-12 00:00:00+00:00' # UTC time
-final_time = '2019-11-12 18:00:00+00:00' # UTC time
-start_time_validate = '2019-11-07 15:00:00+00:00'
-final_time_validate = '2019-11-07 17:00:00+00:00'
+final_time = '2019-11-15 00:00:00+00:00' # UTC time
+start_time_train = '2019-11-12 00:00:00+00:00'
+final_time_train = '2019-11-12 18:00:00+00:00'
+start_time_validate = '2019-11-12 18:00:00+00:00'
+final_time_validate = '2019-11-15 00:00:00+00:00'
 # local_time = 'America/Los_Angeles'
 # Model definition
 mopath = 'models/SolarPlus.mo'
@@ -131,12 +133,10 @@ if simulate_initial:
 # Solve
 # --------------------------------------------------------------------------
 # Solve estimation problem
-model.estimate(start_time, final_time, ['Trtu_west','Trtu_east','Tref','Tfre'])
+model.estimate(start_time_train, final_time_train, ['Trtu_west','Trtu_east','Tref','Tfre'])
 # print(model.display_measurements('Measured'))
 
-# emulation.collect_measurements(start_time_validate, final_time_validate)
-# model.measurements = emulation.measurements
-model.validate(start_time, final_time, 'validate', plot=0)
+model.validate(start_time_validate, final_time_validate, 'validate', plot=0)
 plt.figure(5)
 # for key in ['Trtu_west','Trtu_east','Tref','Tfre']:
 plt.subplot(4,1,1)
