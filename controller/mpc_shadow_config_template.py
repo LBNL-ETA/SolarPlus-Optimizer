@@ -109,6 +109,10 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "uBattery": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uBattery", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
         }
     },
+
+    ##############################################################################
+    # IF ANY OF THIS IS CHANGED, CHANGE CORRESPONDING XBOS DRIVER LIMITS AS WELL #
+    ##############################################################################
     "constraint": {
         "type": "csv",
         "variables": {

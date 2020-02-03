@@ -16,12 +16,21 @@ thermostat_config:
   bacnet_router_address: <>.254
   bbmd_ttl: 600
   time_threshold_revert_to_default: 14400
+  ######################################################
+  # IF THIS IS CHANGED, CHANGE MPC CONSTRAINTS AS WELL #
+  ######################################################
   default_heating_setpoint_map:
     thermostat_west: 70
     thermostat_east: 70
+  ######################################################
+  # IF THIS IS CHANGED, CHANGE MPC CONSTRAINTS AS WELL #
+  ######################################################
   default_cooling_setpoint_map:
     thermostat_west: 75
     thermostat_east: 74
+  ######################################################
+  # IF THIS IS CHANGED, CHANGE MPC CONSTRAINTS AS WELL #
+  ######################################################
   heating_setpoint_limit: 60
   cooling_setpoint_limit: 78
   ip_addresses: [<>.10, <>.11]
