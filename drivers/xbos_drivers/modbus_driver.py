@@ -307,8 +307,7 @@ class Modbus_Driver(object):
             print("Bad type")
             exit()
         payload = builder.build()
-        self.client.write_registers(self.holding_register_dict[register_name][0],
-            payload, skip_encode=True, unit = self.UNIT_ID)
+        self.client.write_registers(self.holding_register_dict[register_name][0], payload, skip_encode=True, unit = unit)
 
     def write_coil(self,register,value, unit=None):
         """
