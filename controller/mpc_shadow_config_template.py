@@ -139,11 +139,10 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "price": {
-        "type": "csv",
         "variables": {
-            "pi_e":  {"filename": "Shadow/Price_Forecast.csv", "column": "pi_e", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "pi_d":  {"filename": "Shadow/Price_Forecast.csv", "column": "pi_d", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "P_est":  {"filename": "Shadow/Price_Forecast.csv", "column": "P_est", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
+            "pi_e": {"type": "influxdb", "uuid": "3be4c234-a38a-5e73-9d53-4503751592be", "window": "1m", "agg": "mean", "measurement": "timeseries"},
+            "pi_d": {"type": "influxdb", "uuid": "90928e8d-df40-5e75-9ddb-7ee444bc187f", "window": "1m", "agg": "mean", "measurement": "timeseries"},
+            "P_est": {"type": "csv", "filename": "Shadow/Price_Forecast.csv", "column": "P_est", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
         }
     },
     "system": {
