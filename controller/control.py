@@ -11,8 +11,8 @@ import os
 import datetime
 import time
 import pandas as pd
-import mpc_config
-from mpc_config import tz_computer
+import mpc_shadow_config_template as mpc_config
+from mpc_shadow_config_template import tz_computer
 from mpc import mpc
 
 def run():
@@ -23,7 +23,7 @@ def run():
     start_time = start.strftime("%Y-%m-%d %H:%M:00")
     start_time_utc = pd.to_datetime(start_time).tz_localize(tz_computer).tz_convert('UTC')
     mpc_horizon = 24*3600
-    mpc_step = 3600
+    # mpc_step = 3600
     print('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print("The Solar+ Optimizer has begun its operation at {0} UTC...".format(start_time_utc))
     print("The prediction horizon is {} hours.".format(mpc_horizon/3600))

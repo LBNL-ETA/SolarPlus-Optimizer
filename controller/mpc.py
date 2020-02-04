@@ -162,12 +162,18 @@ class mpc(object):
         setpoints_raw = pd.concat(setpoints_list,axis=1)
         setpoints = setpoints_raw.resample('5T').pad()
         print(setpoints.head())
-        if 'Trtu' in setpoints.columns:
+        if 'Trtu_west' in setpoints.columns:
             # convert K to F
-            setpoints['Trtu'] = (setpoints['Trtu'] - 273.15) * 9/5 + 32
+            setpoints['Trtu_west'] = (setpoints['Trtu_west'] - 273.15) * 9/5 + 32
             # Considering 2 F deadband (between heating and cooling setpoint) in the thermostat
-            setpoints['Trtu_cool'] = setpoints['Trtu'] + 1
-            setpoints['Trtu_heat'] = setpoints['Trtu'] - 1
+            setpoints['Trtu_west_cool'] = setpoints['Trtu_west'] + 1
+            setpoints['Trtu_west_heat'] = setpoints['Trtu_west'] - 1
+        if 'Trtu_east' in setpoints.columns:
+            # convert K to F
+            setpoints['Trtu_east'] = (setpoints['Trtu_east'] - 273.15) * 9/5 + 32
+            # Considering 2 F deadband (between heating and cooling setpoint) in the thermostat
+            setpoints['Trtu_east_cool'] = setpoints['Trtu_east'] + 1
+            setpoints['Trtu_east_heat'] = setpoints['Trtu_east'] - 1
         if 'Tfre' in setpoints.columns:
             setpoints['Tfre'] = (setpoints['Tfre'] - 273.15) * 9/5 + 32
         if 'Tref' in setpoints.columns:
@@ -239,10 +245,10 @@ class mpc(object):
                 time = self.model.display_measurements('Measured')[self.init_vm[par]].index[-1]
                 if par == 'Tfre_0':
                     if self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1] > 10:
-                        value = 0
+                        value = -2
                 if par == 'Tref_0':
                     if self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1] > 36.5:
-                        value = 34
+                        value = 36
                 print('State {0} set to value {1} from measurement at time {2}.'.format(self.init_vm[par], value, time))
             else:
                 value = 0.5
@@ -499,6 +505,7 @@ class mpc(object):
         opt_options = opt_object.get_optimization_options()
         opt_options['n_e'] = 24*4
         opt_options['IPOPT_options']['tol'] = 1e-10
+        opt_options["IPOPT_options"]["max_iter"] = 500
         opt_object.set_optimization_options(opt_options)
 
         return opt_object
