@@ -11,8 +11,8 @@ import os
 import datetime
 import time
 import pandas as pd
-import mpc_config
-from mpc_config import tz_computer
+import mpc_shadow_config_template as mpc_config
+from mpc_shadow_config_template import tz_computer
 from mpc import mpc
 
 def run():
