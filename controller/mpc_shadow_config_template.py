@@ -5,7 +5,7 @@
 from mpcpy import units
 import os
 
-tz_computer = 'UTC'
+tz_computer = 'America/Los_Angeles'
 config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                          'modelpath' : 'SolarPlus.Building.Optimization.Store',
                          'libraries' : os.getenv('MODELICAPATH'),
@@ -109,7 +109,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         "variables": {
             "FreComp_Split_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "FreComp_Split_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
             "RefComp_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "RefComp_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "HVAC_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "HVAC_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "HVAC_Norm": {"filename": "Shadow/Control_InitialGuess.csv", "column": "HVAC1_Norm", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
             "uHeat": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uHeat", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
             "uBattery": {"filename": "Shadow/Control_InitialGuess.csv", "column": "uBattery", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
         }
