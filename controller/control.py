@@ -11,8 +11,8 @@ import os
 import datetime
 import time
 import pandas as pd
-import mpc_shadow_config_template as mpc_config
-from mpc_shadow_config_template import tz_computer
+import mpc_config
+from mpc_config import tz_computer
 from mpc import mpc
 
 def run():
@@ -80,10 +80,11 @@ if __name__ == '__main__':
         time.sleep(1)
         t = datetime.datetime.now()
         print(t)
-        if (t.minute in [0,5,10,15,20,25,30,35,40,45,50,55]) and (t.minute != minute):
-            minute = t.minute
-            try:
-                run()
-                print('Run ended ok.')
-            except:
-                print('Run ended in error.')
+        # if (t.minute in [0,5,10,15,20,25,30,35,40,45,50,55]) and (t.minute != minute):
+        minute = t.minute
+        try:
+            run()
+            print('Run ended ok.')
+            time.sleep(300)
+        except:
+            print('Run ended in error.')
