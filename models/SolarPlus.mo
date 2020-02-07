@@ -1542,7 +1542,7 @@ package SolarPlus "This package contains models for MPC control optimization."
               coordinateSystem(preserveAspectRatio=false)));
       end Thermal;
 
-      model Refridgeration
+      model Refrigeration
 
         Modelica.Blocks.Interfaces.RealInput uFreDef "Defrost signal input for freezer"
           annotation (Placement(transformation(extent={{-140,-60},{-100,-20}}),
@@ -1561,35 +1561,35 @@ package SolarPlus "This package contains models for MPC control optimization."
           "East RTU zone temperature"
           annotation (Placement(transformation(extent={{-140,20},{-100,60}}),
               iconTransformation(extent={{-120,20},{-100,40}})));
-        Modelica.Blocks.Interfaces.RealInput Trtu_west
-          "RTU west zone temperature" annotation (Placement(transformation(
-                extent={{-140,60},{-100,100}}), iconTransformation(extent={{-120,
-                  60},{-100,80}})));
-        BaseClasses.Refridgeration refridgeration
+        Modelica.Blocks.Interfaces.RealInput Trtu_west "RTU west zone temperature"
+          annotation (Placement(transformation(extent={{-140,60},{-100,100}}),
+              iconTransformation(extent={{-120,60},{-100,80}})));
+        BaseClasses.Refrigeration refrigeration
           annotation (Placement(transformation(extent={{-20,0},{0,20}})));
         Modelica.Blocks.Interfaces.RealInput uRef
           "Cooling signal input for refridgerator" annotation (Placement(
               transformation(extent={{-140,-20},{-100,20}}), iconTransformation(
                 extent={{-120,-10},{-100,10}})));
         Modelica.Blocks.Interfaces.RealOutput Tref(unit="K")
-          "Freezer air temperature" annotation (Placement(transformation(extent
-                ={{100,-10},{120,10}}), iconTransformation(extent={{100,30},{
-                  120,50}})));
+          "Freezer air temperature" annotation (Placement(transformation(extent={{100,
+                  -10},{120,10}}), iconTransformation(extent={{100,-10},{120,10}})));
       equation
-        connect(Trtu_west, refridgeration.Trtu_west) annotation (Line(points={{
-                -120,80},{-60,80},{-60,17},{-21,17}}, color={0,0,127}));
-        connect(Trtu_east, refridgeration.Trtu_east) annotation (Line(points={{
-                -120,40},{-80,40},{-80,14},{-21,14}}, color={0,0,127}));
-        connect(uFreDef, refridgeration.uFreDef) annotation (Line(points={{-120,
-                -40},{-40,-40},{-40,6},{-21,6}}, color={0,0,127}));
-        connect(uFreCool, refridgeration.uFreCool) annotation (Line(points={{
-                -120,-80},{-30,-80},{-30,3},{-21,3}}, color={0,0,127}));
-        connect(uRef, refridgeration.uRef) annotation (Line(points={{-120,0},{
-                -60,0},{-60,10},{-21,10}}, color={0,0,127}));
-        connect(refridgeration.Tfre, Tfre) annotation (Line(points={{1,14},{74,
-                14},{74,40},{110,40}}, color={0,0,127}));
-        connect(refridgeration.Tref, Tref) annotation (Line(points={{1,10},{30,
-                10},{30,0},{110,0}}, color={0,0,127}));
+        connect(Trtu_west, refrigeration.Trtu_west) annotation (Line(points={{-120,80},
+                {-60,80},{-60,17},{-21,17}}, color={0,0,127}));
+        connect(Trtu_east, refrigeration.Trtu_east) annotation (Line(points={{-120,40},
+                {-80,40},{-80,14},{-21,14}}, color={0,0,127}));
+        connect(uFreDef, refrigeration.uFreDef) annotation (Line(points={{-120,-40},{
+                -40,-40},{-40,6},{-21,6}}, color={0,0,127}));
+        connect(uFreCool, refrigeration.uFreCool) annotation (Line(points={{-120,-80},
+                {-30,-80},{-30,3},{-21,3}}, color={0,0,127}));
+        connect(uRef, refrigeration.uRef) annotation (Line(points={{-120,0},{-60,0},{
+                -60,10},{-21,10}}, color={0,0,127}));
+        connect(refrigeration.Tfre, Tfre) annotation (Line(points={{1,14},{74,14},{74,
+                40},{110,40}}, color={0,0,127}));
+        connect(refrigeration.Tref, Tref)
+          annotation (Line(points={{1,10},{30,10},{30,0},{110,0}}, color={0,0,127}));
+        connect(refrigeration.Pfre, Pfre) annotation (Line(points={{1,6},{20,6},
+                {20,-40},{110,-40},{110,-40}}, color={0,0,127}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
                 extent={{-100,100},{100,-100}},
@@ -1597,7 +1597,7 @@ package SolarPlus "This package contains models for MPC control optimization."
                 fillColor={255,255,255},
                 fillPattern=FillPattern.Solid)}),                      Diagram(
               coordinateSystem(preserveAspectRatio=false)));
-      end Refridgeration;
+      end Refrigeration;
 
       model RTU
         BaseClasses.Rtu rtu(Trtu_west_0(displayUnit="K"), Trtu_east_0(
@@ -2563,27 +2563,28 @@ package SolarPlus "This package contains models for MPC control optimization."
           __Dymola_Algorithm="Cvode"));
       end Supervisory;
 
-      model Refridgeration
+      model Refrigeration
 
         parameter Modelica.SIunits.HeatCapacity Cfre=1e6 "Heat capacity of freezer zone" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.ThermalResistance Rfre=0.005 "Thermal resistance of freezer zone to RTU east zone" annotation(Dialog(group = "Freezer"));
-        parameter Modelica.SIunits.ThermalResistance Rref_fre=0.005 "Thermal resistance of freezer zone to RTU east zone" annotation(Dialog(group = "Freezer"));
+        //parameter Modelica.SIunits.ThermalResistance Rref_fre=0.005 "Thermal resistance of freezer zone to RTU east zone" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreCoolingCap = 5860 "Cooling capacity of freezer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreHeatingCap = 3500 "Defrost heating capacity of freezer" annotation(Dialog(group = "Freezer"));
-        parameter Modelica.SIunits.Power FreHeatingEff = 0.99 "Heating efficiency of freezer" annotation(Dialog(group = "Freezer"));
-        parameter Modelica.SIunits.Power FreCoolingCOP = 3 "Cooling COP of frezzer" annotation(Dialog(group = "Freezer"));
+        parameter Real FreHeatingEff = 0.99 "Heating efficiency of freezer" annotation(Dialog(group = "Freezer"));
+        parameter Real FreCoolingCOP = 3 "Cooling COP of frezzer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Temperature Tfre_0=-252.48   "Initial temperature of freezer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Temperature Tref_0 = 3.5+273.15 "Initial temperature of refrigerator" annotation(Dialog(group = "Refrigerator"));
         parameter Modelica.SIunits.HeatCapacity Cref=1e6 "Heat capacity of refrigerator zone" annotation(Dialog(group = "Refrigerator"));
         parameter Modelica.SIunits.ThermalResistance Rref=0.007 "Thermal resistance of refrigerator zone to RTU zone" annotation(Dialog(group = "Refrigerator"));
         parameter Modelica.SIunits.Power RefCoolingCap = 6096 "Cooling capacity of refrigerator" annotation(Dialog(group = "Refrigerator"));
-        parameter Modelica.SIunits.Power RefCoolingCOP = 3 "Cooling COP of refrigerator" annotation(Dialog(group = "Refrigerator"));
+        parameter Real RefCoolingCOP = 3 "Cooling COP of refrigerator" annotation(Dialog(group = "Refrigerator"));
+
         HVACR.SimpleHeaterCooler freCooler(
           coolingCap=FreCoolingCap,
           heatingCap=FreHeatingCap,
           heatingEff=FreHeatingEff,
           coolingCOP=FreCoolingCOP)
-        annotation (Placement(transformation(extent={{-60,-60},{-40,-40}})));
+        annotation (Placement(transformation(extent={{-60,-80},{-40,-60}})));
         Envelope.R1C1 freZone(
           Tzone_0=Tfre_0,
           C=Cfre,
@@ -2610,9 +2611,7 @@ package SolarPlus "This package contains models for MPC control optimization."
           annotation (Placement(transformation(extent={{-140,20},{-100,60}}),
               iconTransformation(extent={{-120,30},{-100,50}})));
         Buildings.HeatTransfer.Sources.PrescribedTemperature preTrtu_east
-          annotation (Placement(transformation(extent={{-60,0},{-40,20}})));
-        Modelica.Thermal.HeatTransfer.Components.ThermalResistor resAdj(R=Rref_fre)
-          annotation (Placement(transformation(extent={{30,20},{50,40}})));
+          annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
         Modelica.Blocks.Interfaces.RealInput Trtu_west "RTU west zone temperature"
           annotation (Placement(transformation(extent={{-140,60},{-100,100}}),
               iconTransformation(extent={{-120,60},{-100,80}})));
@@ -2628,54 +2627,59 @@ package SolarPlus "This package contains models for MPC control optimization."
               transformation(extent={{-140,-20},{-100,20}}), iconTransformation(
                 extent={{-120,-10},{-100,10}})));
         Modelica.Blocks.Sources.Constant uHeat(k=0)
-        annotation (Placement(transformation(extent={{-40,30},{-20,50}})));
+        annotation (Placement(transformation(extent={{-94,50},{-74,70}})));
         Modelica.Blocks.Interfaces.RealOutput Tref(unit="K")
           "Refridgerator air temperature" annotation (Placement(transformation(extent=
-                 {{100,70},{120,90}}), iconTransformation(extent={{100,-10},{
-                  120,10}})));
+                 {{100,70},{120,90}}), iconTransformation(extent={{100,-10},{120,10}})));
         Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor senTref1
         annotation (Placement(transformation(extent={{66,70},{86,90}})));
+        HVACR.SimpleHeaterCooler refCooler(
+          heatingCap=0,
+          coolingCap=RefCoolingCap,
+          coolingCOP=RefCoolingCOP)
+        annotation (Placement(transformation(extent={{-60,20},{-40,40}})));
       equation
         connect(freCooler.qHeat, freZone.qHeat)
-          annotation (Line(points={{-39,-44},{-20,-44},{-20,-14},{-2,-14}},
+          annotation (Line(points={{-39,-64},{-20,-64},{-20,-14},{-2,-14}},
                                                                   color={0,0,127}));
         connect(freCooler.qCool, freZone.qCool)
-          annotation (Line(points={{-39,-54},{-20,-54},{-20,-18},{-2,-18}},
+          annotation (Line(points={{-39,-74},{-16,-74},{-16,-18},{-2,-18}},
                                                                   color={0,0,127}));
         connect(uFreDef, freCooler.uHeat) annotation (Line(points={{-120,-40},{-94,-40},
-                {-94,-42},{-62,-42}},
+                {-94,-62},{-62,-62}},
                                color={0,0,127}));
         connect(uFreCool, freCooler.uCool) annotation (Line(points={{-120,-80},{-72,-80},
-                {-72,-58},{-62,-58}},
+                {-72,-78},{-62,-78}},
                                   color={0,0,127}));
         connect(freZone.port_cap, senTref.port)
           annotation (Line(points={{10.2,-10},{60,-10}},
                                                        color={191,0,0}));
         connect(senTref.T, Tfre) annotation (Line(points={{80,-10},{110,-10}},
                       color={0,0,127}));
-        connect(freCooler.PCool, Pfre) annotation (Line(points={{-39,-58},{-12,-58},{-12,
+        connect(freCooler.PCool, Pfre) annotation (Line(points={{-39,-78},{-12,-78},{-12,
                 -60},{110,-60}},
                             color={0,0,127}));
         connect(Trtu_east, preTrtu_east.T) annotation (Line(points={{-120,40},{-92,40},
-                {-92,10},{-62,10}}, color={0,0,127}));
-        connect(preTrtu_east.port, freZone.port_adj) annotation (Line(points={{-40,10},
-                {-20,10},{-20,-4},{0,-4}}, color={191,0,0}));
-        connect(freZone.port_cap, resAdj.port_a) annotation (Line(points={{10.2,-10},{
-                24,-10},{24,30},{30,30}}, color={191,0,0}));
+                {-92,-30},{-62,-30}},
+                                    color={0,0,127}));
+        connect(preTrtu_east.port, freZone.port_adj) annotation (Line(points={{-40,-30},
+                {-28,-30},{-28,-4},{0,-4}},color={191,0,0}));
         connect(Trtu_west, preTrtu_west.T)
           annotation (Line(points={{-120,80},{-60,80}}, color={0,0,127}));
         connect(preTrtu_west.port, refZone.port_adj) annotation (Line(points={{-38,80},
                 {-16,80},{-16,86},{0,86}}, color={191,0,0}));
-        connect(refZone.port_cap, resAdj.port_b) annotation (Line(points={{10.2,80},{62,
-                80},{62,30},{50,30}}, color={191,0,0}));
-        connect(uRef, refZone.qCool) annotation (Line(points={{-120,0},{-80,0},{-80,64},
-                {-10,64},{-10,72},{-2,72}}, color={0,0,127}));
-        connect(uHeat.y, refZone.qHeat) annotation (Line(points={{-19,40},{-14,40},{-14,
-                76},{-2,76}}, color={0,0,127}));
-        connect(senTref1.port, resAdj.port_b) annotation (Line(points={{66,80},{62,80},
-                {62,30},{50,30}}, color={191,0,0}));
         connect(senTref1.T, Tref)
           annotation (Line(points={{86,80},{110,80}}, color={0,0,127}));
+        connect(uHeat.y, refCooler.uHeat) annotation (Line(points={{-73,60},{-68,60},{
+                -68,38},{-62,38}}, color={0,0,127}));
+        connect(uRef, refCooler.uCool) annotation (Line(points={{-120,0},{-76,0},{-76,
+                22},{-62,22}}, color={0,0,127}));
+        connect(refCooler.qHeat, refZone.qHeat) annotation (Line(points={{-39,36},{-26,
+                36},{-26,76},{-2,76}}, color={0,0,127}));
+        connect(refCooler.qCool, refZone.qCool) annotation (Line(points={{-39,26},{-14,
+                26},{-14,72},{-2,72}}, color={0,0,127}));
+        connect(refZone.port_cap, senTref1.port)
+          annotation (Line(points={{10.2,80},{66,80}}, color={191,0,0}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
                 extent={{-100,100},{100,-100}},
@@ -2683,7 +2687,7 @@ package SolarPlus "This package contains models for MPC control optimization."
                 fillColor={255,255,255},
                 fillPattern=FillPattern.Solid)}),                      Diagram(
               coordinateSystem(preserveAspectRatio=false)));
-      end Refridgeration;
+      end Refrigeration;
 
       model Rtu
         parameter Modelica.SIunits.HeatCapacity Crtu_west=1e6 "Heat capacity of RTU west zone" annotation(Dialog(group = "RTU"));
@@ -2701,8 +2705,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         parameter Real RTUEastCoolingCOP = 2.59 "Cooling COP of east RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Temperature Trtu_west_0 = 21+273.15 "Initial temperature of west RTU zone" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Temperature Trtu_east_0 = 21+273.15 "Initial temperature of east RTU zone" annotation(Dialog(group = "RTU"));
-        parameter Modelica.SIunits.ThermalResistance Rfre=0.005 "Thermal resistance of freezer zone to RTU east zone" annotation(Dialog(group = "Freezer"));
-        parameter Modelica.SIunits.ThermalResistance Rref=0.007 "Thermal resistance of refrigerator zone to RTU zone" annotation(Dialog(group = "Refrigerator"));
+        parameter Modelica.SIunits.ThermalResistance Rfre=0.01254 "Thermal resistance of freezer zone to RTU east zone" annotation(Dialog(group = "Freezer"));
+        parameter Modelica.SIunits.ThermalResistance Rref=0.01525 "Thermal resistance of refrigerator zone to RTU zone" annotation(Dialog(group = "Refrigerator"));
 
         Envelope.R1C1 rtuZone_east(
           Tzone_0=Trtu_east_0,
@@ -2799,14 +2803,14 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealInput Tfre "Freezer zone air temperature"
           annotation (Placement(transformation(extent={{-208,-174},{-180,-146}}),
               iconTransformation(extent={{-114,-100},{-100,-86}})));
-        Buildings.HeatTransfer.Sources.PrescribedTemperature preTout1
-        annotation (Placement(transformation(extent={{-120,-160},{-100,-140}})));
+        Buildings.HeatTransfer.Sources.PrescribedTemperature preTfre
+          annotation (Placement(transformation(extent={{-120,-160},{-100,-140}})));
         Modelica.Blocks.Interfaces.RealInput Tref
           "Refridgerator zone air temperature" annotation (Placement(transformation(
                 extent={{-208,114},{-180,142}}), iconTransformation(extent={{-114,72},
                   {-100,86}})));
-        Buildings.HeatTransfer.Sources.PrescribedTemperature preTout2
-        annotation (Placement(transformation(extent={{-120,120},{-100,140}})));
+        Buildings.HeatTransfer.Sources.PrescribedTemperature preTref
+          annotation (Placement(transformation(extent={{-120,120},{-100,140}})));
         Modelica.Thermal.HeatTransfer.Components.ThermalResistor resRef(R=Rref)
           annotation (Placement(transformation(extent={{40,120},{60,140}})));
       equation
@@ -2868,16 +2872,16 @@ package SolarPlus "This package contains models for MPC control optimization."
                 88,68},{170,68}}, color={0,0,127}));
         connect(RTU_east.PCool, Prtu_east) annotation (Line(points={{-99,-128},{120,-128},
                 {120,-80},{170,-80}}, color={0,0,127}));
-        connect(Tfre, preTout1.T) annotation (Line(points={{-194,-160},{-140,-160},{-140,
-                -150},{-122,-150}}, color={0,0,127}));
-        connect(preTout1.port, resFre.port_a) annotation (Line(points={{-100,-150},{20,
-                -150},{20,-92},{40,-92}}, color={191,0,0}));
+        connect(Tfre, preTfre.T) annotation (Line(points={{-194,-160},{-140,-160},
+                {-140,-150},{-122,-150}}, color={0,0,127}));
+        connect(preTfre.port, resFre.port_a) annotation (Line(points={{-100,-150},
+                {20,-150},{20,-92},{40,-92}}, color={191,0,0}));
         connect(rtuZone_east.port_cap, resFre.port_b) annotation (Line(points={{10.2,-40},
                 {80,-40},{80,-92},{60,-92}}, color={191,0,0}));
-        connect(Tref, preTout2.T) annotation (Line(points={{-194,128},{-160,128},{-160,
-                130},{-122,130}}, color={0,0,127}));
-        connect(preTout2.port, resRef.port_a) annotation (Line(points={{-100,130},{-10,
-                130},{-10,130},{40,130}}, color={191,0,0}));
+        connect(Tref, preTref.T) annotation (Line(points={{-194,128},{-160,128},
+                {-160,130},{-122,130}}, color={0,0,127}));
+        connect(preTref.port, resRef.port_a) annotation (Line(points={{-100,130},
+                {-10,130},{-10,130},{40,130}}, color={191,0,0}));
         connect(resRef.port_b, rtuZone_west.port_cap) annotation (Line(points={{60,130},
                 {72,130},{72,100},{10.2,100}}, color={191,0,0}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
