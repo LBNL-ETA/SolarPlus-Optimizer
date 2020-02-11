@@ -94,7 +94,12 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Shadow/Constraints_Forecast.csv"
         ],
         "influxdb": {"config_filename":"database_client/config.yaml",
-                     "section": "database"}
+                     "section": "database"},
+        "xbos": {
+            "namespace": "",
+            "wavemq": "localhost:4516",
+            "entity": "data_manager.ent"
+        }
     },
     "weather": {
         "type": "influxdb",
@@ -166,8 +171,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "type": "csv|xbos",
             "filename": "Shadow/setpoints.csv",
             "devices": {
-                "<thermostat_topic>/thermostat_east/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"},
-                "<thermostat_topic>/thermostat_west/actuation": {"cooling_setpoint": "Trtu_cool", "heating_setpoint": "Trtu_heat"},
+                "<thermostat_topic>/thermostat_east/actuation": {"cooling_setpoint": "Trtu_east_cool", "heating_setpoint": "Trtu_east_heat"},
+                "<thermostat_topic>/thermostat_west/actuation": {"cooling_setpoint": "Trtu_west_cool", "heating_setpoint": "Trtu_west_heat"},
                 "<refrigeration_topic>/refrigerator/actuation": {"setpoint": "Tref"},
                 "<refrigeration_topic>/freezer/actuation": {"setpoint": "Tfre"}
             }

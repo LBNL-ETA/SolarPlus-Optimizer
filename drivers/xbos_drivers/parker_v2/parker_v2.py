@@ -182,9 +182,10 @@ class ParkerDriver(XBOSProcess):
                     value_to_be_written = int(new_value*10)
                     try:
                         ## adding a synchronous sleep
-                        time.sleep(5)
+                        time.sleep(10)
                         print("writting to %s, value=%d, unit=%d"%(register_name, value_to_be_written, unit))
                         self.modbus_device.write_register(register_name=register_name, value=value_to_be_written, unit=unit)
+                        time.sleep(10)
                     except Exception as e:
                         print("exception happened when writing %d to setpoint for %s, %r"%(value_to_be_written, device, e))
 
