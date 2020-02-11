@@ -428,7 +428,6 @@ class Data_Manager():
         df = df.dropna()
         for device in device_config:
             var_cfg = device_config[device]
-            # var_cfg = {"cooling_setpoint": "Trtu_east_cool", "heating_setpoint": "Trtu_east_heat"}
 
             relevant_df_cols = []
             relevant_new_col_names = []
