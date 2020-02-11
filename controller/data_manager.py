@@ -428,18 +428,23 @@ class Data_Manager():
         df = df.dropna()
         for device in device_config:
             var_cfg = device_config[device]
+            # var_cfg = {"cooling_setpoint": "Trtu_east_cool", "heating_setpoint": "Trtu_east_heat"}
 
-            cols = {}
+            relevant_df_cols = []
+            relevant_new_col_names = []
             for variable in var_cfg:
                 df_var_name = var_cfg[variable]
-                if df_var_name in df.columns:
-                    cols[df_var_name] = variable
+                relevant_df_cols.append(df_var_name)
+                relevant_new_col_names.append(variable)
 
-            df.columns = [cols[col] if col in cols.keys() else col for col in df.columns]
+            device_df = df[relevant_df_cols]
+            device_df.columns = relevant_new_col_names
+
+            # df.columns = [cols[col] if col in cols.keys() else col for col in df.columns]
 
             setpoint_list = []
             if device.startswith("flexstat"):
-                for index, row in df.iterrows():
+                for index, row in device_df.iterrows():
                     change_time = int(index.value)
                     hsp = row.get('heating_setpoint', None)
                     csp = row.get('cooling_setpoint', None)
@@ -466,7 +471,7 @@ class Data_Manager():
                     )
                 )
             elif device.startswith("parker"):
-                for index, row in df.iterrows():
+                for index, row in device_df.iterrows():
                     change_time = int(index.value)
                     device_setpoint = row.get('setpoint', None)
                     differential = row.get('differential', None)
