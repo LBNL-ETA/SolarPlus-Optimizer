@@ -3,7 +3,7 @@ import threading
 import time
 
 def continuous_read(obj):
-    file_output_name = "discharge_battery_test_output.csv"
+    file_output_name = "charge_battery_test_output.csv"
 
     fp = open(file_output_name, 'a')
 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # output = obj.get_data_raw()
     print("==========PRINTING CURRENT VALUES: i={} ===========".format(i))
     print(output)
-    file_output_name = "discharge_battery_test_output.csv"
+    file_output_name = "charge_battery_test_output.csv"
     fp = open(file_output_name, 'w')
     fp.write('time,' + ','.join([str(item) for item in output]) + '\n')
     fp.write(str(time.time()) + ',' + ','.join([str(item) for item in output.values()]) + '\n')
