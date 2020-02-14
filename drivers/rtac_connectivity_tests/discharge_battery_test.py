@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     output = obj.get_data()
     # output = obj.get_data_raw()
-    print("==========PRINTING CURRENT VALUES: i={} ===========".format(i))
+    print("==========PRINTING CURRENT VALUES: ===========")
     print(output)
     file_output_name = "discharge_battery_test_output.csv"
     fp = open(file_output_name, 'w')
