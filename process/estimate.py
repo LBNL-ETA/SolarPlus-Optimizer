@@ -134,11 +134,9 @@ if simulate_initial:
 # --------------------------------------------------------------------------
 # Solve estimation problem
 model.estimate(start_time_train, final_time_train, ['Trtu_west','Trtu_east','Tref','Tfre'])
-# print(model.display_measurements('Measured'))
-
-model.validate(start_time_validate, final_time_validate, 'validate', plot=0)
+model.validate(start_time_train, final_time_train, 'validate', plot=0)
+# model.validate(start_time_validate, final_time_validate, 'validate', plot=0)
 plt.figure(5)
-# for key in ['Trtu_west','Trtu_east','Tref','Tfre']:
 plt.subplot(4,1,1)
 plt.plot(model.measurements['Trtu_west']['Simulated'].get_base_data()-273.15, label='Trtu_west_Simulated')
 plt.plot(model.measurements['Trtu_west']['Measured'].get_base_data()-273.15, label='Trtu_west_Measured')

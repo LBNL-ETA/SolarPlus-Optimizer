@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 # --------------------------------------------------------------------------
 # Estimation periods
 start_time = '2019-11-12 00:00:00+00:00' # UTC time
-final_time = '2019-11-12 12:00:00+00:00' # UTC time
+final_time = '2019-11-12 08:00:00+00:00' # UTC time
 start_time_validate = '2019-11-07 15:00:00+00:00'
 final_time_validate = '2019-11-07 17:00:00+00:00'
 # local_time = 'America/Los_Angeles'
@@ -24,10 +24,11 @@ modelpath = 'SolarPlus.Building.Training.RTU'
 meas_list = ['Trtu_west', 'Trtu_east']
 sample_rate = 300;
 # Initial states (must satisfy optimization constraints)
-Trtu_west_0 = 295.04 # K
-Trtu_east_0 = 296.36 # K
-Tref_0 = 274.48 # K
-Tfre_0 = 252.82 # K
+Trtu_west_0 = 295.14 # 2019-11-12 00:00
+Trtu_east_0 = 296.68 # 2019-11-12 00:00
+# Trtu_west_0 = 294.39 # 2019-11-12 04:00
+# Trtu_east_0 = 295.26 # 2019-11-12 04:00
+
 # Simulate Initial Option
 simulate_initial = False
 # --------------------------------------------------------------------------
@@ -54,7 +55,8 @@ plt.legend()
 vm_controls = {'HVAC_West_Norm' : ('uCoolWest', units.unit1),
                'HVAC_East_Norm' : ('uCoolEast', units.unit1),
                'ref_k' : ('Tref', units.K),
-               'fre_k': ('Tfre', units.K)}
+               'fre_k': ('Tfre', units.K),
+               'internal_gains': ('intGai', units.W)}
                # 'freezer_CompressorStatus' : ('uFreCool', units.unit1),
                # 'FreComp_Split_Norm' : ('uFreCool', units.unit1),
                # 'uFreDef' : ('uFreDef', units.unit1),
@@ -67,7 +69,8 @@ plt.figure(3)
 plt.plot(controls.get_base_data()['uCoolWest'])
 plt.plot(controls.get_base_data()['uCoolEast'])
 plt.legend(['RTU_west','RTU_east'],loc='best')
-
+plt.figure(4)
+plt.plot(controls.get_base_data()['intGai'])
 # Parameters
 csv_parameters = 'models/pars_rtu.csv'
 parameters = exodata.ParameterFromCSV(csv_parameters)
@@ -138,8 +141,6 @@ if simulate_initial:
 model.estimate(start_time, final_time, ['Trtu_west','Trtu_east'])
 # print(model.display_measurements('Measured'))
 
-# emulation.collect_measurements(start_time_validate, final_time_validate)
-# model.measurements = emulation.measurements
 model.validate(start_time, final_time, 'validate', plot=0)
 plt.figure(5)
 # for key in ['Trtu_west','Trtu_east','Tref','Tfre']:
