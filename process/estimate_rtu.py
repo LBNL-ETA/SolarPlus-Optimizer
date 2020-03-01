@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 # --------------------------------------------------------------------------
 # Estimation periods
 start_time = '2019-11-12 00:00:00+00:00' # UTC time
-final_time = '2019-11-12 08:00:00+00:00' # UTC time
+final_time = '2019-11-12 12:00:00+00:00' # UTC time
 start_time_validate = '2019-11-07 15:00:00+00:00'
 final_time_validate = '2019-11-07 17:00:00+00:00'
 # local_time = 'America/Los_Angeles'
@@ -55,8 +55,8 @@ plt.legend()
 vm_controls = {'HVAC_West_Norm' : ('uCoolWest', units.unit1),
                'HVAC_East_Norm' : ('uCoolEast', units.unit1),
                'ref_k' : ('Tref', units.K),
-               'fre_k': ('Tfre', units.K),
-               'internal_gains': ('intGai', units.W)}
+               'fre_k': ('Tfre', units.K)}
+               # 'internal_gains': ('intGai', units.W)}
                # 'freezer_CompressorStatus' : ('uFreCool', units.unit1),
                # 'FreComp_Split_Norm' : ('uFreCool', units.unit1),
                # 'uFreDef' : ('uFreDef', units.unit1),
@@ -69,8 +69,8 @@ plt.figure(3)
 plt.plot(controls.get_base_data()['uCoolWest'])
 plt.plot(controls.get_base_data()['uCoolEast'])
 plt.legend(['RTU_west','RTU_east'],loc='best')
-plt.figure(4)
-plt.plot(controls.get_base_data()['intGai'])
+# plt.figure(4)
+# plt.plot(controls.get_base_data()['intGai'])
 # Parameters
 csv_parameters = 'models/pars_rtu.csv'
 parameters = exodata.ParameterFromCSV(csv_parameters)

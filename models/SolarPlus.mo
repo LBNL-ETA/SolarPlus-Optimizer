@@ -1658,9 +1658,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealInput Tfre "Outdoor air temperature"
           annotation (Placement(transformation(extent={{-128,-94},{-100,-66}}),
               iconTransformation(extent={{-114,74},{-100,88}})));
-        Modelica.Blocks.Interfaces.RealInput intGai "Internal gains"
-          annotation (Placement(transformation(extent={{-128,-14},{-100,14}}),
-              iconTransformation(extent={{-114,26},{-100,40}})));
+        Modelica.Blocks.Sources.Constant uHeat1(k=25000)
+        annotation (Placement(transformation(extent={{-80,30},{-60,50}})));
       equation
         connect(Tout, rtu.Tout) annotation (Line(points={{-114,60},{-52,60},{
                 -52,16.1},{-20.7,16.1}}, color={0,0,127}));
@@ -1682,8 +1681,8 @@ package SolarPlus "This package contains models for MPC control optimization."
                 -26,0.7},{-20.7,0.7}}, color={0,0,127}));
         connect(Tref, rtu.Tref) annotation (Line(points={{-114,92},{-30,92},{
                 -30,17.9},{-20.7,17.9}}, color={0,0,127}));
-        connect(intGai, rtu.intGai) annotation (Line(points={{-114,0},{-60,0},{
-                -60,12.1},{-20.7,12.1}}, color={0,0,127}));
+        connect(uHeat1.y, rtu.intGai) annotation (Line(points={{-59,40},{-40,40},
+                {-40,12.1},{-20.7,12.1}}, color={0,0,127}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
                 extent={{-100,100},{100,-100}},
