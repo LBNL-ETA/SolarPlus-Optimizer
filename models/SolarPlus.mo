@@ -1624,7 +1624,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       model RTU
         BaseClasses.Rtu rtu(Trtu_west_0(displayUnit="K"), Trtu_east_0(
               displayUnit="K"))
-          annotation (Placement(transformation(extent={{-20,0},{0,20}})));
+          annotation (Placement(transformation(extent={{20,0},{40,20}})));
         Modelica.Blocks.Interfaces.RealInput Tout "Outdoor air temperature"
         annotation (Placement(transformation(extent={{-128,46},{-100,74}}),
               iconTransformation(extent={{-114,74},{-100,88}})));
@@ -1662,27 +1662,27 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{-80,30},{-60,50}})));
       equation
         connect(Tout, rtu.Tout) annotation (Line(points={{-114,60},{-52,60},{
-                -52,16.1},{-20.7,16.1}}, color={0,0,127}));
+                -52,16.1},{19.3,16.1}},  color={0,0,127}));
         connect(poaWin, rtu.poaWin) annotation (Line(points={{-114,20},{-60,20},
-                {-60,13.9},{-20.7,13.9}}, color={0,0,127}));
+                {-60,13.9},{19.3,13.9}},  color={0,0,127}));
         connect(uCoolWest, rtu.uCoolWest) annotation (Line(points={{-114,-40},{
-                -40,-40},{-40,7.9},{-20.7,7.9}}, color={0,0,127}));
+                -40,-40},{-40,7.9},{19.3,7.9}},  color={0,0,127}));
         connect(uHeat.y, rtu.uHeatWest) annotation (Line(points={{-59,-20},{-50,
-                -20},{-50,9.9},{-20.7,9.9}},   color={0,0,127}));
-        connect(rtu.Trtu_west, Trtu_west) annotation (Line(points={{0.7,17.3},{
-                80,17.3},{80,60},{110,60}}, color={0,0,127}));
-        connect(rtu.Trtu_east, Trtu_east) annotation (Line(points={{0.7,7.3},{
+                -20},{-50,9.9},{19.3,9.9}},    color={0,0,127}));
+        connect(rtu.Trtu_west, Trtu_west) annotation (Line(points={{40.7,17.3},
+                {80,17.3},{80,60},{110,60}},color={0,0,127}));
+        connect(rtu.Trtu_east, Trtu_east) annotation (Line(points={{40.7,7.3},{
                 80,7.3},{80,-60},{110,-60}}, color={0,0,127}));
         connect(uCoolEast, rtu.uCoolEast) annotation (Line(points={{-114,-60},{
-                -32,-60},{-32,3.1},{-20.7,3.1}}, color={0,0,127}));
+                -32,-60},{-32,3.1},{19.3,3.1}},  color={0,0,127}));
         connect(uHeat.y, rtu.uHeatEast) annotation (Line(points={{-59,-20},{-36,
-                -20},{-36,5.5},{-20.7,5.5}}, color={0,0,127}));
+                -20},{-36,5.5},{19.3,5.5}},  color={0,0,127}));
         connect(Tfre, rtu.Tfre) annotation (Line(points={{-114,-80},{-26,-80},{
-                -26,0.7},{-20.7,0.7}}, color={0,0,127}));
+                -26,0.7},{19.3,0.7}},  color={0,0,127}));
         connect(Tref, rtu.Tref) annotation (Line(points={{-114,92},{-30,92},{
-                -30,17.9},{-20.7,17.9}}, color={0,0,127}));
-        connect(uHeat1.y, rtu.intGai) annotation (Line(points={{-59,40},{-40,40},
-                {-40,12.1},{-20.7,12.1}}, color={0,0,127}));
+                -30,17.9},{19.3,17.9}},  color={0,0,127}));
+        connect(uHeat1.y, rtu.intGai) annotation (Line(points={{-59,40},{-54,40},
+                {-54,12.1},{19.3,12.1}}, color={0,0,127}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
                 extent={{-100,100},{100,-100}},
@@ -2724,6 +2724,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         parameter Modelica.SIunits.ThermalResistance Rrtu_west=0.0010 "Thermal resistance of west RTU zone to outside" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.ThermalResistance Rrtu_east=0.0010 "Thermal resistance of east RTU zone to outside" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.ThermalResistance Rwest_east=0.0010 "Thermal resistance of east-west RTU zones" annotation(Dialog(group = "RTU"));
+        parameter Real intGaiRat=0.8 "Internal heat gain ratio";
         parameter Modelica.SIunits.Power RTUWestHeatingCap = 29300 "Heating capacity of west RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Power RTUEastHeatingCap = 29300 "Heating capacity of east RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Power RTUWestCoolingCap = 24910 "Cooling capacity of west RTU" annotation(Dialog(group = "RTU"));
@@ -2843,6 +2844,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealInput intGai "Total internal gains"
           annotation (Placement(transformation(extent={{-208,6},{-180,34}}),
               iconTransformation(extent={{-114,14},{-100,28}})));
+        Modelica.Blocks.Math.Gain IntGaiRat(k=intGaiRat) "Internal heat gains ratio"
+          annotation (Placement(transformation(extent={{-140,-10},{-120,10}})));
       equation
         connect(Tout, preTout.T) annotation (Line(points={{-194,88},{-158,88},{-158,100},
                 {-122,100}}, color={0,0,127}));
@@ -2910,10 +2913,12 @@ package SolarPlus "This package contains models for MPC control optimization."
                 {-10,130},{-10,130},{40,130}}, color={191,0,0}));
         connect(resRef.port_b, rtuZone_west.port_cap) annotation (Line(points={{60,130},
                 {72,130},{72,100},{10.2,100}}, color={191,0,0}));
-        connect(intGai, IntHeaGaiWest.u)
-          annotation (Line(points={{-194,20},{-102,20}}, color={0,0,127}));
-        connect(intGai, IntHeaGaiEast.u) annotation (Line(points={{-194,20},{
-                -140,20},{-140,-40},{-102,-40}}, color={0,0,127}));
+        connect(intGai, IntGaiRat.u) annotation (Line(points={{-194,20},{-150,20},{-150,
+                0},{-142,0}}, color={0,0,127}));
+        connect(IntGaiRat.y, IntHeaGaiWest.u) annotation (Line(points={{-119,0},{-112,
+                0},{-112,20},{-102,20}}, color={0,0,127}));
+        connect(IntGaiRat.y, IntHeaGaiEast.u) annotation (Line(points={{-119,0},{-112,
+                0},{-112,-40},{-102,-40}}, color={0,0,127}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
                 extent={{-100,100},{100,-100}},

@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 # --------------------------------------------------------------------------
 # Estimation periods
 start_time = '2019-11-12 00:00:00+00:00' # UTC time
-final_time = '2019-11-12 12:00:00+00:00' # UTC time
+final_time = '2019-11-13 00:00:00+00:00' # UTC time
 start_time_validate = '2019-11-07 15:00:00+00:00'
 final_time_validate = '2019-11-07 17:00:00+00:00'
 # local_time = 'America/Los_Angeles'
@@ -85,8 +85,6 @@ for meas in meas_list:
     measurements[meas] = {'Sample' : variables.Static('{0}_sample'.format(meas), sample_rate, units.s)};
 vm_measurements = {'temp_rtu_west_k' : ('Trtu_west', units.K),
                    'temp_rtu_east_k' : ('Trtu_east', units.K)}
-                   # 'ref_k' : ('Tref', units.K)}
-                   # 'fre_k' : ('Tfre', units.K)}
 csv_measurements = 'controller/validation/temperature_201911.csv'
 store = systems.RealFromCSV(csv_measurements, measurements, vm_measurements, tz_name = weather.tz_name)
 store.collect_measurements(start_time, final_time)
@@ -139,11 +137,8 @@ if simulate_initial:
 # --------------------------------------------------------------------------
 # Solve estimation problem
 model.estimate(start_time, final_time, ['Trtu_west','Trtu_east'])
-# print(model.display_measurements('Measured'))
-
 model.validate(start_time, final_time, 'validate', plot=0)
 plt.figure(5)
-# for key in ['Trtu_west','Trtu_east','Tref','Tfre']:
 plt.subplot(2,1,1)
 plt.plot(model.measurements['Trtu_west']['Simulated'].get_base_data()-273.15, label='Trtu_west_Simulated')
 plt.plot(model.measurements['Trtu_west']['Measured'].get_base_data()-273.15, label='Trtu_west_Measured')
