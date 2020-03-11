@@ -20,13 +20,13 @@ thermostat_config:
   # IF THIS IS CHANGED, CHANGE MPC CONSTRAINTS AS WELL #
   ######################################################
   default_heating_setpoint_map:
-    thermostat_west: 70
+    thermostat_west: 67
     thermostat_east: 70
   ######################################################
   # IF THIS IS CHANGED, CHANGE MPC CONSTRAINTS AS WELL #
   ######################################################
   default_cooling_setpoint_map:
-    thermostat_west: 75
+    thermostat_west: 71
     thermostat_east: 74
   ######################################################
   # IF THIS IS CHANGED, CHANGE MPC CONSTRAINTS AS WELL #
