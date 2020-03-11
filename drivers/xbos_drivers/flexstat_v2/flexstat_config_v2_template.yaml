@@ -33,6 +33,7 @@ thermostat_config:
   ######################################################
   heating_setpoint_limit: 60
   cooling_setpoint_limit: 78
+  minimum_deadband: 2
   ip_addresses: [<>.10, <>.11]
   bacnet_device_ids: [1, 1]
   point_map:
