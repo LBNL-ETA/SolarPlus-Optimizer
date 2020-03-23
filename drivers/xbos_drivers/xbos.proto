@@ -29,6 +29,9 @@ import "wattnode.proto";
 // kmc flexstat thermostat
 import "flexstat.proto";
 
+// SEL real time automation controller
+import "rtac.proto";
+
 // c37 + other energise-related
 import "c37.proto";
 import "energise.proto";
@@ -54,6 +57,8 @@ message XBOS {
   FlexstatState flexstat_state = 153;
   FlexstatActuationMessage flexstat_actuation_message = 154;
   ParkerActuationMessage parker_actuation_message = 155;
+  RtacState rtac_state = 156;
+  RtacActuationMessage rtac_actuation_message = 157;
 
   //System Status Fields
   BasicServerStatus BasicServerStatus = 200;

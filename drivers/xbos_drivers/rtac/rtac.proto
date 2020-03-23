@@ -1,0 +1,109 @@
+syntax = "proto3";
+package xbospb;
+import "nullabletypes.proto";
+
+
+message Rtac {
+    RtacState rtac_state = 1;
+    RtacActuationMessage rtac_actuation_message = 2;
+}
+
+message RtacActuationMessage {
+    uint64 time = 1;
+    Int64 control_flag = 2;
+    repeated RtacSetpoints setpoints = 3;
+}
+
+message RtacSetpoints {
+    uint64 change_time = 1;
+    Double real_power_setpoint = 2;
+    Double reactive_power_setpoint = 3;
+    Double active_power_output_limit = 4;
+}
+
+message RtacState {
+	//epoch time
+	uint64 time = 1;
+    //0xAA55/0x55AA; written by driver periodically to show communication is alive
+    Int64 heartbeat = 2;
+    //between 109000W to-109000W
+    //unit: W
+    Double real_power_setpoint = 3;
+    //max apparent power (real and reactive together) not to exceed 130kVA
+    //unit: VAR
+    Double reactive_power_setpoint = 4;
+    //Target Real Power
+    //unit: W
+    Double target_real_power = 5;
+    //Target Reactive Power
+    //unit: VAR
+    Double target_reactive_power = 6;
+    //Battery Total Capacity
+    //unit: Wh
+    Double battery_total_capacity = 7;
+    //Battery Current Stored Energy
+    //unit: Wh
+    Double battery_current_stored_energy = 8;
+    //Total Actual real power
+    //unit: W
+    Double total_actual_real_power = 9;
+    //Total Actual reactive power
+    //unit: VAR
+    Double total_actual_reactive_power = 10;
+    //Total Actual apparent power
+    //unit: VA
+    Double total_actual_apparent_power = 11;
+    //could be used for curtailment
+    //unit: W
+    Double active_power_output_limit = 12;
+    //Current Power Production
+    //unit: W
+    Double current_power_production = 13;
+    //AC Current Phase A
+    //unit: A
+    Double ac_current_phase_a = 14;
+    //AC Current Phase B
+    //unit: A
+    Double ac_current_phase_b = 15;
+    //AC Current Phase C
+    //unit: A
+    Double ac_current_phase_c = 16;
+    //AC Voltage A-B
+    //unit: V
+    Double ac_voltage_ab = 17;
+    //AC Voltage B-C
+    //unit: V
+    Double ac_voltage_bc = 18;
+    //AC Voltage C-A
+    //unit: V
+    Double ac_voltage_ca = 19;
+    //AC Frequency
+    //unit: Hz
+    Double ac_frequency = 20;
+    //Is system currently connected to PG&E or islanded
+    //unit: T/F
+    Int64 islanding_state = 21;
+    //is system islanded (or would be islanded) using BESS or diesel generator
+    //unit: T/F
+    Int64 island_type = 22;
+    //while on-grid is BESS available for control or not
+    //unit: T/F
+    Int64 bess_availability = 23;
+    //code indicating fault has occurred to indicate what the problem is
+    Double fault_condition = 24;
+    //is PG&E grid available or not regardless of connect state
+    //unit: T/F
+    Int64 pge_state = 25;
+    //is PCC breaker closed or not
+    //unit: T/F
+    Int64 pcc_breaker_state = 26;
+    //PG&E voltage
+    //unit: V
+    Double pge_voltage = 27;
+    //PG&E frequency
+    //unit: Hz
+    Double pge_frequency = 28;
+    //is BESS/PV break closed or not
+    //unit: T/F
+    Int64 bess_pv_breaker_state = 29;
+ }
