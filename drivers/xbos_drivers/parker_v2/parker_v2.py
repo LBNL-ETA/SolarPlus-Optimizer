@@ -186,6 +186,15 @@ class ParkerDriver(XBOSProcess):
                         print("writting to %s, value=%d, unit=%d"%(register_name, value_to_be_written, unit))
                         self.modbus_device.write_register(register_name=register_name, value=value_to_be_written, unit=unit)
                         time.sleep(10)
+
+                        latest_value = round(self.modbus_device.read_holding_register(register_name=register_name, unit=unit)/10, 1)
+                        if latest_value != new_value:
+                            print("reconnecting the modbus serial device")
+                            self.modbus_device.reconnect()
+                            time.sleep(10)
+                            print("writting to %s, value=%d, unit=%d" % (register_name, value_to_be_written, unit))
+                            self.modbus_device.write_register(register_name=register_name, value=value_to_be_written, unit=unit)
+                            time.sleep(10)
                     except Exception as e:
                         print("exception happened when writing %d to setpoint for %s, %r"%(value_to_be_written, device, e))
 
