@@ -167,6 +167,7 @@ class BaselineDriver(XBOSProcess):
         # print('test_data: \n', test_data.head(), test_data.shape)
 
         reg_metrics = self.regression(data, predict_col=predict_col)
+        data_model_metrics = DataModel(data, event_day, 10, 10)
         # ten_ten_metrics = ten_of_ten(baseline)
 
         # TODO: Check which is the best performing model here

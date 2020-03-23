@@ -98,23 +98,6 @@ class DRSignalsDriver(XBOSProcess):
         else:
             raise ValueError('Event type does not correspond to a valid DR_MODE')
 
-    # def setup(self, cfg):
-    #     """ DELETED: Not needed for XBOSProcess. """
-    #     self.base_resource = cfg['base_resource']
-    #
-    #     self.namespace = b64decode(cfg['namespace'])
-    #
-    #     # Keeps track of how further into the future should the forecast be
-    #     # Value is in number of hours
-    #     self.FORECAST_PERIOD = cfg['forecast_period']
-    #
-    #     # Store the default values for min and max power
-    #     self.default_pmin = cfg['pmin']
-    #     self.default_pmax = cfg['pmax']
-    #
-    #     # Init the scheduler state to keep track of the updates
-    #     self.init_event_scheduler()
-
     def init_event_scheduler(self):
         """ Populate DR Manager with default events. Current implementation includes dr-prices only.
         TODO: For more robustness, add a function that checks that there's only one default event for each DR mode.
@@ -503,18 +486,12 @@ class DRSignalsDriver(XBOSProcess):
         df_price = self.get_price(curr_time, end_time)
         df_power = self.get_power(curr_time, end_time)
 
-        # print('df_price: \n', df_price.head())
-        # print('df_power: \n', df_power.head())
-
-        df = df_price.join(df_power)
+        df = df_price.join(df_power, how='outer')
         df.index = pd.to_datetime(df.index)
         df['pmin'].fillna(self.default_pmin, inplace=True)
         df['pmax'].fillna(self.default_pmax, inplace=True)
         df['dr-mode'].fillna('none', inplace=True)
         df.index = df.index.round(FORECAST_FREQUENCY)
-
-        # print('df: \n', df.head())
-        df.to_csv('temp.csv')
 
         tim = int(time.time() * 1e9)
 
@@ -559,25 +536,23 @@ class DRSignalsDriver(XBOSProcess):
 
         await self.publish(self.namespace, self.base_resource1, False, message1)
 
-        # Publish to constraints forecast
-        msg_list2 = []
-        for index, row in df.iterrows():
-            msg = constraints_forecast_pb2.ConstraintForecast.Constraints(
-                forecast_time=int(index.tz_localize('US/Pacific').tz_convert('UTC').timestamp()),
-                PMin=types.Double(value=row['pmin']),
-                PMax=types.Double(value=row['pmax'])
-            )
-            msg_list2.append(msg)
+        # # Publish to constraints forecast
+        # msg_list2 = []
+        # for index, row in df.iterrows():
+        #     msg = constraints_forecast_pb2.ConstraintForecast.Constraints(
+        #         forecast_time=int(index.tz_localize('US/Pacific').tz_convert('UTC').timestamp()),
+        #         PMin=types.Double(value=row['pmin']),
+        #         PMax=types.Double(value=row['pmax'])
+        #     )
+        #     msg_list2.append(msg)
 
-        message2 = xbos_pb2.XBOS(
-            constraints_forecast=constraints_forecast_pb2.ConstraintForecast(
-                time=tim,
-                constraints_predictions=msg_list2
-            )
-        )
-        print('mes2: ', message2)
-        await self.publish(self.namespace, self.base_resource2, False, message2)
-        print('base_res2: ', self.base_resource2)
+        # message2 = xbos_pb2.XBOS(
+        #     constraints_forecast=constraints_forecast_pb2.ConstraintForecast(
+        #         time=tim,
+        #         constraints_predictions=msg_list2
+        #     )
+        # )
+        # await self.publish(self.namespace, self.base_resource2, False, message2)
 
 
 if __name__ == '__main__':
