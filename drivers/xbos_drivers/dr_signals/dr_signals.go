@@ -22,6 +22,7 @@ var device_units = map[string]string {
     "power_shed":           "kW",
     "power_shift":          "kW",
     "power_track":          "kW",
+    "event_st_ed_time":     "int",
 }
 
 func ingest_time_series(value float64, name string, toInflux types.ExtractedTimeseries,
@@ -40,6 +41,7 @@ func ingest_time_series(value float64, name string, toInflux types.ExtractedTime
 		//"prediction_time": fmt.Sprintf("%d", prediction_time/1e9),
 		"prediction_time": fmt.Sprintf("%d", prediction_time),
 		"prediction_step": fmt.Sprintf("%d", step),
+        "event_st_ed_time": fmt.Sprintf("%d", event_st_ed_time),
 	}
 	//This add function is passed in from the ingester and when it is executed
 	//a point is written into influx
@@ -127,6 +129,14 @@ func Extract(uri types.SubscriptionURI, msg xbospb.XBOS, add func(types.Extracte
 
             step++
         }
+
+        if msg.Drsigpred.EventStEdTime != nil {
+            err := ingest_time_series(float64(msg.Drsigpred.EventStEdTime.Value),
+                "event_st_ed_time", extracted, add, int64(msg.Drsigpred.Time), step, uri)
+            if err != nil {
+                return err
+            }
+		}
     }
 	return nil
 }

@@ -1,7 +1,9 @@
 import argparse
+import calendar
 import datetime
 import logging
 import os
+import time
 from datetime import timedelta
 
 import pandas as pd
@@ -501,22 +503,33 @@ class DRSignalsDriver(XBOSProcess):
         end_time = curr_time + timedelta(hours=self.FORECAST_PERIOD)
 
         df_price = self.get_price(curr_time, end_time)
+        df_price.index = df_price.index.round(FORECAST_FREQUENCY)
+
         df_power = self.get_power(curr_time, end_time)
+        df_power.index = df_power.index.round(FORECAST_FREQUENCY)
 
-        # print('df_price: \n', df_price.head())
-        # print('df_power: \n', df_power.head())
 
-        df = df_price.join(df_power)
+        df = df_price.join(df_power, how='outer')
         df.index = pd.to_datetime(df.index)
         df['pmin'].fillna(self.default_pmin, inplace=True)
         df['pmax'].fillna(self.default_pmax, inplace=True)
         df['dr-mode'].fillna('none', inplace=True)
-        df.index = df.index.round(FORECAST_FREQUENCY)
-
-        # print('df: \n', df.head())
-        df.to_csv('temp.csv')
 
         tim = int(time.time() * 1e9)
+
+        event_st_ed_time = []
+        for event in self.dr_manager.custom_dr_events:
+            for key, value in event.items():
+                if key in ['startdate', 'enddate']:
+                    event_st_ed_time.append(calendar.timegm(time.strptime(value, '%Y-%m-%dT%H:%M:%S')))
+                elif key in ['startdate-take_relax']:
+                    event_st_ed_time.append(calendar.timegm(time.strptime(value['start-date-take'], '%Y-%m-%dT%H:%M:%S')))
+                    event_st_ed_time.append(calendar.timegm(time.strptime(value['start-date-relax'], '%Y-%m-%dT%H:%M:%S')))
+                elif key in ['enddate-take_relax']:
+                    event_st_ed_time.append(calendar.timegm(time.strptime(value['end-date-take'], '%Y-%m-%dT%H:%M:%S')))
+                    event_st_ed_time.append(calendar.timegm(time.strptime(value['end-date-relax'], '%Y-%m-%dT%H:%M:%S')))
+
+        print(event_st_ed_time)
 
         # Publish to dr_signals
         # Uncomment once self.get_baseline() works
@@ -553,12 +566,14 @@ class DRSignalsDriver(XBOSProcess):
         message1 = xbos_pb2.XBOS(
             drsigpred=dr_signals_pb2.DRSignalsPrediction(
                 time=tim,
-                predictions=msg_list1
+                predictions=msg_list1,
+                event_st_ed_time=event_st_ed_time
             )
         )
 
         await self.publish(self.namespace, self.base_resource1, False, message1)
 
+        """
         # Publish to constraints forecast
         msg_list2 = []
         for index, row in df.iterrows():
@@ -578,6 +593,7 @@ class DRSignalsDriver(XBOSProcess):
         print('mes2: ', message2)
         await self.publish(self.namespace, self.base_resource2, False, message2)
         print('base_res2: ', self.base_resource2)
+        """
 
 
 if __name__ == '__main__':
