@@ -12,9 +12,9 @@ from matplotlib import pyplot as plt
 # --------------------------------------------------------------------------
 # Estimation periods
 start_time = '2019-11-12 00:00:00+00:00' # UTC time
-final_time = '2019-11-13 00:00:00+00:00' # UTC time
-start_time_validate = '2019-11-07 15:00:00+00:00'
-final_time_validate = '2019-11-07 17:00:00+00:00'
+final_time = '2019-11-12 09:00:00+00:00' # UTC time
+start_time_validate = '2019-11-14 00:00:00+00:00'
+final_time_validate = '2019-11-15 00:00:00+00:00'
 # local_time = 'America/Los_Angeles'
 # Model definition
 mopath = 'models/SolarPlus.mo'
@@ -43,20 +43,22 @@ geography = (37.8771, -122.2485)
 csv_weather = 'controller/validation/weather_input_201911.csv'
 weather = exodata.WeatherFromCSV(csv_weather,vm_weather,geography, tz_name='UTC')
 weather.collect_data(start_time, final_time);
-plt.figure(1)
+fig1 = plt.figure(1)
 plt.plot(weather.get_base_data()['weaTDryBul']-273.15,label='TOut')
 plt.legend()
-plt.figure(2)
+fig1.savefig('pe_Outdoor temperature')
+fig2 = plt.figure(2)
 plt.plot(weather.get_base_data()['weaPoaWin'],label='Window solar radiation')
 # plt.plot(weather.get_base_data()['weaPoaPv'],label='PV solar radiation')
 plt.legend()
+fig2.savefig("pe_Solar radiation on windows")
 
 # Controls
 vm_controls = {'HVAC_West_Norm' : ('uCoolWest', units.unit1),
                'HVAC_East_Norm' : ('uCoolEast', units.unit1),
                'ref_k' : ('Tref', units.K),
-               'fre_k': ('Tfre', units.K)}
-               # 'internal_gains': ('intGai', units.W)}
+               'fre_k': ('Tfre', units.K),
+               'internal_gains_con': ('intGai', units.W)}
                # 'freezer_CompressorStatus' : ('uFreCool', units.unit1),
                # 'FreComp_Split_Norm' : ('uFreCool', units.unit1),
                # 'uFreDef' : ('uFreDef', units.unit1),
@@ -65,12 +67,14 @@ vm_controls = {'HVAC_West_Norm' : ('uCoolWest', units.unit1),
 csv_power = 'controller/validation/normalized_power_201911.csv'
 controls = exodata.ControlFromCSV(csv_power, vm_controls, tz_name=weather.tz_name)
 controls.collect_data(start_time, final_time);
-plt.figure(3)
+fig3 = plt.figure(3)
 plt.plot(controls.get_base_data()['uCoolWest'])
 plt.plot(controls.get_base_data()['uCoolEast'])
 plt.legend(['RTU_west','RTU_east'],loc='best')
-# plt.figure(4)
-# plt.plot(controls.get_base_data()['intGai'])
+fig3.savefig("pe_Cooling control signal")
+fig4 = plt.figure(4)
+plt.plot(controls.get_base_data()['intGai'])
+fig4.savefig("pe_Internal Gains")
 # Parameters
 csv_parameters = 'models/pars_rtu.csv'
 parameters = exodata.ParameterFromCSV(csv_parameters)
@@ -136,9 +140,17 @@ if simulate_initial:
 # Solve
 # --------------------------------------------------------------------------
 # Solve estimation problem
-model.estimate(start_time, final_time, ['Trtu_west','Trtu_east'])
-model.validate(start_time, final_time, 'validate', plot=0)
-plt.figure(5)
+# opt_options = model._estimate_method.opt_problem.get_optimization_options()
+opt_options = model._parameter_estimate_method.opt_problem.get_optimization_options()
+opt_options['IPOPT_options']['ma27_liw_init_factor'] = 5*16
+opt_options['IPOPT_options']['ma27_la_init_factor'] = 5*16
+opt_options['IPOPT_options']['max_iter'] = 3000
+#opt_options['IPOPT_options']['tol'] = 0.00001
+# model._estimate_method.opt_problem.set_optimization_options(opt_options)
+model._parameter_estimate_method.opt_problem.set_optimization_options(opt_options)
+model.parameter_estimate(start_time, final_time, ['Trtu_west','Trtu_east'], global_start=0, seed=None)
+model.validate(start_time, final_time, 'validate', plot=1)
+fig = plt.figure(5)
 plt.subplot(2,1,1)
 plt.plot(model.measurements['Trtu_west']['Simulated'].get_base_data()-273.15, label='Trtu_west_Simulated')
 plt.plot(model.measurements['Trtu_west']['Measured'].get_base_data()-273.15, label='Trtu_west_Measured')
@@ -147,25 +159,16 @@ plt.subplot(2,1,2)
 plt.plot(model.measurements['Trtu_east']['Simulated'].get_base_data()-273.15, label='Trtu_east_Simulated')
 plt.plot(model.measurements['Trtu_east']['Measured'].get_base_data()-273.15, label='Trtu_east_Measured')
 plt.legend()
-# plt.subplot(3,1,3)
-# plt.plot(model.measurements['Tref']['Simulated'].get_base_data()-273.15, label='Tref_Simulated')
-# plt.plot(model.measurements['Tref']['Measured'].get_base_data()-273.15, label='Tref_Measured')
-# plt.legend()
-# plt.subplot(4,1,4)
-# plt.plot(model.measurements['Tfre']['Simulated'].get_base_data()-273.15, label='Tfre_Simulated')
-# plt.plot(model.measurements['Tfre']['Measured'].get_base_data()-273.15, label='Tfre_Measured')
-# plt.legend()
-plt.show()
+# plt.show()
+fig.savefig("pe_Temperature validation")
 
 print('\n')
 print("-------------------------------------")
 print("The RMSE value of the estimation is:")
 for key in ['Trtu_west','Trtu_east']:
     print(model.RMSE[key].display_data())
-
 print('\n')
 print("--------------------------------------")
 print("The estimated parameters for the model are:")
 for key in model.parameter_data.keys():
     print(key, model.parameter_data[key]['Value'].display_data())
-# --------------------------------------------------------------------------

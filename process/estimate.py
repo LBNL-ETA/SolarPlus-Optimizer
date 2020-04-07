@@ -132,14 +132,6 @@ if simulate_initial:
 
 # Solve
 # --------------------------------------------------------------------------
-# Solve estimation problem
-# opt_object = optimization.Optimization(models.JModelica,
-#                                        models.RMSE,
-#                                        optimization.JModelica,
-#                                        {})
-# opt_options = opt_object.get_optimization_options()
-# opt_options['IPOPT_options']['linear_solver'] = 'mumps'
-# opt_options["IPOPT_options"]["max_iter"] = 500
 model.estimate(start_time_train, final_time_train, ['Trtu_west','Trtu_east','Tref','Tfre'])
 model.validate(start_time_train, final_time_train, 'validate', plot=0)
 # model.validate(start_time_validate, final_time_validate, 'validate', plot=0)

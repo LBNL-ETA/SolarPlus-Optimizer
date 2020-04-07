@@ -1658,8 +1658,9 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Interfaces.RealInput Tfre "Outdoor air temperature"
           annotation (Placement(transformation(extent={{-128,-94},{-100,-66}}),
               iconTransformation(extent={{-114,74},{-100,88}})));
-        Modelica.Blocks.Sources.Constant uHeat1(k=25000)
-        annotation (Placement(transformation(extent={{-80,30},{-60,50}})));
+        Modelica.Blocks.Interfaces.RealInput intGai "Internal heat gains"
+          annotation (Placement(transformation(extent={{-128,-14},{-100,14}}),
+              iconTransformation(extent={{-114,52},{-100,66}})));
       equation
         connect(Tout, rtu.Tout) annotation (Line(points={{-114,60},{-52,60},{
                 -52,16.1},{19.3,16.1}},  color={0,0,127}));
@@ -1681,8 +1682,8 @@ package SolarPlus "This package contains models for MPC control optimization."
                 -26,0.7},{19.3,0.7}},  color={0,0,127}));
         connect(Tref, rtu.Tref) annotation (Line(points={{-114,92},{-30,92},{
                 -30,17.9},{19.3,17.9}},  color={0,0,127}));
-        connect(uHeat1.y, rtu.intGai) annotation (Line(points={{-59,40},{-54,40},
-                {-54,12.1},{19.3,12.1}}, color={0,0,127}));
+        connect(intGai, rtu.intGai) annotation (Line(points={{-114,0},{-80,0},{
+                -80,12.1},{19.3,12.1}}, color={0,0,127}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
                 extent={{-100,100},{100,-100}},
@@ -1691,6 +1692,68 @@ package SolarPlus "This package contains models for MPC control optimization."
                 fillPattern=FillPattern.Solid)}),                      Diagram(
               coordinateSystem(preserveAspectRatio=false)));
       end RTU;
+
+      model RTU2
+        BaseClasses.Rtu rtu(Trtu_west_0(displayUnit="K"), Trtu_east_0(
+              displayUnit="K"))
+          annotation (Placement(transformation(extent={{20,0},{40,20}})));
+        Modelica.Blocks.Interfaces.RealInput Tout "Outdoor air temperature"
+        annotation (Placement(transformation(extent={{-128,46},{-100,74}}),
+              iconTransformation(extent={{-114,74},{-100,88}})));
+        Modelica.Blocks.Interfaces.RealInput poaWin
+          "Solar radiation on the windows"
+          annotation (Placement(transformation(extent={{-128,6},{-100,34}}),
+              iconTransformation(extent={{-114,52},{-100,66}})));
+        Modelica.Blocks.Interfaces.RealInput uCoolWest
+          "Cooling signal input for RTU on the west side" annotation (Placement(
+              transformation(extent={{-128,-54},{-100,-26}}),
+                                                            iconTransformation(extent={{-114,
+                  -28},{-100,-14}})));
+        Modelica.Blocks.Interfaces.RealInput uCoolEast
+          "Cooling signal input for RTU on the east side" annotation (Placement(
+              transformation(extent={{-128,-74},{-100,-46}}),
+              iconTransformation(extent={{-114,-76},{-100,-62}})));
+        Modelica.Blocks.Sources.Constant uHeat(k=0)
+        annotation (Placement(transformation(extent={{-80,-30},{-60,-10}})));
+        Modelica.Blocks.Interfaces.RealOutput Trtu_west(unit="K")
+          "West zone air temperature" annotation (Placement(transformation(
+                extent={{100,50},{120,70}}),   iconTransformation(extent={{100,66},{114,
+                  80}})));
+        Modelica.Blocks.Interfaces.RealOutput Trtu_east(unit="K")
+          "East zone air temperature" annotation (Placement(transformation(
+                extent={{100,-70},{120,-50}}),
+                                             iconTransformation(extent={{100,-34},{114,
+                  -20}})));
+        Modelica.Blocks.Interfaces.RealInput intGai "Internal heat gains"
+          annotation (Placement(transformation(extent={{-128,-14},{-100,14}}),
+              iconTransformation(extent={{-114,52},{-100,66}})));
+      equation
+        connect(Tout, rtu.Tout) annotation (Line(points={{-114,60},{-52,60},{
+                -52,16.1},{19.3,16.1}},  color={0,0,127}));
+        connect(poaWin, rtu.poaWin) annotation (Line(points={{-114,20},{-60,20},
+                {-60,13.9},{19.3,13.9}},  color={0,0,127}));
+        connect(uCoolWest, rtu.uCoolWest) annotation (Line(points={{-114,-40},{
+                -40,-40},{-40,7.9},{19.3,7.9}},  color={0,0,127}));
+        connect(uHeat.y, rtu.uHeatWest) annotation (Line(points={{-59,-20},{-50,
+                -20},{-50,9.9},{19.3,9.9}},    color={0,0,127}));
+        connect(rtu.Trtu_west, Trtu_west) annotation (Line(points={{40.7,17.3},
+                {80,17.3},{80,60},{110,60}},color={0,0,127}));
+        connect(rtu.Trtu_east, Trtu_east) annotation (Line(points={{40.7,7.3},{
+                80,7.3},{80,-60},{110,-60}}, color={0,0,127}));
+        connect(uCoolEast, rtu.uCoolEast) annotation (Line(points={{-114,-60},{
+                -32,-60},{-32,3.1},{19.3,3.1}},  color={0,0,127}));
+        connect(uHeat.y, rtu.uHeatEast) annotation (Line(points={{-59,-20},{-36,
+                -20},{-36,5.5},{19.3,5.5}},  color={0,0,127}));
+        connect(intGai, rtu.intGai) annotation (Line(points={{-114,0},{-80,0},{
+                -80,12.1},{19.3,12.1}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+              Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                fillColor={255,255,255},
+                fillPattern=FillPattern.Solid)}),                      Diagram(
+              coordinateSystem(preserveAspectRatio=false)));
+      end RTU2;
     end Training;
 
     package Optimization
@@ -2725,6 +2788,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         parameter Modelica.SIunits.ThermalResistance Rrtu_east=0.0010 "Thermal resistance of east RTU zone to outside" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.ThermalResistance Rwest_east=0.0010 "Thermal resistance of east-west RTU zones" annotation(Dialog(group = "RTU"));
         parameter Real intGaiRat=0.8 "Internal heat gain ratio";
+        parameter Real intGaiWest=0.8 "Internal heat gain west zone ratio";
+        parameter Real intGaiEast=0.8 "Internal heat gain east zone ratio";
         parameter Modelica.SIunits.Power RTUWestHeatingCap = 29300 "Heating capacity of west RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Power RTUEastHeatingCap = 29300 "Heating capacity of east RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Power RTUWestCoolingCap = 24910 "Cooling capacity of west RTU" annotation(Dialog(group = "RTU"));
@@ -2769,10 +2834,10 @@ package SolarPlus "This package contains models for MPC control optimization."
         Modelica.Blocks.Math.Gain gain_east(k=33*0.5)
           "Solar heat gain through windows"
           annotation (Placement(transformation(extent={{-140,-80},{-120,-60}})));
-        Modelica.Blocks.Math.Gain IntHeaGaiEast(k=0.5)
+        Modelica.Blocks.Math.Gain IntHeaGaiEast(k=intGaiEast)
           "Internal heat gains on the east side"
           annotation (Placement(transformation(extent={{-100,-50},{-80,-30}})));
-        Modelica.Blocks.Math.Gain IntHeaGaiWest(k=0.5)
+        Modelica.Blocks.Math.Gain IntHeaGaiWest(k=intGaiWest)
           "Internal heat gains on the west side"
           annotation (Placement(transformation(extent={{-100,10},{-80,30}})));
         Modelica.Blocks.Math.Gain gain_west(k=33*0.5)
@@ -2927,6 +2992,218 @@ package SolarPlus "This package contains models for MPC control optimization."
                 fillPattern=FillPattern.Solid)}),                      Diagram(
               coordinateSystem(preserveAspectRatio=false, extent={{-180,-160},{160,140}})));
       end Rtu;
+
+      model Rtu2
+        parameter Modelica.SIunits.HeatCapacity Crtu_west=1e6 "Heat capacity of RTU west zone" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.HeatCapacity Crtu_east=1e6 "Heat capacity of RTU east zone" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.ThermalResistance Rrtu_west=0.0010 "Thermal resistance of west RTU zone to outside" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.ThermalResistance Rrtu_east=0.0010 "Thermal resistance of east RTU zone to outside" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.ThermalResistance Rwest_east=0.0010 "Thermal resistance of east-west RTU zones" annotation(Dialog(group = "RTU"));
+        parameter Real intGaiRat=0.8 "Internal heat gain ratio";
+        parameter Real intGaiWest=0.8 "Internal heat gain west zone ratio";
+        parameter Real intGaiEast=0.8 "Internal heat gain east zone ratio";
+        parameter Modelica.SIunits.Power RTUWestHeatingCap = 29300 "Heating capacity of west RTU" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.Power RTUEastHeatingCap = 29300 "Heating capacity of east RTU" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.Power RTUWestCoolingCap = 24910 "Cooling capacity of west RTU" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.Power RTUEastCoolingCap = 24910 "Cooling capacity of east RTU" annotation(Dialog(group = "RTU"));
+        parameter Real RTUWestHeatingEff = 0.8 "Heating efficiency of west RTU" annotation(Dialog(group = "RTU"));
+        parameter Real RTUEastHeatingEff = 0.8 "Heating efficiency of east RTU" annotation(Dialog(group = "RTU"));
+        parameter Real RTUWestCoolingCOP = 2.59 "Cooling COP of west RTU" annotation(Dialog(group = "RTU"));
+        parameter Real RTUEastCoolingCOP = 2.59 "Cooling COP of east RTU" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.Temperature Trtu_west_0 = 21+273.15 "Initial temperature of west RTU zone" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.Temperature Trtu_east_0 = 21+273.15 "Initial temperature of east RTU zone" annotation(Dialog(group = "RTU"));
+        parameter Modelica.SIunits.ThermalResistance Rfre=0.01254 "Thermal resistance of freezer zone to RTU east zone" annotation(Dialog(group = "Freezer"));
+        parameter Modelica.SIunits.ThermalResistance Rref=0.01525 "Thermal resistance of refrigerator zone to RTU zone" annotation(Dialog(group = "Refrigerator"));
+
+        Envelope.R1C1 rtuZone_east(
+          Tzone_0=Trtu_east_0,
+          C=Crtu_east,
+          R=Rrtu_east) "RTU zone on the east side where the staff is located"
+          annotation (Placement(transformation(extent={{0,-50},{20,-30}})));
+        Envelope.R1C1 rtuZone_west(
+          Tzone_0=Trtu_west_0,
+          C=Crtu_west,
+          R=Rrtu_west) "RTU zone on the west side where the staff is located"
+          annotation (Placement(transformation(extent={{0,90},{20,110}})));
+        Buildings.HeatTransfer.Sources.PrescribedTemperature preTout
+        annotation (Placement(transformation(extent={{-120,90},{-100,110}})));
+        HVACR.SimpleHeaterCooler RTU_west(
+          heatingCap=RTUWestHeatingCap,
+          coolingCap=RTUWestCoolingCap,
+          coolingCOP=RTUWestCoolingCOP,
+          heatingEff=RTUWestHeatingEff)
+          "RTU system on the west side where the staff is located"
+          annotation (Placement(transformation(extent={{-120,60},{-100,80}})));
+        HVACR.SimpleHeaterCooler RTU_east(
+          heatingCap=RTUEastHeatingCap,
+          heatingEff=RTUEastHeatingEff,
+          coolingCap=RTUEastCoolingCap,
+          coolingCOP=RTUEastCoolingCOP)
+          "RTU system on the east side where most slot machines are located"
+          annotation (Placement(transformation(extent={{-120,-130},{-100,-110}})));
+        Modelica.Blocks.Math.Add3 heatEast
+          annotation (Placement(transformation(extent={{-40,-90},{-20,-70}})));
+        Modelica.Blocks.Math.Gain gain_east(k=33*0.5)
+          "Solar heat gain through windows"
+          annotation (Placement(transformation(extent={{-140,-80},{-120,-60}})));
+        Modelica.Blocks.Math.Gain IntHeaGaiEast(k=intGaiEast)
+          "Internal heat gains on the east side"
+          annotation (Placement(transformation(extent={{-100,-50},{-80,-30}})));
+        Modelica.Blocks.Math.Gain IntHeaGaiWest(k=intGaiWest)
+          "Internal heat gains on the west side"
+          annotation (Placement(transformation(extent={{-100,10},{-80,30}})));
+        Modelica.Blocks.Math.Gain gain_west(k=33*0.5)
+          "Solar heat gain through windows"
+          annotation (Placement(transformation(extent={{-140,30},{-120,50}})));
+        Modelica.Blocks.Math.Add3 heatWest
+          annotation (Placement(transformation(extent={{-40,30},{-20,50}})));
+        Modelica.Thermal.HeatTransfer.Components.ThermalResistor resAdjWesEas(R=
+              Rwest_east)
+          annotation (Placement(transformation(extent={{46,20},{66,40}})));
+        Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor senTrtu_east
+          annotation (Placement(transformation(extent={{102,-50},{122,-30}})));
+        Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor senTrtu_west
+          annotation (Placement(transformation(extent={{100,90},{120,110}})));
+        Modelica.Blocks.Interfaces.RealOutput Trtu_east(unit="K")
+          "East zone air temperature" annotation (Placement(transformation(
+                extent={{160,-50},{180,-30}}),
+                                             iconTransformation(extent={{100,-34},{114,
+                  -20}})));
+        Modelica.Blocks.Interfaces.RealOutput Trtu_west(unit="K")
+          "West zone air temperature" annotation (Placement(transformation(
+                extent={{160,98},{180,118}}),  iconTransformation(extent={{100,66},{114,
+                  80}})));
+        Modelica.Blocks.Interfaces.RealOutput Prtu_west(unit="W")
+          "West RTU electric power" annotation (Placement(transformation(extent={{160,58},
+                  {180,78}}),            iconTransformation(extent={{100,40},{114,54}})));
+        Modelica.Blocks.Interfaces.RealOutput Prtu_east(unit="W")
+          "East RTU electric power" annotation (Placement(transformation(extent={{160,-90},
+                  {180,-70}}),          iconTransformation(extent={{100,-60},{114,-46}})));
+        Modelica.Blocks.Interfaces.RealInput Tout "Outdoor air temperature"
+        annotation (Placement(transformation(extent={{-208,74},{-180,102}}),
+              iconTransformation(extent={{-114,54},{-100,68}})));
+        Modelica.Blocks.Interfaces.RealInput poaWin "Solar radiation on the windows"
+          annotation (Placement(transformation(extent={{-208,34},{-180,62}}),
+              iconTransformation(extent={{-114,32},{-100,46}})));
+        Modelica.Blocks.Interfaces.RealInput uHeatWest
+          "Heating signal input for the west RTU " annotation (Placement(
+              transformation(extent={{-208,-26},{-180,2}}), iconTransformation(extent={{-114,-8},
+                  {-100,6}})));
+        Modelica.Blocks.Interfaces.RealInput uCoolWest
+          "Cooling signal input for RTU on the west side" annotation (Placement(
+              transformation(extent={{-208,-66},{-180,-38}}),
+                                                            iconTransformation(extent={{-114,
+                  -28},{-100,-14}})));
+        Modelica.Blocks.Interfaces.RealInput uHeatEast
+          "Heating signal input for the east RTU " annotation (Placement(
+              transformation(extent={{-208,-106},{-180,-78}}),
+                                                             iconTransformation(
+                extent={{-114,-52},{-100,-38}})));
+        Modelica.Blocks.Interfaces.RealInput uCoolEast
+          "Cooling signal input for RTU on the east side" annotation (Placement(
+              transformation(extent={{-208,-146},{-180,-118}}),
+              iconTransformation(extent={{-114,-76},{-100,-62}})));
+        Modelica.Thermal.HeatTransfer.Components.ThermalResistor resFre(R=Rfre)
+          annotation (Placement(transformation(extent={{40,-102},{60,-82}})));
+        Modelica.Blocks.Interfaces.RealInput Tfre "Freezer zone air temperature"
+          annotation (Placement(transformation(extent={{-208,-174},{-180,-146}}),
+              iconTransformation(extent={{-114,-100},{-100,-86}})));
+        Buildings.HeatTransfer.Sources.PrescribedTemperature preTfre
+          annotation (Placement(transformation(extent={{-120,-160},{-100,-140}})));
+        Modelica.Blocks.Interfaces.RealInput Tref
+          "Refridgerator zone air temperature" annotation (Placement(transformation(
+                extent={{-208,114},{-180,142}}), iconTransformation(extent={{-114,72},
+                  {-100,86}})));
+        Buildings.HeatTransfer.Sources.PrescribedTemperature preTref
+          annotation (Placement(transformation(extent={{-120,120},{-100,140}})));
+        Modelica.Thermal.HeatTransfer.Components.ThermalResistor resRef(R=Rref)
+          annotation (Placement(transformation(extent={{40,120},{60,140}})));
+        Modelica.Blocks.Interfaces.RealInput intGai "Total internal gains"
+          annotation (Placement(transformation(extent={{-208,6},{-180,34}}),
+              iconTransformation(extent={{-114,14},{-100,28}})));
+        Modelica.Blocks.Math.Gain IntGaiRat(k=intGaiRat) "Internal heat gains ratio"
+          annotation (Placement(transformation(extent={{-140,-10},{-120,10}})));
+      equation
+        connect(Tout, preTout.T) annotation (Line(points={{-194,88},{-158,88},{-158,100},
+                {-122,100}}, color={0,0,127}));
+        connect(preTout.port, rtuZone_west.port_adj) annotation (Line(points={{-100,100},
+                {-50,100},{-50,106},{0,106}}, color={191,0,0}));
+        connect(rtuZone_west.port_cap, resAdjWesEas.port_a) annotation (Line(points={{
+                10.2,100},{30,100},{30,30},{46,30}}, color={191,0,0}));
+        connect(rtuZone_west.port_cap, senTrtu_west.port)
+          annotation (Line(points={{10.2,100},{100,100}}, color={191,0,0}));
+        connect(rtuZone_east.port_cap, senTrtu_east.port)
+          annotation (Line(points={{10.2,-40},{102,-40}}, color={191,0,0}));
+        connect(poaWin, gain_west.u) annotation (Line(points={{-194,48},{-160,48},{-160,
+                40},{-142,40}}, color={0,0,127}));
+        connect(uHeatWest, RTU_west.uHeat) annotation (Line(points={{-194,-12},{-168,-12},
+                {-168,78},{-122,78}}, color={0,0,127}));
+        connect(uCoolWest, RTU_west.uCool) annotation (Line(points={{-194,-52},{-154,-52},
+                {-154,62},{-122,62}}, color={0,0,127}));
+        connect(uHeatEast, RTU_east.uHeat) annotation (Line(points={{-194,-92},{-164,-92},
+                {-164,-112},{-122,-112}}, color={0,0,127}));
+        connect(uCoolEast, RTU_east.uCool) annotation (Line(points={{-194,-132},{-158,
+                -132},{-158,-128},{-122,-128}}, color={0,0,127}));
+        connect(poaWin, gain_east.u) annotation (Line(points={{-194,48},{-160,48},{-160,
+                -70},{-142,-70}}, color={0,0,127}));
+        connect(gain_east.y, heatEast.u3) annotation (Line(points={{-119,-70},{-78,-70},
+                {-78,-88},{-42,-88}}, color={0,0,127}));
+        connect(IntHeaGaiEast.y, heatEast.u2) annotation (Line(points={{-79,-40},{-60,
+                -40},{-60,-80},{-42,-80}}, color={0,0,127}));
+        connect(RTU_east.qHeat, heatEast.u1) annotation (Line(points={{-99,-114},{-54,
+                -114},{-54,-72},{-42,-72}}, color={0,0,127}));
+        connect(heatEast.y, rtuZone_east.qHeat) annotation (Line(points={{-19,-80},{-12,
+                -80},{-12,-44},{-2,-44}}, color={0,0,127}));
+        connect(RTU_east.qCool, rtuZone_east.qCool) annotation (Line(points={{-99,-124},
+                {-8,-124},{-8,-48},{-2,-48}}, color={0,0,127}));
+        connect(IntHeaGaiWest.y, heatWest.u3) annotation (Line(points={{-79,20},{-56,20},
+                {-56,32},{-42,32}}, color={0,0,127}));
+        connect(gain_west.y, heatWest.u2)
+          annotation (Line(points={{-119,40},{-42,40}}, color={0,0,127}));
+        connect(RTU_west.qHeat, heatWest.u1) annotation (Line(points={{-99,76},{-66,76},
+                {-66,48},{-42,48}}, color={0,0,127}));
+        connect(heatWest.y, rtuZone_west.qHeat) annotation (Line(points={{-19,40},{-8,
+                40},{-8,96},{-2,96}}, color={0,0,127}));
+        connect(RTU_west.qCool, rtuZone_west.qCool) annotation (Line(points={{-99,66},
+                {-30,66},{-30,92},{-2,92}}, color={0,0,127}));
+        connect(senTrtu_west.T, Trtu_west) annotation (Line(points={{120,100},{140,100},
+                {140,108},{170,108}}, color={0,0,127}));
+        connect(senTrtu_east.T, Trtu_east)
+          annotation (Line(points={{122,-40},{170,-40}}, color={0,0,127}));
+        connect(resAdjWesEas.port_b, senTrtu_east.port) annotation (Line(points={{66,30},
+                {74,30},{74,-40},{102,-40}}, color={191,0,0}));
+        connect(preTout.port, rtuZone_east.port_adj) annotation (Line(points={{-100,100},
+                {-50,100},{-50,-34},{0,-34}}, color={191,0,0}));
+        connect(RTU_west.PCool, Prtu_west) annotation (Line(points={{-99,62},{88,62},{
+                88,68},{170,68}}, color={0,0,127}));
+        connect(RTU_east.PCool, Prtu_east) annotation (Line(points={{-99,-128},{120,-128},
+                {120,-80},{170,-80}}, color={0,0,127}));
+        connect(Tfre, preTfre.T) annotation (Line(points={{-194,-160},{-140,-160},
+                {-140,-150},{-122,-150}}, color={0,0,127}));
+        connect(preTfre.port, resFre.port_a) annotation (Line(points={{-100,-150},
+                {20,-150},{20,-92},{40,-92}}, color={191,0,0}));
+        connect(rtuZone_east.port_cap, resFre.port_b) annotation (Line(points={{10.2,-40},
+                {80,-40},{80,-92},{60,-92}}, color={191,0,0}));
+        connect(Tref, preTref.T) annotation (Line(points={{-194,128},{-160,128},
+                {-160,130},{-122,130}}, color={0,0,127}));
+        connect(preTref.port, resRef.port_a) annotation (Line(points={{-100,130},
+                {-10,130},{-10,130},{40,130}}, color={191,0,0}));
+        connect(resRef.port_b, rtuZone_west.port_cap) annotation (Line(points={{60,130},
+                {72,130},{72,100},{10.2,100}}, color={191,0,0}));
+        connect(intGai, IntGaiRat.u) annotation (Line(points={{-194,20},{-150,20},{-150,
+                0},{-142,0}}, color={0,0,127}));
+        connect(IntGaiRat.y, IntHeaGaiWest.u) annotation (Line(points={{-119,0},{-112,
+                0},{-112,20},{-102,20}}, color={0,0,127}));
+        connect(IntGaiRat.y, IntHeaGaiEast.u) annotation (Line(points={{-119,0},{-112,
+                0},{-112,-40},{-102,-40}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+              Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                fillColor={255,255,255},
+                fillPattern=FillPattern.Solid)}),                      Diagram(
+              coordinateSystem(preserveAspectRatio=false, extent={{-180,-160},{160,140}})));
+      end Rtu2;
     end BaseClasses;
 
   end Building;
@@ -2953,7 +3230,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         tableName="normalized_power_input",
         fileName=
             "/home/kun/Documents/SolarPlus-Optimizer/controller/validation/normalized_power_input.csv",
-        columns={2,3,4,5,6})
+        columns={6,7,8,9,10})
         annotation (Placement(transformation(extent={{-60,-20},{-40,0}})));
 
       Modelica.Blocks.Sources.CombiTimeTable temperature_meas(
@@ -2969,32 +3246,26 @@ package SolarPlus "This package contains models for MPC control optimization."
               30},{-20,28},{-1.66667,28}},
                                      color={0,0,127}));
       connect(weather.y[3], store.weaPoaWin) annotation (Line(points={{-39,30},
-              {-20,30},{-20,24.6316},{-1.66667,24.6316}},
+              {-20,30},{-20,24.4444},{-1.66667,24.4444}},
                                      color={0,0,127}));
       connect(weather.y[2], store.weaPoaPv) annotation (Line(points={{-39,30},{
-              -20,30},{-20,21.2632},{-1.66667,21.2632}},
+              -20,30},{-20,20.8889},{-1.66667,20.8889}},
                                  color={0,0,127}));
-      connect(Normalized_power_input.y[4], store.uHeat) annotation (Line(points=
-             {{-39,-10},{-20,-10},{-20,14.5263},{-1.66667,14.5263}}, color={0,0,
+      connect(Normalized_power_input.y[4], store.uHeat) annotation (Line(points={{-39,-10},
+              {-20,-10},{-20,13.7778},{-1.66667,13.7778}},           color={0,0,
               127}));
-      connect(Normalized_power_input.y[1], store.uCool) annotation (Line(points=
-             {{-39,-10},{-20,-10},{-20,11.1579},{-1.66667,11.1579}}, color={0,0,
+      connect(Normalized_power_input.y[1], store.uCool) annotation (Line(points={{-39,-10},
+              {-20,-10},{-20,10.2222},{-1.66667,10.2222}},           color={0,0,
               127}));
       connect(Normalized_power_input.y[5], store.uBattery) annotation (Line(
-            points={{-39,-10},{-20,-10},{-20,4.42105},{-1.66667,4.42105}},
+            points={{-39,-10},{-20,-10},{-20,3.11111},{-1.66667,3.11111}},
                                                              color={0,0,127}));
       connect(Normalized_power_input.y[3], store.uRef) annotation (Line(points={{-39,-10},
-              {-20,-10},{-20,1.05263},{-1.66667,1.05263}},
+              {-20,-10},{-20,-0.444444},{-1.66667,-0.444444}},
                                                         color={0,0,127}));
       connect(Normalized_power_input.y[2], store.uFreCool) annotation (Line(
-            points={{-39,-10},{-20,-10},{-20,-2.31579},{-1.66667,-2.31579}},
+            points={{-39,-10},{-20,-10},{-20,-4},{-1.66667,-4}},
                                                            color={0,0,127}));
-      connect(Normalized_power_input.y[4], store.uHeatEast) annotation (Line(
-            points={{-39,-10},{-20,-10},{-20,17.8947},{-1.66667,17.8947}},
-            color={0,0,127}));
-      connect(Normalized_power_input.y[1], store.uCoolEast) annotation (Line(
-            points={{-39,-10},{-20,-10},{-20,7.78947},{-1.66667,7.78947}},
-            color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
             coordinateSystem(preserveAspectRatio=false)),
         experiment(StopTime=1296000, Interval=300));
