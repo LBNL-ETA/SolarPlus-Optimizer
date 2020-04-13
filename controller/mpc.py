@@ -243,11 +243,11 @@ class mpc(object):
             value = self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1]
             time = self.model.display_measurements('Measured')[self.init_vm[par]].index[-1]
             if par == 'Tfre_0' and value > 10:
-                #if self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1] > 10:
                 value = -2
             if par == 'Tref_0' and value > 36.5:
-                # if self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1] > 36.5:
                 value = 36
+            if par == 'SOC_0':
+                value = 0.4
             print('State {0} set to value {1} from measurement at time {2}.'.format(self.init_vm[par], value, time))
             # Set the value in the model
             self.model.parameter_data[par]['Value'].set_data(value)
@@ -546,9 +546,6 @@ class mpc(object):
                 raise ValueError('Exodata object {0} unknown.'.format(exo_object))
             # Update data
             df = self.data_manager.get_data_from_config(config_section, start_time, final_time)
-
-#            if config_section == "control":
-#                df = process_data.process_control_df(df=df)
 
             exo_object._df = df
             print('Updating {0}...'.format(exo_object.name))
