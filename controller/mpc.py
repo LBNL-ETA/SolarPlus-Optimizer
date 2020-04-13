@@ -165,15 +165,15 @@ class mpc(object):
         if 'Trtu_west' in setpoints.columns:
             # convert K to F
             setpoints['Trtu_west'] = (setpoints['Trtu_west'] - 273.15) * 9/5 + 32
-            # Considering 1 F deadband (between heating and cooling setpoint) in the thermostat
+            # Considering 4 F deadband (between heating and cooling setpoint) in the thermostat
             setpoints['Trtu_west_cool'] = setpoints['Trtu_west']
-            setpoints['Trtu_west_heat'] = setpoints['Trtu_west'] - 1
+            setpoints['Trtu_west_heat'] = setpoints['Trtu_west'] - 4
         if 'Trtu_east' in setpoints.columns:
             # convert K to F
             setpoints['Trtu_east'] = (setpoints['Trtu_east'] - 273.15) * 9/5 + 32
-            # Considering 1 F deadband (between heating and cooling setpoint) in the thermostat
+            # Considering 4 F deadband (between heating and cooling setpoint) in the thermostat
             setpoints['Trtu_east_cool'] = setpoints['Trtu_east']
-            setpoints['Trtu_east_heat'] = setpoints['Trtu_east'] - 1
+            setpoints['Trtu_east_heat'] = setpoints['Trtu_east'] - 4
         if 'Tfre' in setpoints.columns:
             setpoints['Tfre'] = (setpoints['Tfre'] - 273.15) * 9/5 + 32
         if 'Tref' in setpoints.columns:
