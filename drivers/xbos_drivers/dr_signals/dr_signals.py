@@ -428,12 +428,12 @@ class DRSignalsDriver(XBOSProcess):
                 default_result = self.get_default_dr_signal('dr-prices',
                                                             curr_time_formatted,
                                                             custom_st.strftime('%Y-%m-%dT%H:%M:%S'))
-                price_df = pd.concat([default_result['data_dr'], price_df])
+                price_df = pd.concat([default_result['data_dr'], price_df], sort=True)
             if custom_et < end_time:
                 default_result = self.get_default_dr_signal('dr-prices',
                                                             custom_et.strftime('%Y-%m-%dT%H:%M:%S'),
                                                             end_time_formatted)
-                price_df = pd.concat([price_df, default_result['data_dr']])
+                price_df = pd.concat([price_df, default_result['data_dr']], sort=True)
 
         return price_df[['customer_energy_charge', 'customer_demand_charge_tou']]
 

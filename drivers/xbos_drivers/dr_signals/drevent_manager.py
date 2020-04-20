@@ -3,7 +3,7 @@ __author__ = 'Olivier Van Cutsem, Pranav Gupta'
 import json
 import os
 import pytz
-#import datetime
+from datetime import timedelta
 from dateutil.parser import parse
 
 import electricitycostcalculator
@@ -143,6 +143,7 @@ class DREventManager:
 
         local_dt = local.localize(naive, is_dst=None)
         utc_dt = local_dt.astimezone(pytz.utc)
+
         return utc_dt.strftime("%Y-%m-%dT%H:%M:%S")
 
     def decode_rawjson(self, type_dr, raw_data):
@@ -268,18 +269,18 @@ class DREventManager:
 
             elif 'energy_prices' in raw_json_data and 'demand_prices' in raw_json_data:
                 assert len(raw_json_data['energy_prices']) == len(raw_json_data['demand_prices'])
-                st, et = parse(start_date), parse(end_date)
+                st, et = parse(self.convert_to_utc(start_date)), parse(self.convert_to_utc(end_date))
                 delta_sec = (et - st).total_seconds()
 
                 if self.FORECAST_FREQUENCY == '15min':
-                    step = datetime.timedelta(minutes=15)
+                    step = timedelta(minutes=15)
                 else:
                     raise NotImplementedError('Only 15min frequency works for now.')
                 assert len(raw_json_data['energy_prices']) == (delta_sec / step.total_seconds())
 
                 array = []
                 for index, i in enumerate(range(0, int(delta_sec), int(step.total_seconds()))):
-                    array.append([st + datetime.timedelta(seconds=i),
+                    array.append([st + timedelta(seconds=i),
                                   raw_json_data['energy_prices'][index],
                                   raw_json_data['demand_prices'][index]])
                 price_df = pd.DataFrame(array, columns=['timestamp',
