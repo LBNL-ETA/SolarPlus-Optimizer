@@ -408,7 +408,6 @@ class DRSignalsDriver(XBOSProcess):
         """
         curr_time_formatted = curr_time.strftime('%Y-%m-%dT%H:%M:%S')
         end_time_formatted = end_time.strftime('%Y-%m-%dT%H:%M:%S')
-
         result = self.get_dr_signal('dr-prices', curr_time_formatted, end_time_formatted)
 
         # Revert to default event
@@ -480,7 +479,7 @@ class DRSignalsDriver(XBOSProcess):
         # Checks if new event(s) have been added
         self.update_dr_events()
 
-        curr_time = datetime.datetime.now()
+        curr_time = datetime.datetime.utcnow()
         end_time = curr_time + timedelta(hours=self.FORECAST_PERIOD)
 
         df_price = self.get_price(curr_time, end_time)

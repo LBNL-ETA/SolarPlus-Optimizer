@@ -2,12 +2,12 @@ __author__ = 'Olivier Van Cutsem, Pranav Gupta'
 
 import json
 import os
-from datetime import timedelta
+import pytz
+#import datetime
 from dateutil.parser import parse
 
 import electricitycostcalculator
 import pandas as pd
-from dateutil.parser import parse
 from electricitycostcalculator.cost_calculator.cost_calculator import CostCalculator
 from electricitycostcalculator.cost_calculator.tariff_structure import *
 from electricitycostcalculator.openei_tariff.openei_tariff_analyzer import *
@@ -134,6 +134,17 @@ class DREventManager:
 
         return avail_events
 
+    @staticmethod
+    def convert_to_utc(date, timezone='US/Pacific'):
+        local = pytz.timezone("US/Pacific")
+
+        # NOTE: datetime module is possibly imported from electricitycostcalculator
+        naive = datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
+
+        local_dt = local.localize(naive, is_dst=None)
+        utc_dt = local_dt.astimezone(pytz.utc)
+        return utc_dt.strftime("%Y-%m-%dT%H:%M:%S")
+
     def decode_rawjson(self, type_dr, raw_data):
         """ Decode the custom DR events json file.
 
@@ -153,16 +164,16 @@ class DREventManager:
 
         if type_dr == 'dr-prices':
             ret_dict['type_dr'] = 'dr-prices'
-            ret_dict['startdate'] = raw_data["start-date"]
-            ret_dict['enddate'] = raw_data["end-date"]
+            ret_dict['startdate'] = self.convert_to_utc(raw_data["start-date"])
+            ret_dict['enddate'] = self.convert_to_utc(raw_data["end-date"])
             ret_dict['data_dr'] = self.get_df_tariff(raw_data["type"], (raw_data["start-date"], raw_data["end-date"]),
                                                      raw_data["data"])
 
         elif type_dr == 'dr-limit' or type_dr == 'dr-shed' or type_dr == 'dr-track':
             raw_data = raw_data["data"]
             ret_dict['type_dr'] = type_dr
-            ret_dict['startdate'] = raw_data["start-date"]
-            ret_dict['enddate'] = raw_data["end-date"]
+            ret_dict['startdate'] = self.convert_to_utc(raw_data["start-date"])
+            ret_dict['enddate'] = self.convert_to_utc(raw_data["end-date"])
 
             if type_dr == 'dr-track':
                 st, et = parse(raw_data["start-date"]), parse(raw_data["end-date"])
@@ -193,12 +204,12 @@ class DREventManager:
                 ret_dict['enddate'] = raw_data["end-date-take"] if et1 > et2 else raw_data["end-date-relax"]
 
                 start_date = {
-                    'start-date-take': raw_data["start-date-take"],
-                    'start-date-relax': raw_data["start-date-relax"]
+                    'start-date-take': self.convert_to_utc(raw_data["start-date-take"]),
+                    'start-date-relax': self.convert_to_utc(raw_data["start-date-relax"])
                 }
                 end_date = {
-                    'end-date-take': raw_data["end-date-take"],
-                    'end-date-relax': raw_data["end-date-relax"]
+                    'end-date-take': self.convert_to_utc(raw_data["end-date-take"]),
+                    'end-date-relax': self.convert_to_utc(raw_data["end-date-relax"])
                 }
                 power = {
                     'power-take': raw_data['power-take'],
@@ -261,14 +272,14 @@ class DREventManager:
                 delta_sec = (et - st).total_seconds()
 
                 if self.FORECAST_FREQUENCY == '15min':
-                    step = timedelta(minutes=15)
+                    step = datetime.timedelta(minutes=15)
                 else:
                     raise NotImplementedError('Only 15min frequency works for now.')
                 assert len(raw_json_data['energy_prices']) == (delta_sec / step.total_seconds())
 
                 array = []
                 for index, i in enumerate(range(0, int(delta_sec), int(step.total_seconds()))):
-                    array.append([st + timedelta(seconds=i),
+                    array.append([st + datetime.timedelta(seconds=i),
                                   raw_json_data['energy_prices'][index],
                                   raw_json_data['demand_prices'][index]])
                 price_df = pd.DataFrame(array, columns=['timestamp',
