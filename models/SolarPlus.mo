@@ -910,7 +910,7 @@ package SolarPlus "This package contains models for MPC control optimization."
           Cref=1e7,
           Rref=0.01,
           Cfre=1e7,
-          Rfre=0.013,
+          Rfre=0.02,
           FreHeatingCap=4500,
           Rref_fre=0.018),
         multiSum(k={1,1,1,1,1,1,1/4,1/4}, nu=8),
@@ -941,7 +941,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       "Cooling signal input for freezer"
       annotation (Placement(transformation(extent={{-140,-240},{-100,-200}}),
             iconTransformation(extent={{-120,-220},{-100,-200}})));
-      Modelica.Blocks.Math.MultiSum multiSum1(k={1,2,2,1}, nu=4)
+      Modelica.Blocks.Math.MultiSum multiSum1(k={1,3,1,1}, nu=4)
         annotation (Placement(transformation(extent={{44,-214},{56,-202}})));
       Modelica.Blocks.Math.Product squareTrtu
       annotation (Placement(transformation(extent={{14,-172},{20,-166}})));
@@ -1018,8 +1018,8 @@ package SolarPlus "This package contains models for MPC control optimization."
               -202.8},{-4.3,-200},{-19,-200}}, color={0,0,127}));
       connect(add4.y, squareTfre.u1) annotation (Line(points={{-19,-240},{0,-240},{0,
               -239.2},{13.4,-239.2}},    color={0,0,127}));
-      connect(TSetFre.y,add4. u2) annotation (Line(points={{-58,-240},{-50,-240},{-50,
-              -246},{-42,-246}},       color={0,0,127}));
+      connect(TSetFre.y,add4. u2) annotation (Line(points={{-58,-240},{-50,-240},
+              {-50,-246},{-42,-246}},  color={0,0,127}));
       connect(squareTfre.u2,add4. y) annotation (Line(points={{13.4,-242.8},{4,-242.8},
               {4,-240},{-19,-240}},         color={0,0,127}));
       connect(add2.y, squareTrtu.u2) annotation (Line(points={{-19,-168},{-4,-168},
@@ -1907,7 +1907,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       model Store
         extends BaseClasses.partialStore(store(
             TSpRtuEast=22.5 + 273.15,
-            TSpRtuWest=20.5 + 273.15,
+            TSpRtuWest=20.6 + 273.15,
             TSpRef=0 + 273.15,
             TSpFre=-22 + 273.15));
         Modelica.Blocks.Interfaces.RealInput uHeat "RTU heating signal input"
@@ -2121,21 +2121,21 @@ package SolarPlus "This package contains models for MPC control optimization."
         parameter Modelica.SIunits.Power RTUEastCoolingCap = 16998 "Cooling capacity of east RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Power RTUWestHeatingEff = 0.8 "Heating efficiency of west RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Power RTUEastHeatingEff = 0.8 "Heating efficiency of east RTU" annotation(Dialog(group = "RTU"));
-        parameter Modelica.SIunits.Power RTUWestCoolingCOP = 3 "Cooling COP of west RTU" annotation(Dialog(group = "RTU"));
-        parameter Modelica.SIunits.Power RTUEastCoolingCOP = 3 "Cooling COP of east RTU" annotation(Dialog(group = "RTU"));
+        parameter Real RTUWestCoolingCOP = 3 "Cooling COP of west RTU" annotation(Dialog(group = "RTU"));
+        parameter Real RTUEastCoolingCOP = 3 "Cooling COP of east RTU" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Temperature Trtu_west_0 = 21+273.15 "Initial temperature of west RTU zone" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.Temperature Trtu_east_0 = 21+273.15 "Initial temperature of east RTU zone" annotation(Dialog(group = "RTU"));
         parameter Modelica.SIunits.HeatCapacity Cref=1e6 "Heat capacity of refrigerator zone" annotation(Dialog(group = "Refrigerator"));
-        parameter Modelica.SIunits.ThermalResistance Rref=0.007 "Thermal resistance of refrigerator zone to RTU zone" annotation(Dialog(group = "Refrigerator"));
+        parameter Modelica.SIunits.ThermalResistance Rref=0.007 "Thermal resistance of refrigerator zone to RTU west zone" annotation(Dialog(group = "Refrigerator"));
         parameter Modelica.SIunits.Power RefCoolingCap = 6096 "Cooling capacity of refrigerator" annotation(Dialog(group = "Refrigerator"));
-        parameter Modelica.SIunits.Power RefCoolingCOP = 3 "Cooling COP of refrigerator" annotation(Dialog(group = "Refrigerator"));
+        parameter Real RefCoolingCOP = 3 "Cooling COP of refrigerator" annotation(Dialog(group = "Refrigerator"));
         parameter Modelica.SIunits.Temperature Tref_0 = 3.5+273.15 "Initial temperature of refrigerator" annotation(Dialog(group = "Refrigerator"));
         parameter Modelica.SIunits.HeatCapacity Cfre=1e6 "Heat capacity of freezer zone" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.ThermalResistance Rfre=0.005 "Thermal resistance of freezer zone to RTU east zone" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreCoolingCap = 5861 "Cooling capacity of freezer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreHeatingCap = 3500 "Defrost heating capacity of freezer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Power FreHeatingEff = 0.99 "Heating efficiency of freezer" annotation(Dialog(group = "Freezer"));
-        parameter Modelica.SIunits.Power FreCoolingCOP = 3 "Cooling COP of frezzer" annotation(Dialog(group = "Freezer"));
+        parameter Real FreCoolingCOP = 3 "Cooling COP of frezzer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.Temperature Tfre_0 = -25+273.15 "Initial temperature of freezer" annotation(Dialog(group = "Freezer"));
         parameter Modelica.SIunits.ThermalResistance Rref_fre=0.001 "Thermal resistance of refrigerator zone to freezer zone" annotation(Dialog(group = "Refrigerator"));
 
