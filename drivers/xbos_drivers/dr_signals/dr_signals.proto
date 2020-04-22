@@ -1,0 +1,34 @@
+syntax = "proto3";
+package xbospb;
+import "nullabletypes.proto";
+
+message DRSignalsPrediction {
+
+    message Prediction {
+
+        // Nullable
+        // unit = ns
+        uint64 forecast_time = 1;
+
+        Double price_energy = 2;
+        Double price_demand = 3;
+
+		// 0 - none, 1 - limit,
+		// 2 - shed, 3 - shift,
+		// 4 - track
+		Uint64 signal_type = 4;
+
+		Double power_limit = 5;
+		Double power_shed = 6;
+		Double power_shift = 7;
+		Double power_track = 8;
+
+    }
+
+    // Not nullable
+    // unit = ns
+    uint64 time = 1;
+    
+    repeated Prediction predictions = 3;
+
+}

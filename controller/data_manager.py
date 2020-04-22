@@ -239,7 +239,7 @@ class Data_Manager():
                 latest timestamp when the forecasts came in
         '''
         res = self.influx_client.query(
-            "select last(value), time from timeseries where \"uuid\"=\'%s\' and time > now() - 17m "%uuid)
+            "select last(value), time from timeseries where \"uuid\"=\'%s\' and time > now() - 63m "%uuid)
         if not measurement in res:
             res = self.influx_client.query(
                 "select last(value), time from timeseries where \"uuid\"=\'%s\' " % uuid)

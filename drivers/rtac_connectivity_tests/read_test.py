@@ -18,6 +18,7 @@ start_time = time.time()
 while (time.time() - start_time) < 60:
     time.sleep(10)
     output = obj.get_data()
+    # output = obj.get_data_raw()
     print()
     print(output)
     fp.write(str(time.time())+',' + ','.join([str(item) for item in output.values()]) + '\n')

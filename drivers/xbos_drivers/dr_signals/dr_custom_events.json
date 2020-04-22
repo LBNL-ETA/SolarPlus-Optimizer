@@ -1,0 +1,61 @@
+[
+  {
+    "type": "price-tou",
+    "notification-date": "2020-04-16T04:00:00",
+    "start-date": "2020-04-20T22:00:00",
+    "end-date": "2020-04-20T23:00:00",
+    "data":
+    {
+      "energy_prices": [1, 2, 3, 4],
+      "demand_prices": [5, 6, 7, 8]
+    }
+  },
+  
+  {
+    "type": "dr-shift",
+    "notification-date": "2020-04-16T04:00:00",
+    "data":
+    {
+      "power-take": 5,
+      "power-relax": -5,
+      "start-date-take": "2020-04-21T01:00:00",
+      "end-date-take": "2020-04-21T02:00:00",
+      "start-date-relax": "2020-04-21T02:00:00",
+      "end-date-relax": "2020-04-21T03:00:00"
+    }
+  },
+
+  {
+    "type": "dr-limit",
+    "notification-date": "2020-04-16T04:00:00",
+    "data":
+    {
+      "power": 35,
+      "start-date": "2020-04-21T04:00:00",
+      "end-date": "2020-04-21T06:00:00"
+    }
+  },
+
+  {
+    "type": "dr-shed",
+    "notification-date": "2020-04-16T04:00:00",
+    "data":
+    {
+      "power": -5,
+      "start-date": "2020-04-21T08:00:00",
+      "end-date": "2020-04-21T09:00:00"
+    }
+  },
+  
+  {
+    "type": "dr-track",
+    "notification-date": "2020-04-16T04:00:00",
+    "data":
+    {
+      "profile": [40, 40, 40, 40, 40, 40, 40, 40],
+      "delta": 7,
+      "start-date": "2020-04-21T10:00:00",
+      "end-date": "2020-04-21T12:00:00"
+    }
+  }
+]
