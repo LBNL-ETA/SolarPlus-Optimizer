@@ -23,7 +23,7 @@ def run():
     start_time = start.strftime("%Y-%m-%d %H:%M:00")
     start_time_utc = pd.to_datetime(start_time).tz_localize(tz_computer).tz_convert('UTC')
     mpc_horizon = 24*3600
-    mpc_step = 3600
+    # mpc_step = 3600
     print('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print("The Solar+ Optimizer has begun its operation at {0} UTC...".format(start_time_utc))
     print("The prediction horizon is {} hours.".format(mpc_horizon/3600))
@@ -35,11 +35,6 @@ def run():
     outdir = os.path.abspath(os.path.join(__file__,'..','output'))
     if not os.path.exists(outdir):
         os.mkdir(outdir)
-    # Save setup: UTC time
-    # with open(outdir+'/mpc_setup_{0}.txt'.format(start_time), 'w') as f:
-    #     f.write(str(start_time_utc) +'\n')
-    #     f.write(str(mpc_step) +'\n')
-    #     f.write(str(mpc_horizon) +'\n')
 
     # Instantiate controller
     if controller is 'mpc':
@@ -85,5 +80,6 @@ if __name__ == '__main__':
             try:
                 run()
                 print('Run ended ok.')
+                # time.sleep(300)
             except:
                 print('Run ended in error.')

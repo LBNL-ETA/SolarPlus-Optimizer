@@ -14,12 +14,21 @@ modbus:
     UNIT_ID: [0xf7, 0xf6]
     time_threshold_revert_to_default: 14400
 
+    ######################################################
+    # IF THIS IS CHANGED, CHANGE MPC CONSTRAINTS AS WELL #
+    ######################################################
     default_setpoint_map:
       refrigerator: 33
       freezer: -7
+    ######################################################
+    # IF THIS IS CHANGED, CHANGE MPC CONSTRAINTS AS WELL #
+    ######################################################
     max_setpoint_limit_map:
       refrigerator: 38
       freezer: -2
+    ######################################################
+    # IF THIS IS CHANGED, CHANGE MPC CONSTRAINTS AS WELL #
+    ######################################################
     min_setpoint_limit_map:
       refrigerator: 33
       freezer: -30

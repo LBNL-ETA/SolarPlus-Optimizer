@@ -12,23 +12,18 @@ from matplotlib import pyplot as plt
 # --------------------------------------------------------------------------
 # Estimation periods
 start_time = '2019-11-12 00:00:00+00:00' # UTC time
-final_time = '2019-11-15 00:00:00+00:00' # UTC time
-start_time_train = '2019-11-12 00:00:00+00:00'
-final_time_train = '2019-11-12 18:00:00+00:00'
-start_time_validate = '2019-11-12 18:00:00+00:00'
-final_time_validate = '2019-11-15 00:00:00+00:00'
+final_time = '2019-11-12 18:00:00+00:00' # UTC time
+start_time_validate = '2019-11-07 15:00:00+00:00'
+final_time_validate = '2019-11-07 17:00:00+00:00'
 # local_time = 'America/Los_Angeles'
 # Model definition
 mopath = 'models/SolarPlus.mo'
-modelpath = 'SolarPlus.Building.Training.Thermal'
+modelpath = 'SolarPlus.Building.Training.Freezer'
 # Model measurements
-meas_list = ['Trtu_west', 'Trtu_east', 'Tref', 'Tfre']
+meas_list = ['Tfre']
 sample_rate = 300;
 # Initial states (must satisfy optimization constraints)
-Trtu_west_0 = 294.0 # K
-Trtu_east_0 = 294.0 # K
-Tref_0 = 274.48 # K
-Tfre_0 = 252.82 # K
+Tfre_0 = 252.48 # K
 # Simulate Initial Option
 simulate_initial = False
 # --------------------------------------------------------------------------
@@ -43,31 +38,27 @@ geography = (37.8771, -122.2485)
 csv_weather = 'controller/validation/weather_input_201911.csv'
 weather = exodata.WeatherFromCSV(csv_weather,vm_weather,geography, tz_name='UTC')
 weather.collect_data(start_time, final_time);
-plt.figure(1)
-plt.plot(weather.get_base_data()['weaTDryBul']-273.15,label='TOut')
-plt.legend()
-plt.figure(2)
-plt.plot(weather.get_base_data()['weaPoaWin'],label='Window solar radiation')
-plt.plot(weather.get_base_data()['weaPoaPv'],label='PV solar radiation')
-plt.legend()
-
 # Controls
-vm_controls = {'HVAC_West_Norm' : ('uCoolWest', units.unit1),
-               'HVAC_East_Norm' : ('uCoolEast', units.unit1),
+vm_controls = {'ref_k': ('Tref', units.K),
+               'temp_rtu_east_k' : ('Trtu_east', units.K),
                'freezer_CompressorStatus' : ('uFreCool', units.unit1),
                # 'FreComp_Split_Norm' : ('uFreCool', units.unit1),
-               'uFreDef' : ('uFreDef', units.unit1),
-               # 'RefComp_Norm' : ('uRef', units.unit1)}
-               'refrigerator_CompressorStatus' : ('uRef', units.unit1)}
+               'uFreDef' : ('uFreDef', units.unit1)}
 csv_power = 'controller/validation/normalized_power_201911.csv'
-controls = exodata.ControlFromCSV(csv_power, vm_controls, tz_name=weather.tz_name)
+controls = exodata.ControlFromCSV(csv_power, vm_controls, tz_name='UTC')
 controls.collect_data(start_time, final_time);
-plt.figure(3)
-plt.plot(controls.get_base_data())
-plt.legend(['RTU_west','RTU_east','Freezer','Freezer defrost','Refrigerator'],loc='best')
+plt.figure(1)
+plt.subplot(2,1,1)
+plt.plot(controls.get_base_data()['uFreCool'])
+plt.plot(controls.get_base_data()['uFreDef'])
+plt.legend(['Freezer','Freezer defrost'],loc='best')
+plt.subplot(2,1,2)
+plt.plot(controls.get_base_data()['Trtu_east']-273.15)
+plt.plot(controls.get_base_data()['Tref']-273.15)
+plt.legend()
 
 # Parameters
-csv_parameters = 'models/pars_thermal.csv'
+csv_parameters = 'models/pars_freezer.csv'
 parameters = exodata.ParameterFromCSV(csv_parameters)
 parameters.collect_data()
 
@@ -78,10 +69,7 @@ parameters.collect_data()
 measurements = dict()
 for meas in meas_list:
     measurements[meas] = {'Sample' : variables.Static('{0}_sample'.format(meas), sample_rate, units.s)};
-vm_measurements = {'temp_rtu_west_k' : ('Trtu_west', units.K),
-                   'temp_rtu_east_k' : ('Trtu_east', units.K),
-                   'ref_k' : ('Tref', units.K),
-                   'fre_k' : ('Tfre', units.K)}
+vm_measurements = {'fre_k' : ('Tfre', units.K)}
 csv_measurements = 'controller/validation/temperature_201911.csv'
 store = systems.RealFromCSV(csv_measurements, measurements, vm_measurements, tz_name = weather.tz_name)
 store.collect_measurements(start_time, final_time)
@@ -133,25 +121,14 @@ if simulate_initial:
 # Solve
 # --------------------------------------------------------------------------
 # Solve estimation problem
-model.estimate(start_time_train, final_time_train, ['Trtu_west','Trtu_east','Tref','Tfre'])
+model.estimate(start_time, final_time, ['Tfre'])
 # print(model.display_measurements('Measured'))
 
-model.validate(start_time_validate, final_time_validate, 'validate', plot=0)
-plt.figure(5)
+# emulation.collect_measurements(start_time_validate, final_time_validate)
+# model.measurements = emulation.measurements
+model.validate(start_time, final_time, 'validate', plot=0)
+plt.figure(2)
 # for key in ['Trtu_west','Trtu_east','Tref','Tfre']:
-plt.subplot(4,1,1)
-plt.plot(model.measurements['Trtu_west']['Simulated'].get_base_data()-273.15, label='Trtu_west_Simulated')
-plt.plot(model.measurements['Trtu_west']['Measured'].get_base_data()-273.15, label='Trtu_west_Measured')
-plt.legend()
-plt.subplot(4,1,2)
-plt.plot(model.measurements['Trtu_east']['Simulated'].get_base_data()-273.15, label='Trtu_east_Simulated')
-plt.plot(model.measurements['Trtu_east']['Measured'].get_base_data()-273.15, label='Trtu_east_Measured')
-plt.legend()
-plt.subplot(4,1,3)
-plt.plot(model.measurements['Tref']['Simulated'].get_base_data()-273.15, label='Tref_Simulated')
-plt.plot(model.measurements['Tref']['Measured'].get_base_data()-273.15, label='Tref_Measured')
-plt.legend()
-plt.subplot(4,1,4)
 plt.plot(model.measurements['Tfre']['Simulated'].get_base_data()-273.15, label='Tfre_Simulated')
 plt.plot(model.measurements['Tfre']['Measured'].get_base_data()-273.15, label='Tfre_Measured')
 plt.legend()
@@ -160,7 +137,7 @@ plt.show()
 print('\n')
 print("-------------------------------------")
 print("The RMSE value of the estimation is:")
-for key in ['Trtu_west','Trtu_east','Tref','Tfre']:
+for key in ['Tfre']:
     print(model.RMSE[key].display_data())
 
 print('\n')
@@ -168,4 +145,5 @@ print("--------------------------------------")
 print("The estimated parameters for the model are:")
 for key in model.parameter_data.keys():
     print(key, model.parameter_data[key]['Value'].display_data())
+print("--------------------------------------")
 # --------------------------------------------------------------------------

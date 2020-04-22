@@ -11,7 +11,7 @@ explicitly as appropriate.
 from mpcpy import exodata, models, optimization, variables, units, systems
 import pandas as pd
 from data_manager import Data_Manager
-import process_data
+# import process_data
 import datetime
 
 class mpc(object):
@@ -162,12 +162,18 @@ class mpc(object):
         setpoints_raw = pd.concat(setpoints_list,axis=1)
         setpoints = setpoints_raw.resample('5T').pad()
         print(setpoints.head())
-        if 'Trtu' in setpoints.columns:
+        if 'Trtu_west' in setpoints.columns:
             # convert K to F
-            setpoints['Trtu'] = (setpoints['Trtu'] - 273.15) * 9/5 + 32
-            # Considering 2 F deadband (between heating and cooling setpoint) in the thermostat
-            setpoints['Trtu_cool'] = setpoints['Trtu'] + 1
-            setpoints['Trtu_heat'] = setpoints['Trtu'] - 1
+            setpoints['Trtu_west'] = (setpoints['Trtu_west'] - 273.15) * 9/5 + 32
+            # Considering 4 F deadband (between heating and cooling setpoint) in the thermostat
+            setpoints['Trtu_west_cool'] = setpoints['Trtu_west']
+            setpoints['Trtu_west_heat'] = setpoints['Trtu_west'] - 4
+        if 'Trtu_east' in setpoints.columns:
+            # convert K to F
+            setpoints['Trtu_east'] = (setpoints['Trtu_east'] - 273.15) * 9/5 + 32
+            # Considering 4 F deadband (between heating and cooling setpoint) in the thermostat
+            setpoints['Trtu_east_cool'] = setpoints['Trtu_east']
+            setpoints['Trtu_east_heat'] = setpoints['Trtu_east'] - 4
         if 'Tfre' in setpoints.columns:
             setpoints['Tfre'] = (setpoints['Tfre'] - 273.15) * 9/5 + 32
         if 'Tref' in setpoints.columns:
@@ -234,18 +240,15 @@ class mpc(object):
         # For each initial state
         for par in self.init_vm:
             # Get the estimated value
-            if par != 'SOC_0':
-                value = self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1]
-                time = self.model.display_measurements('Measured')[self.init_vm[par]].index[-1]
-                if par == 'Tfre_0':
-                    if self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1] > 10:
-                        value = 0
-                if par == 'Tref_0':
-                    if self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1] > 36.5:
-                        value = 34
-                print('State {0} set to value {1} from measurement at time {2}.'.format(self.init_vm[par], value, time))
-            else:
-                value = 0.5
+            value = self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1]
+            time = self.model.display_measurements('Measured')[self.init_vm[par]].index[-1]
+            if par == 'Tfre_0' and value > 10:
+                value = -2
+            if par == 'Tref_0' and value > 36.5:
+                value = 36
+            if par == 'SOC_0':
+                value = 0.4
+            print('State {0} set to value {1} from measurement at time {2}.'.format(self.init_vm[par], value, time))
             # Set the value in the model
             self.model.parameter_data[par]['Value'].set_data(value)
 
@@ -499,6 +502,8 @@ class mpc(object):
         opt_options = opt_object.get_optimization_options()
         opt_options['n_e'] = 24*4
         opt_options['IPOPT_options']['tol'] = 1e-10
+        opt_options["IPOPT_options"]["max_iter"] = 500
+        opt_options['IPOPT_options']['linear_solver'] = 'mumps'
         opt_object.set_optimization_options(opt_options)
 
         return opt_object
@@ -541,9 +546,6 @@ class mpc(object):
                 raise ValueError('Exodata object {0} unknown.'.format(exo_object))
             # Update data
             df = self.data_manager.get_data_from_config(config_section, start_time, final_time)
-
-#            if config_section == "control":
-#                df = process_data.process_control_df(df=df)
 
             exo_object._df = df
             print('Updating {0}...'.format(exo_object.name))

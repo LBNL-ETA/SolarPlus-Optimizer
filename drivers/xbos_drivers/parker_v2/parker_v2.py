@@ -131,7 +131,7 @@ class ParkerDriver(XBOSProcess):
                     print("CASE 1/2")
                 elif time_now < first_change_time:
                     setpoint = setpoint_dict[first_change_time].get('setpoint', None)
-                    differential = setpoint_dict[first_change_time].get('differential', None)
+                    # differential = setpoint_dict[first_change_time].get('differential', None)
                     print("first change time = = %s"%(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(first_change_time))))
                 elif time_now >= first_change_time:
                     for change_time in sorted(setpoint_dict):
@@ -139,7 +139,7 @@ class ParkerDriver(XBOSProcess):
                             found = True
                             # CASE3: if time_now is between the list of setpoints, get the new setpoints
                             setpoint = setpoint_dict[change_time].get('setpoint', None)
-                            differential = setpoint_dict[change_time].get('differential', None)
+                            # differential = setpoint_dict[change_time].get('differential', None)
                             print("CASE 3: change_time = = %s"%(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(change_time))))
 
                     if not found:
@@ -152,11 +152,11 @@ class ParkerDriver(XBOSProcess):
                         else:
                             # CASE5: time_now is less that 4 hours ahead of the last setpoint forecase, do nothing
                             setpoint = None
-                            differential = None
+                            # differential = None
                             print("CASE 5")
 
                 self.change_setpoints(device=device, variable_name='setpoint', new_value=setpoint)
-                self.change_setpoints(device=device, variable_name='differential', new_value=differential)
+                # self.change_setpoints(device=device, variable_name='differential', new_value=differential)
             else:
                 print("control flag for device %s is False. Not changing setpoints"%(device))
 
@@ -181,10 +181,29 @@ class ParkerDriver(XBOSProcess):
                 if current_value != new_value:
                     value_to_be_written = int(new_value*10)
                     try:
-                        ## adding a synchronous sleep
+                        print("writting to %s, value=%d, unit=%d" % (register_name, value_to_be_written, unit))
+
+                        self.modbus_device.kill_modbus()
+                        self.modbus_device.initialize_modbus()
+
+                        output = self.modbus_device.get_data(unit=unit)
+                        print("Intital register values:")
+                        print(output)
+
+                        print("----SETTING SP to {0}F-----".format(new_value))
+                        self.modbus_device.write_register('setpoint', value_to_be_written, unit=unit)
+                        print("wait 5 seconds")
                         time.sleep(5)
-                        print("writting to %s, value=%d, unit=%d"%(register_name, value_to_be_written, unit))
-                        self.modbus_device.write_register(register_name=register_name, value=value_to_be_written, unit=unit)
+
+                        print("Register values after changing the above registers:")
+                        output = self.modbus_device.get_data(unit=unit)
+                        print(output)
+                        time.sleep(10)
+
+                        latest_value = round(self.modbus_device.read_holding_register(register_name=register_name, unit=unit)/10, 1)
+                        if latest_value != new_value:
+                            print("reconnecting the modbus serial device")
+                            self.modbus_device.reconnect()
                     except Exception as e:
                         print("exception happened when writing %d to setpoint for %s, %r"%(value_to_be_written, device, e))
 

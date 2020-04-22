@@ -32,6 +32,7 @@ class FlexstatDriver(XBOSProcess):
         self._default_cooling_setpoint_map = self.thermostat_config.get("default_cooling_setpoint_map", {'thermostat_west': 75, 'thermostat_east': 69})
         self._heating_setpoint_limit = self.thermostat_config.get("heating_setpoint_limit", 60)
         self._cooling_setpoint_limit = self.thermostat_config.get("cooling_setpoint_limit", 78)
+        self._minimum_deadband = self.thermostat_config.get("minimum_deadband", 2)
 
         self.init_thermostats()
         self._setpoints = {}
@@ -218,6 +219,8 @@ class FlexstatDriver(XBOSProcess):
 
                 if self._heating_setpoint_limit > new_value:
                     new_value = self._heating_setpoint_limit
+                elif self._cooling_setpoint_limit < new_value:
+                    new_value = self._cooling_setpoint_limit - self._minimum_deadband
 
                 occ_hsp_bacnet_variable_name = self.point_map['occ_heating_setpt']
                 current_occ_heating_sp = round(self.device_map[device][occ_hsp_bacnet_variable_name].value, 2)
@@ -240,6 +243,8 @@ class FlexstatDriver(XBOSProcess):
 
                 if self._cooling_setpoint_limit < new_value:
                     new_value = self._cooling_setpoint_limit
+                elif self._heating_setpoint_limit > new_value:
+                    new_value = self._heating_setpoint_limit + self._minimum_deadband
 
                 occ_csp_bacnet_variable_name = self.point_map['occ_cooling_setpt']
                 current_occ_cooling_sp = round(self.device_map[device][occ_csp_bacnet_variable_name].value, 2)
