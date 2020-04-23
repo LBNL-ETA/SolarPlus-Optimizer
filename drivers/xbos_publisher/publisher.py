@@ -14,7 +14,7 @@ import pandas as pd
 import time
 import datetime
 import pytz
-
+import base64
 
 def create_setpoints_df(start_date):
     tz_local = pytz.timezone("US/Pacific")
@@ -54,6 +54,9 @@ def create_setpoints_df(start_date):
     setpoint_df.index.name = 'Time'
 
     return setpoint_df
+
+def ensure_b64decode(e):
+        return bytes(base64.b64decode(e, altchars=('-_')))
 
 
 def get_wavemq_msg_dictionary(setpoint_df, device_config):
@@ -107,6 +110,8 @@ def get_wavemq_msg_dictionary(setpoint_df, device_config):
             msg_dict[device] = msg
 
             print("created message to publish on to wavemq to topic %s" % (device))
+
+    return msg_dict
 
 
 def publish_on_wavemq(xbos_schema, xbos_client, perspective, namespace, uri, *msgs):
@@ -164,8 +169,7 @@ xbos_schema = "xbosproto/XBOS"
 for topic in msg_dictionary:
     msg = msg_dictionary[topic]
     try:
-        publish_on_wavemq(xbos_schema=xbos_schema, xbos_client=xbos_client, perspective=perspective, namespace=namespace,
-                      uri=topic, msg=msg)
+        publish_on_wavemq(xbos_schema, xbos_client, perspective, namespace, topic, msg)
         print("successfully published to topic={0}".format(topic))
     except Exception as e:
         print("Error while publishing on topic={0} error={1}".format(topic, str(e)))

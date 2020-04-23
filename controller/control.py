@@ -81,5 +81,5 @@ if __name__ == '__main__':
                 run()
                 print('Run ended ok.')
                 # time.sleep(300)
-            except:
-                print('Run ended in error.')
+            except Exception as e:
+                print('Run ended in error={0}'.format(str(e)))
