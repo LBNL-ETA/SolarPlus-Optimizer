@@ -1,0 +1,44 @@
+syntax = "proto3";
+package xbospb;
+import "nullabletypes.proto";
+
+message ConstraintForecast {
+
+    message Constraints {
+        
+        // Nullable
+        // unit = ns
+        uint64 forecast_time = 1;
+
+        Double TRtuMax = 2;
+        Double TRtuMin = 3;
+        Double TRefMax = 4;
+        Double TRefMin = 5;
+        Double TFreMax = 6;
+        Double TFreMin = 7;
+        Double SOCMax = 8;
+        Double SOCMin = 9; 
+        Double uCoolMin = 10;
+        Double uCoolMax = 11;
+        Double uHeatMin = 12;
+        Double uHeatMax = 13;
+        Double uChargeMin = 14;
+        Double uChargeMax = 15;
+        Double uDischargeMax = 16;
+        Double uDischargeMin = 17;
+        Double uRefMin = 18;
+        Double uRefMax = 19;
+        Double uFreCoolMin = 20;
+        Double uFreCoolMax = 21;
+        Double demand = 22;
+        Double uBatteryMin = 23;
+        Double uBatteryMax = 24;
+        Double PMin = 25;
+        Double PMax = 26;
+
+    }
+
+    uint64 time = 1;
+    repeated Constraints constraints_predictions = 2;
+
+}

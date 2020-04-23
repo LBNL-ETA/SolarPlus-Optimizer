@@ -1,0 +1,11 @@
+waved: localhost:777
+wavemq: localhost:4516
+base_resource1: dr_signals_test
+base_resource2: constraints_test
+rate: 2 # units = sec
+entity: drsignals.ent
+namespace:
+id: dr-signals-driver
+forecast_period: 48
+pmin: -999999
+pmax: 999999
