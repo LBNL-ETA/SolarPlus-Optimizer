@@ -15,6 +15,7 @@ import time
 import datetime
 import pytz
 import base64
+import yaml
 
 def create_setpoints_df(start_date):
     tz_local = pytz.timezone("US/Pacific")
@@ -38,10 +39,10 @@ def create_setpoints_df(start_date):
 
     step1_start_datetime = start_datetime
     step1_end_datetime = step1_start_datetime + datetime.timedelta(hours=4)
-    setpoint_df.loc[step1_start_datetime: step1_end_datetime, 'Trtu_west_heat'] = 78
-    setpoint_df.loc[step1_start_datetime: step1_end_datetime, 'Trtu_west_cool'] = 82
-    setpoint_df.loc[step1_start_datetime: step1_end_datetime, 'Trtu_east_heat'] = 78
-    setpoint_df.loc[step1_start_datetime: step1_end_datetime, 'Trtu_east_cool'] = 82
+    setpoint_df.loc[step1_start_datetime: step1_end_datetime, 'Trtu_west_heat'] = 76
+    setpoint_df.loc[step1_start_datetime: step1_end_datetime, 'Trtu_west_cool'] = 78
+    setpoint_df.loc[step1_start_datetime: step1_end_datetime, 'Trtu_east_heat'] = 76
+    setpoint_df.loc[step1_start_datetime: step1_end_datetime, 'Trtu_east_cool'] = 78
 
     step2_start_datetime = step1_end_datetime + datetime.timedelta(minutes=5)
     step2_end_datetime = step2_start_datetime + datetime.timedelta(hours=6)
@@ -139,8 +140,8 @@ def publish_on_wavemq(xbos_schema, xbos_client, perspective, namespace, uri, *ms
         print("Error publishing: {0}".format(e))
 
 
-start_date = datetime.datetime.now().date()
-# start_date = datetime.date(2020, 4, 21)
+# start_date = datetime.datetime.now().date()
+start_date = datetime.date(2020, 5, 4)
 setpoint_df = create_setpoints_df(start_date)
 
 device_config = {
@@ -150,11 +151,11 @@ device_config = {
 
 msg_dictionary = get_wavemq_msg_dictionary(setpoint_df=setpoint_df, device_config=device_config)
 
-xbos_cfg =  {
-    "namespace": "",
-    "wavemq": "localhost:4516",
-    "entity": "data_manager.ent"
-}
+with open("drivers/xbos_publisher/publisher_config.yaml", "r") as fp:
+    config = yaml.safe_load(fp)
+
+
+xbos_cfg =  config.get('xbos')
 
 entity = open(xbos_cfg.get('entity'), 'rb').read()
 perspective = Perspective(
@@ -162,17 +163,20 @@ perspective = Perspective(
 )
 namespace = ensure_b64decode(xbos_cfg.get('namespace'))
 wavemq = xbos_cfg.get('wavemq', 'localhost:4516')
+publish_interval  = xbos_cfg.get('publish_interval', 3600)
 wavemq_channel = insecure_channel(wavemq)
 xbos_client = WAVEMQStub(wavemq_channel)
 xbos_schema = "xbosproto/XBOS"
 
-for topic in msg_dictionary:
-    msg = msg_dictionary[topic]
-    try:
-        publish_on_wavemq(xbos_schema, xbos_client, perspective, namespace, topic, msg)
-        print("successfully published to topic={0}".format(topic))
-    except Exception as e:
-        print("Error while publishing on topic={0} error={1}".format(topic, str(e)))
+while True:
+    for topic in msg_dictionary:
+        msg = msg_dictionary[topic]
+        try:
+            publish_on_wavemq(xbos_schema, xbos_client, perspective, namespace, topic, msg)
+            print("successfully published to topic={0}".format(topic))
+        except Exception as e:
+            print("Error while publishing on topic={0} error={1}".format(topic, str(e)))
+    time.sleep(publish_interval)
 
 
 
