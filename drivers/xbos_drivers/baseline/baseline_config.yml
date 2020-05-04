@@ -1,0 +1,19 @@
+xbos:
+  waved: localhost:777
+  wavemq: localhost:4516
+  base_resource: baseline_test
+  rate: 3600 # change this to 1 hour
+  entity: baseline.ent
+  namespace:
+  # service_name: blr
+  id: baseline_driver
+influx:
+  host:
+  port:
+  username:
+  password:
+  database:
+  ssl: true
+  verify_ssl: true
+baseline:
+  forecast_horizon: 2 # days

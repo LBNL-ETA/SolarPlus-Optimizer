@@ -1,0 +1,23 @@
+syntax = "proto3";
+package xbospb;
+import "nullabletypes.proto";
+
+message BaselinePrediction {
+
+    message Prediction {
+
+        // Nullable
+        // unit = ns
+        uint64 forecast_time = 1;
+
+        Double power = 2;
+
+    }
+
+    // Not nullable
+    // unit = ns
+    uint64 time = 1;
+    
+    repeated Prediction predictions = 2;
+
+}
