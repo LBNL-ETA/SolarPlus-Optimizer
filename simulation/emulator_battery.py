@@ -12,7 +12,7 @@ class battery_emulator(object):
         self.tz_name = tz_name
 
 
-    def load_battery_fmu(self, compiled_fmu=False):
+    def load_battery_fmu(self, compiled_fmu=True):
         '''
         Load compiled FMU
         '''
@@ -76,7 +76,7 @@ class battery_emulator(object):
 
         model_name = 'SolarPlus.Batteries.Emulator'
         model_file = 'models/SolarPlus.mo'
-        battery_fmu = self.compile_fmu(model_name, model_file)
+        battery_fmu = compile_fmu(model_name, model_file)
         shutil.move('SolarPlus_Batteries_Emulator.fmu','simulation/SolarPlus_Batteries_Emulator.fmu')
 
         return battery_fmu
