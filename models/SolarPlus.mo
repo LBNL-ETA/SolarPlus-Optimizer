@@ -453,7 +453,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       "Simple battery model with SOC as state including charging, discharging"
       parameter Modelica.SIunits.Energy Ecap  "Battery capacity";
       parameter Modelica.SIunits.Power P_cap "Charging or discharging capacity";
-      parameter Modelica.SIunits.DimensionlessRatio eta=0.9 "Charging or discharging efficiency";
+      parameter Modelica.SIunits.DimensionlessRatio eta=1.0 "Charging or discharging efficiency";
       parameter Modelica.SIunits.DimensionlessRatio SOC_0 "Initial state of charge";
       Modelica.SIunits.Energy E(fixed=true,start=SOC_0*Ecap) "Battery energy level";
       Modelica.SIunits.Power P_loss "Charging or discharging losses of battery";

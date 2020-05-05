@@ -3,14 +3,16 @@ from pyfmi import load_fmu
 
 class battery_emulator(object):
 
-    def __init__(self, SOC_0=None, tz_name='UTC'):
+    def __init__(self, SOC_0, tz_name='UTC'):
         '''
         Constructor
         '''
         # needs to add configuration file for the battery.
+        self.SOC_0 = SOC_0
+        self.tz_name = tz_name
 
 
-    def load_battery_fmu(self, compiled_fmu=True):
+    def load_battery_fmu(self, compiled_fmu=False):
         '''
         Load compiled FMU
         '''
@@ -31,10 +33,16 @@ class battery_emulator(object):
         '''
 
         battery_emu = self.load_battery_fmu()
-        res = battery_emu.simulate(start_time, final_time, input=power_setpoint)
+        SOC_0 = battery_emu.get('simple.SOC_0')
+        SOC_0 = self.SOC_0
+        battery_emu.set('simple.SOC_0', SOC_0)
+        res = battery_emu.simulate(start_time, final_time, power_setpoint)
+        # Measured SOC from the emulator
         SOC_meas = res['SOC_meas']
+        # Power setpoint coming from the controller
+        PSet_in = res['PSet']
 
-        return SOC_meas, res
+        return SOC_meas, PSet_in, res
 
     def plot_fmu(self, start_time, final_time, with_plot=True):
 
@@ -45,14 +53,13 @@ class battery_emulator(object):
         u = np.cos(t/24)*10900
         u_traj = np.transpose(np.vstack((t,u)))
         power_setpoint = (['PSet'],u_traj)
-        SOC_meas, res = self.simulate_fmu(start_time, final_time, power_setpoint)
-        u_sim = res['PSet']
+        SOC_meas, PSet_in, res = self.simulate_fmu(start_time, final_time, power_setpoint)
         time_sim = res['time']
 
         if with_plot:
             fig = plt.figure()
             plt.subplot(2,1,1)
-            plt.plot(time_sim, u_sim, label='Power setpoint')
+            plt.plot(time_sim, PSet_in, label='Power setpoint')
             plt.legend()
             plt.subplot(2,1,2)
             plt.plot(time_sim, SOC_meas, label='SOC')
@@ -76,5 +83,5 @@ class battery_emulator(object):
 
 start_time = 0
 final_time = 24*3600
-emu = battery_emulator()
+emu = battery_emulator(SOC_0=0.5)
 emu.plot_fmu(start_time, final_time)
