@@ -644,7 +644,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       Simple simple(
         Ecap(displayUnit="kWh") = 626400000,
         P_cap=10900,
-        eta=0.88,
+        eta=1.0,
         SOC_0=0.25)
         annotation (Placement(transformation(extent={{0,-10},{20,10}})));
       Modelica.Blocks.Math.Gain gain(k=1/10900)
