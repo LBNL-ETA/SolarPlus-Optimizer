@@ -1,0 +1,33 @@
+waved: localhost:777
+wavemq: localhost:4516
+base_resource: constraints_test
+rate: 2 # units = sec
+entity: constraints.ent
+namespace:=
+id: constraints_forecast_driver
+forecast_period: 48
+Trtu_max: 20
+Trtu_min: 25
+Tref_max: -2
+Tref_min: 2
+Tfre_max: -24
+Tfre_min: -20
+SOC_max: 1
+SOC_min: 0.25
+uCool_max: 1
+uCool_min: 0
+uHeat_max: 1
+uHeat_min: 0
+uChargeMax: 1
+uChargeMin: 0
+uDischargeMax: 1
+uDischargeMin: 0
+uRef_max: 1
+uRef_min: 0
+uFreCool_max: 1
+uFreCool_min: 0
+demand: 20
+uBattery_max: 1
+uBattery_min: -1
+Pmax: 999999
+Pmin: -999999
