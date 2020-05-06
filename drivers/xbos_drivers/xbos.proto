@@ -35,6 +35,9 @@ import "dr_signals.proto";
 // Constraints Forecast for MPC
 import "constraints_forecast.proto";
 
+// SEL real time automation controller
+import "rtac.proto";
+
 // c37 + other energise-related
 import "c37.proto";
 import "energise.proto";
@@ -62,6 +65,8 @@ message XBOS {
   ParkerActuationMessage parker_actuation_message = 155;
   DRSignalsPrediction drsigpred = 156;
   ConstraintForecast constraints_forecast = 157; 
+  RtacState rtac_state = 158;
+  RtacActuationMessage rtac_actuation_message = 159;
 
   //System Status Fields
   BasicServerStatus BasicServerStatus = 200;
