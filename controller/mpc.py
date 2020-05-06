@@ -166,8 +166,8 @@ class mpc(object):
             # convert K to F
             setpoints['Trtu_west'] = (setpoints['Trtu_west'] - 273.15) * 9/5 + 32
             # Considering 4 F deadband (between heating and cooling setpoint) in the thermostat
-            setpoints['Trtu_west_cool'] = setpoints['Trtu_west']
-            setpoints['Trtu_west_heat'] = setpoints['Trtu_west'] - 4
+            setpoints['Trtu_west_cool'] = setpoints['Trtu_west'] + 1
+            setpoints['Trtu_west_heat'] = setpoints['Trtu_west'] - 3
         if 'Trtu_east' in setpoints.columns:
             # convert K to F
             setpoints['Trtu_east'] = (setpoints['Trtu_east'] - 273.15) * 9/5 + 32
