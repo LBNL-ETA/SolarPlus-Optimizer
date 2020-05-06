@@ -453,7 +453,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       "Simple battery model with SOC as state including charging, discharging"
       parameter Modelica.SIunits.Energy Ecap  "Battery capacity";
       parameter Modelica.SIunits.Power P_cap "Charging or discharging capacity";
-      parameter Modelica.SIunits.DimensionlessRatio eta=0.9 "Charging or discharging efficiency";
+      parameter Modelica.SIunits.DimensionlessRatio eta=1.0 "Charging or discharging efficiency";
       parameter Modelica.SIunits.DimensionlessRatio SOC_0 "Initial state of charge";
       Modelica.SIunits.Energy E(fixed=true,start=SOC_0*Ecap) "Battery energy level";
       Modelica.SIunits.Power P_loss "Charging or discharging losses of battery";
@@ -543,7 +543,7 @@ package SolarPlus "This package contains models for MPC control optimization."
           annotation (Placement(transformation(extent={{0,-10},{20,10}})));
       equation
         connect(sin.y, simple.u)
-          annotation (Line(points={{-39,0},{-2,0}}, color={0,0,127}));
+          annotation (Line(points={{-38,0},{-2,0}}, color={0,0,127}));
         connect(simple.SOC, SOC) annotation (Line(points={{21.2,4},{60,4},{60,
                 20},{110,20}}, color={0,0,127}));
         connect(simple.Preal, Preal) annotation (Line(points={{21.2,-4},{60,-4},
@@ -639,6 +639,39 @@ package SolarPlus "This package contains models for MPC control optimization."
               coordinateSystem(preserveAspectRatio=false)));
       end Simple;
     end Training;
+
+    model Emulator "Emulator model of the battery"
+      Simple simple(
+        Ecap(displayUnit="kWh") = 626400000,
+        P_cap=10900,
+        eta=1.0,
+        SOC_0=0.25)
+        annotation (Placement(transformation(extent={{0,-10},{20,10}})));
+      Modelica.Blocks.Math.Gain gain(k=1/10900)
+        annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
+      Modelica.Blocks.Interfaces.RealInput PSet
+        "Power setpoint from the controller" annotation (Placement(
+            transformation(extent={{-140,-20},{-100,20}}), iconTransformation(
+              extent={{-140,-20},{-100,20}})));
+      Modelica.Blocks.Interfaces.RealOutput SOC_meas
+        "Measured state of charge from the emulator" annotation (Placement(
+            transformation(extent={{100,-10},{120,10}}), iconTransformation(
+              extent={{100,-10},{120,10}})));
+    equation
+      connect(gain.y, simple.u)
+        annotation (Line(points={{-19,0},{-2,0}}, color={0,0,127}));
+      connect(PSet, gain.u)
+        annotation (Line(points={{-120,0},{-42,0}}, color={0,0,127}));
+      connect(simple.SOC, SOC_meas) annotation (Line(points={{21.2,4},{60,4},{
+              60,0},{110,0}}, color={0,0,127}));
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+                                    Rectangle(
+            extent={{-100,-100},{100,100}},
+            lineColor={0,0,127},
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Solid)}), Diagram(coordinateSystem(
+              preserveAspectRatio=false)));
+    end Emulator;
   end Batteries;
 
   package PV "Package for PV models"
