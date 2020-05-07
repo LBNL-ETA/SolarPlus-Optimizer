@@ -127,7 +127,7 @@ class Data_Manager():
     def ensure_b64decode(self, e):
         return bytes(base64.b64decode(e, altchars=('-_')))
 
-    def get_single_data_from_influx(self, uuid, measurement='timeseries', start_time=None, end_time=None, window='5m', agg='mean', forecast=False):
+    def get_single_data_from_influx(self, uuid, measurement='timeseries', start_time=None, end_time=None, window='5m', agg='mean', forecast=False, config_name=None):
         '''From the influxdb measurement, get one particular variable as a DataFrame
                Parameters
                ----------
@@ -174,7 +174,10 @@ class Data_Manager():
 
             if agg != 'raw':
                 window = window.replace("m", "T")
-                df = df[st_hour:et_hour].resample(window).agg(agg).interpolate(method='linear')
+                if config_name != 'price' and config_name != 'constraint':
+                    df = df.resample(window).agg(agg).interpolate(method='linear')[start_time:end_time]
+                else:
+                    df = df.resample(window).agg(agg).fillna(method='ffill')[start_time:end_time]
                 df = df[start_time:end_time]
         else:
             if agg != 'raw':
@@ -195,7 +198,7 @@ class Data_Manager():
             df = self.influx_client.query(q)[measurement]
         return df
 
-    def get_single_data_from_csv(self, filename, column_name, start_time=None, end_time=None, tz="America/Los_Angeles", agg='mean', window='5m'):
+    def get_single_data_from_csv(self, filename, column_name, start_time=None, end_time=None, tz="America/Los_Angeles", agg='mean', window='5m', config_name=None):
         if start_time != None:
             st_hour = datetime.datetime.combine(start_time.date(), datetime.time(start_time.hour, 0, 0, tzinfo=start_time.tzinfo))
 
@@ -218,7 +221,10 @@ class Data_Manager():
             df = df.loc[:, column_name]
 
         if agg != 'raw':
-            df = df.resample(window).agg(agg).interpolate(method='linear')[start_time:end_time]
+            if config_name != 'price' and config_name != 'constraint':
+                df = df.resample(window).agg(agg).interpolate(method='linear')[start_time:end_time]
+            else:
+                df = df.resample(window).agg(agg).fillna(method='ffill')[start_time:end_time]
         df = df.dropna()
 
         return df
@@ -281,8 +287,8 @@ class Data_Manager():
                 agg = variable_cfg.get('agg', 'mean')
                 window = variable_cfg.get('window', '5m')
 
-                df = self.get_single_data_from_csv(filename=filename, column_name=column_name, start_time=start_time, end_time=end_time, tz=tz, agg=agg,
-                                                   window=window)
+                df = self.get_single_data_from_csv(filename=filename, column_name=column_name, start_time=start_time,
+                                                   end_time=end_time, tz=tz, agg=agg, window=window, config_name=config)
                 df_list.append(df)
                 column_names.append(variable)
             elif source_type == "influxdb":
@@ -292,7 +298,8 @@ class Data_Manager():
                 measurement = variable_cfg.get('measurement', 'timeseries')
 
                 df = self.get_single_data_from_influx(uuid=uuid, measurement=measurement, start_time=start_time,
-                                                      end_time=end_time, window=window, agg=agg, forecast=forecast)
+                                                      end_time=end_time, window=window, agg=agg, forecast=forecast,
+                                                      config_name=config)
                 df_list.append(df)
                 column_names.append(variable)
 
