@@ -645,10 +645,10 @@ package SolarPlus "This package contains models for MPC control optimization."
         Ecap(displayUnit="kWh") = 626400000,
         P_cap=10900,
         eta=1.0,
-        SOC_0=0.25)
-        annotation (Placement(transformation(extent={{0,-10},{20,10}})));
-      Modelica.Blocks.Math.Gain gain(k=1/10900)
+        SOC_0=0.5)
         annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
+      Modelica.Blocks.Math.Gain gain(k=1/10900)
+        annotation (Placement(transformation(extent={{-80,-10},{-60,10}})));
       Modelica.Blocks.Interfaces.RealInput PSet
         "Power setpoint from the controller" annotation (Placement(
             transformation(extent={{-140,-20},{-100,20}}), iconTransformation(
@@ -657,13 +657,28 @@ package SolarPlus "This package contains models for MPC control optimization."
         "Measured state of charge from the emulator" annotation (Placement(
             transformation(extent={{100,-10},{120,10}}), iconTransformation(
               extent={{100,-10},{120,10}})));
+      Modelica.Blocks.Logical.LessEqualThreshold SOCmin(threshold=0.25)
+        "minimum state of charge"
+        annotation (Placement(transformation(extent={{0,-10},{20,10}})));
+      Modelica.Blocks.Logical.Switch switch1
+        annotation (Placement(transformation(extent={{40,-10},{60,10}})));
+      Modelica.Blocks.Sources.Constant const(k=0.25)
+        annotation (Placement(transformation(extent={{0,30},{20,50}})));
     equation
       connect(gain.y, simple.u)
-        annotation (Line(points={{-19,0},{-2,0}}, color={0,0,127}));
+        annotation (Line(points={{-59,0},{-42,0}},color={0,0,127}));
       connect(PSet, gain.u)
-        annotation (Line(points={{-120,0},{-42,0}}, color={0,0,127}));
-      connect(simple.SOC, SOC_meas) annotation (Line(points={{21.2,4},{60,4},{
-              60,0},{110,0}}, color={0,0,127}));
+        annotation (Line(points={{-120,0},{-82,0}}, color={0,0,127}));
+      connect(simple.SOC, SOCmin.u) annotation (Line(points={{-18.8,4},{-10,4},
+              {-10,0},{-2,0}}, color={0,0,127}));
+      connect(SOCmin.y, switch1.u2)
+        annotation (Line(points={{21,0},{38,0}}, color={255,0,255}));
+      connect(const.y, switch1.u1) annotation (Line(points={{21,40},{26,40},{26,
+              8},{38,8}}, color={0,0,127}));
+      connect(simple.SOC, switch1.u3) annotation (Line(points={{-18.8,4},{-10,4},
+              {-10,-20},{30,-20},{30,-8},{38,-8}}, color={0,0,127}));
+      connect(switch1.y, SOC_meas)
+        annotation (Line(points={{61,0},{110,0}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
                                     Rectangle(
             extent={{-100,-100},{100,100}},
