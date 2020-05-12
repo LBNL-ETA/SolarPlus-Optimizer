@@ -267,6 +267,7 @@ class DREventManager:
                 end_date_sig = parse(end_date)
                 price_df, map = self.__tariff_manager.get_electricity_price((start_date_sig, end_date_sig), timestep)
                 price_df['customer_demand_charge_tou'] = price_df['customer_demand_charge_tou'] + price_df['customer_demand_charge_season']
+                price_df.index = price_df.tz_localize('US/Pacific').tz_convert('UTC')
 
             elif 'energy_prices' in raw_json_data and 'demand_prices' in raw_json_data:
                 assert len(raw_json_data['energy_prices']) == len(raw_json_data['demand_prices'])
@@ -288,6 +289,7 @@ class DREventManager:
                                                         'customer_energy_charge',
                                                         'customer_demand_charge_tou'])
                 price_df.set_index(price_df.columns[0], inplace=True)
+                price_df.index = price_df.tz_localize('US/Pacific').tz_convert('UTC')
             else:
                 raise KeyError('cannot find tariff-json or (energy_prices and demand_prices)')
 
