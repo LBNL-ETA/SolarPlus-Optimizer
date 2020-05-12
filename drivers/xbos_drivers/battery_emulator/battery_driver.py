@@ -63,13 +63,13 @@ class EmulatedBatteryDriver(XBOSProcess):
         start = self.current_time
         end = self.current_time + self._model_update_rate
 
+        print("simulating with setpoints: {}".format(self.current_real_power_setpoint))
         power_setpoint = (['PSet'], np.array(
             [
                 [start, self.current_real_power_setpoint],
                 [end, self.current_real_power_setpoint]
             ]
         ))
-
         self.battery.simulate(start, end, power_setpoint, options=self.model_options)
         self.model_options['initialize'] = False
         self.current_time = self.current_time + self._model_update_rate
@@ -81,8 +81,7 @@ class EmulatedBatteryDriver(XBOSProcess):
             setpoint_dict[time] = {}
 
             if 'realPowerSetpoint' in setpoint.keys():
-                setpoint_dict[time]['realPowerSetpoint'] = setpoint['realPowerSetpoint'].get('realPowerSetpoint', None)
-
+                setpoint_dict[time]['real_power_setpoint'] = setpoint['realPowerSetpoint'].get('value', None)
         return setpoint_dict
 
     async def _query_existing(self, uri):
@@ -96,7 +95,7 @@ class EmulatedBatteryDriver(XBOSProcess):
 
             if control_flag != None:
                 if not control_flag and self.device_control_flag.get(device, False):
-                    self.change_setpoints(device=device, variable_name='realPowerSetpoint', new_value=self._default_real_power_setpoint)
+                    self.change_setpoints(device=device, variable_name='real_power_setpoint', new_value=self._default_real_power_setpoint)
                 self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
             if setpoints != None:
@@ -115,7 +114,7 @@ class EmulatedBatteryDriver(XBOSProcess):
 
         if control_flag != None:
             if not control_flag  and self.device_control_flag.get(device, False):
-                self.change_setpoints(device=device, variable_name='realPowerSetpoint', new_value=self._default_real_power_setpoint)
+                self.change_setpoints(device=device, variable_name='real_power_setpoint', new_value=self._default_real_power_setpoint)
             self.device_control_flag[device] = control_flag.get('value', False) == '1'
 
         if setpoints != None:
@@ -161,14 +160,13 @@ class EmulatedBatteryDriver(XBOSProcess):
                             # CASE5: time_now is less that 4 hours ahead of the last setpoint forecase, do nothing
                             real_power_setpoint = None
                             print("CASE 5")
-
                 self.change_setpoints(device=device, variable_name='real_power_setpoint', new_value=real_power_setpoint)
 
     def change_setpoints(self, device, variable_name, new_value):
         if new_value != None:
             new_value = round(new_value, 2)
             if variable_name == 'real_power_setpoint':
-                if self._max_real_power_setpoint[device] < new_value:
+                if self._max_real_power_setpoint < new_value:
                     print("new setpoint = %f more than max limit=%f for %s. changing new setpoint to max setpoint limit" % (
                         new_value, self._max_real_power_setpoint, device))
                     new_value = self._max_real_power_setpoint
@@ -178,21 +176,19 @@ class EmulatedBatteryDriver(XBOSProcess):
                         new_value, self._min_real_power_setpoint, device))
                     new_value = self._min_real_power_setpoint
 
-                register_name = 'real_power_setpoint'
-                unit = self.unit_id
                 current_value = self.current_real_power_setpoint
 
                 if current_value != new_value:
                     value_to_be_written = new_value
                     try:
-                        print("writting to %s, value=%f, unit=%d" % (register_name, value_to_be_written, unit))
+                        print("writting to real power setpoint, value=%f" % (value_to_be_written))
                         self.current_real_power_setpoint = value_to_be_written
                     except Exception as e:
                         print("exception happened when writing %f to setpoint for %s, %r" % (
                         value_to_be_written, device, e))
 
-                    print("device %s, variable= %s, modbus variable=%s, old value = %f, new value = %f, value written=%f" % (
-                        device, variable_name, register_name, current_value, new_value, value_to_be_written))
+                    print("device %s, variable= %s, old value = %f, new value = %f, value written=%f" % (
+                        device, variable_name, current_value, new_value, value_to_be_written))
                 else:
                     print("no change in setpoint, not changing")
 

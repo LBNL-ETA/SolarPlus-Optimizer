@@ -4,8 +4,6 @@ import datetime
 import os
 from influxdb import DataFrameClient
 import yaml
-import requests
-import json
 import time
 
 try:
@@ -510,21 +508,18 @@ class Data_Manager():
                     change_time = int(index.value)
                     real_power_setpoint = row.get('real_power_setpoint', None)
 
-                    if real_power_setpoint:
+                    if real_power_setpoint != None:
                         setpoint = rtac_pb2.RtacSetpoints(change_time=change_time,
-                                                          real_power_setpoint=types.Double(value=real_power_setpoint))
-                    else:
-                        setpoint=None
-
-                    if setpoint != None:
+                                                      real_power_setpoint=types.Double(value=real_power_setpoint))
                         setpoint_list.append(setpoint)
 
-                msg = xbos_pb2.XBOS(
-                    rtac_actuation_message=rtac_pb2.RtacActuationMessage(
-                        time=int(time.time() * 1e9),
-                        setpoints = setpoint_list
+                if len(setpoint_list) > 0:
+                    msg = xbos_pb2.XBOS(
+                        rtac_actuation_message=rtac_pb2.RtacActuationMessage(
+                            time=int(time.time() * 1e9),
+                            setpoints = setpoint_list
+                        )
                     )
-                )
             print("publishing on to wavemq to topic %s"%(device))
             self.publish_on_wavemq(device, msg)
 
