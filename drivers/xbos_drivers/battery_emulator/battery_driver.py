@@ -24,7 +24,7 @@ class EmulatedBatteryDriver(XBOSProcess):
         self.service_name = cfg['service_name']
 
         self._model_update_rate = self.device_config.get('model_update_rate', 30)
-        self._inital_SOC = self.device_config.get('initial_SOC', 0)
+        self._initial_SOC = self.device_config.get('initial_SOC', 0.5)
         self._default_real_power_setpoint = self.device_config.get('default_real_power_setpoint', 0)
         self._min_real_power_setpoint = self.device_config.get('min_real_power_setpoint', -109000)
         self._max_real_power_setpoint = self.device_config.get('max_real_power_setpoint', 109000)
@@ -37,7 +37,7 @@ class EmulatedBatteryDriver(XBOSProcess):
 
         self.fmu_file = self.device_config.get('fmu_file')
         self.battery = load_fmu(self.fmu_file)
-        self.battery.set('simple.SOC_0', self._inital_SOC)
+        self.battery.set('simple.SOC_0', self._initial_SOC)
         self.model_options = self.battery.simulate_options()
         self.model_options['initialize'] = True
         self.current_time = 0
@@ -183,6 +183,7 @@ class EmulatedBatteryDriver(XBOSProcess):
                     try:
                         print("writting to real power setpoint, value=%f" % (value_to_be_written))
                         self.current_real_power_setpoint = value_to_be_written
+                        self.battery.set('PSet', self.current_real_power_setpoint)
                     except Exception as e:
                         print("exception happened when writing %f to setpoint for %s, %r" % (
                         value_to_be_written, device, e))

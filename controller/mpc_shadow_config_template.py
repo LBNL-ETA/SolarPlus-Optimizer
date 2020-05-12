@@ -93,8 +93,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
     "source": {
         "csv_files": [
             "Shadow/Price_Forecast.csv",
-            "Shadow/Constraints_Forecast.csv",
-            "Shadow/emulation_states.csv"
+            "Shadow/Constraints_Forecast.csv"
         ],
         "influxdb": {"config_filename":"database_client/config.yaml",
                      "section": "database"}
@@ -163,8 +162,7 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "Trtu_west": {"uuid": "7d48d689-5cf8-50fd-98af-22dd9868b379", "window": "5m", "agg": "mean", "measurement": "timeseries"},
             "Trtu_east": {"uuid": "fd200d7e-0c46-53fc-87e4-6c8639b67b94", "window": "5m", "agg": "mean", "measurement": "timeseries"},
             "Tfre": {"uuid": "3f493b8d-0107-569f-8968-433f46de0fec", "window": "5m", "agg": "mean", "measurement": "timeseries"},
-            # change UUID
-            "SOC": {"uuid": "cd25d131-8db3-58e6-b218-d728579e2eb1", "window": "5m", "agg": "mean", "measurement": "timeseries"}
+            "SOC": {"uuid": "0efc4fa5-755c-5c45-863a-c0c776ab7538", "window": "5m", "agg": "mean", "measurement": "timeseries"}
         }
     },
 
