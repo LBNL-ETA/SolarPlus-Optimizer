@@ -200,7 +200,7 @@ class EmulatedBatteryDriver(XBOSProcess):
     async def _read_and_publish(self, *args):
 
         try:
-            measurements = {'real_power_setpoint': self.battery.get('PSet'), 'battery_current_stored_energy': self.battery.get('SOC_meas')}
+            measurements = {'real_power_setpoint': self.battery.get('PSet'), 'battery_soc': self.battery.get('SOC_meas')}
 
             time_now = time.time() * 1e9
 
@@ -208,7 +208,7 @@ class EmulatedBatteryDriver(XBOSProcess):
                 rtac_state=rtac_pb2.RtacState(
                     time=int(time_now),
                     real_power_setpoint = types.Double(value=measurements.get('real_power_setpoint', None)),
-                    battery_current_stored_energy = types.Double(value=measurements.get('battery_current_stored_energy', None))
+                    battery_soc = types.Double(value=measurements.get('battery_soc', None))
                 )
             )
             resource = self.base_resource + "/" + self.service_name
