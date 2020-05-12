@@ -43,15 +43,14 @@ class EmulatedBatteryDriver(XBOSProcess):
         self.current_time = 0
         self.current_real_power_setpoint = self._default_real_power_setpoint
 
-        # # Check message bus and extract latest control flag and setpoint list
-        # # for device_name in self.service_name_map:
-        # actuation_message_uri = self.base_resource+"/"+self.service_name+"/actuation"
-        # schedule(self._query_existing(uri=actuation_message_uri))
-        # schedule(self._query_existing(uri=actuation_message_uri+"/control_flag"))
+        # Check message bus and extract latest control flag and setpoint list
+        actuation_message_uri = self.base_resource+"/"+self.service_name+"/actuation"
+        schedule(self._query_existing(uri=actuation_message_uri))
+        schedule(self._query_existing(uri=actuation_message_uri+"/control_flag"))
         #
         # # set subscription to any new action message that is published and extract setpoint list
-        # schedule(self.subscribe_extract(self.namespace, actuation_message_uri, self._actuation_message_path, self._save_setpoints, "save_setpoints"))
-        # schedule(self.subscribe_extract(self.namespace, actuation_message_uri+"/control_flag", self._actuation_message_path, self._save_setpoints, "save_setpoints"))
+        schedule(self.subscribe_extract(self.namespace, actuation_message_uri, self._actuation_message_path, self._save_setpoints, "save_setpoints"))
+        schedule(self.subscribe_extract(self.namespace, actuation_message_uri+"/control_flag", self._actuation_message_path, self._save_setpoints, "save_setpoints"))
 
         # read controller points every _rate seconds and publish
         schedule(self.call_periodic(self._rate, self._read_and_publish, runfirst=True))

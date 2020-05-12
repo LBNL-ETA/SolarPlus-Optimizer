@@ -2,6 +2,7 @@ from pyxbos.process import XBOSProcess, b64decode, b64encode, schedule, run_loop
 from pyxbos import xbos_pb2
 from pyxbos import flexstat_pb2
 from pyxbos import parker_pb2
+from pyxbos import rtac_pb2
 from pyxbos import nullabletypes_pb2 as types
 import yaml
 import argparse
@@ -53,6 +54,13 @@ class ControlFlagPublisher(XBOSProcess):
                     elif topic.startswith("parker"):
                         msg = xbos_pb2.XBOS(
                             parker_actuation_message=parker_pb2.ParkerActuationMessage(
+                                time=int(time.time() * 1e9),
+                                control_flag=types.Int64(value=new_flag)
+                            )
+                        )
+                    elif topic.startswith("emulated_battery"):
+                        msg = xbos_pb2.XBOS(
+                            rtac_actuation_message=rtac_pb2.RtacActuationMessage(
                                 time=int(time.time() * 1e9),
                                 control_flag=types.Int64(value=new_flag)
                             )

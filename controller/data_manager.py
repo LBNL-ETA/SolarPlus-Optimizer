@@ -17,6 +17,7 @@ try:
     from pyxbos import xbos_pb2
     from pyxbos import flexstat_pb2
     from pyxbos import parker_pb2
+    from pyxbos import rtac_pb2
     from pyxbos import nullabletypes_pb2 as types
     import base64
 except ImportError:
@@ -500,6 +501,26 @@ class Data_Manager():
 
                 msg = xbos_pb2.XBOS(
                     parker_actuation_message=parker_pb2.ParkerActuationMessage(
+                        time=int(time.time() * 1e9),
+                        setpoints = setpoint_list
+                    )
+                )
+            elif device.startswith("emulated_battery"):
+                for index, row in device_df.iterrows():
+                    change_time = int(index.value)
+                    real_power_setpoint = row.get('real_power_setpoint', None)
+
+                    if real_power_setpoint:
+                        setpoint = rtac_pb2.RtacSetpoints(change_time=change_time,
+                                                          real_power_setpoint=types.Double(value=real_power_setpoint))
+                    else:
+                        setpoint=None
+
+                    if setpoint != None:
+                        setpoint_list.append(setpoint)
+
+                msg = xbos_pb2.XBOS(
+                    rtac_actuation_message=rtac_pb2.RtacActuationMessage(
                         time=int(time.time() * 1e9),
                         setpoints = setpoint_list
                     )
