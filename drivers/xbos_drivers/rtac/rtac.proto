@@ -41,69 +41,71 @@ message RtacState {
     //Battery Total Capacity
     //unit: Wh
     Double battery_total_capacity = 7;
+    //unit: percentage
+    Double battery_soc = 8;
     //Battery Current Stored Energy
     //unit: Wh
-    Double battery_current_stored_energy = 8;
+    Double battery_current_stored_energy = 9;
     //Total Actual real power
     //unit: W
-    Double total_actual_real_power = 9;
+    Double total_actual_real_power = 10;
     //Total Actual reactive power
     //unit: VAR
-    Double total_actual_reactive_power = 10;
+    Double total_actual_reactive_power = 11;
     //Total Actual apparent power
     //unit: VA
-    Double total_actual_apparent_power = 11;
+    Double total_actual_apparent_power = 12;
     //could be used for curtailment
     //unit: W
-    Double active_power_output_limit = 12;
+    Double active_power_output_limit = 13;
     //Current Power Production
     //unit: W
-    Double current_power_production = 13;
+    Double current_power_production = 14;
     //AC Current Phase A
     //unit: A
-    Double ac_current_phase_a = 14;
+    Double ac_current_phase_a = 15;
     //AC Current Phase B
     //unit: A
-    Double ac_current_phase_b = 15;
+    Double ac_current_phase_b = 16;
     //AC Current Phase C
     //unit: A
-    Double ac_current_phase_c = 16;
+    Double ac_current_phase_c = 17;
     //AC Voltage A-B
     //unit: V
-    Double ac_voltage_ab = 17;
+    Double ac_voltage_ab = 18;
     //AC Voltage B-C
     //unit: V
-    Double ac_voltage_bc = 18;
+    Double ac_voltage_bc = 19;
     //AC Voltage C-A
     //unit: V
-    Double ac_voltage_ca = 19;
+    Double ac_voltage_ca = 20;
     //AC Frequency
     //unit: Hz
-    Double ac_frequency = 20;
+    Double ac_frequency = 21;
     //Is system currently connected to PG&E or islanded
     //unit: T/F
-    Int64 islanding_state = 21;
+    Int64 islanding_state = 22;
     //is system islanded (or would be islanded) using BESS or diesel generator
     //unit: T/F
-    Int64 island_type = 22;
+    Int64 island_type = 23;
     //while on-grid is BESS available for control or not
     //unit: T/F
-    Int64 bess_availability = 23;
+    Int64 bess_availability = 24;
     //code indicating fault has occurred to indicate what the problem is
-    Double fault_condition = 24;
+    Double fault_condition = 25;
     //is PG&E grid available or not regardless of connect state
     //unit: T/F
-    Int64 pge_state = 25;
+    Int64 pge_state = 26;
     //is PCC breaker closed or not
     //unit: T/F
-    Int64 pcc_breaker_state = 26;
+    Int64 pcc_breaker_state = 27;
     //PG&E voltage
     //unit: V
-    Double pge_voltage = 27;
+    Double pge_voltage = 28;
     //PG&E frequency
     //unit: Hz
-    Double pge_frequency = 28;
+    Double pge_frequency = 29;
     //is BESS/PV break closed or not
     //unit: T/F
-    Int64 bess_pv_breaker_state = 29;
+    Int64 bess_pv_breaker_state = 30;
  }

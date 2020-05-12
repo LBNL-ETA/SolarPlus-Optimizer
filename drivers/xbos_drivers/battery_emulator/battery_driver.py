@@ -22,7 +22,6 @@ class EmulatedBatteryDriver(XBOSProcess):
         self._set_setpoint_rate = cfg["check_setpoint_rate"]
         self.device_config = cfg['device_config']
         self.service_name = cfg['service_name']
-        self.fmu_file = cfg['fmu_file']
 
         self._model_update_rate = self.device_config.get('model_update_rate', 30)
         self._inital_SOC = self.device_config.get('initial_SOC', 0)
@@ -30,18 +29,19 @@ class EmulatedBatteryDriver(XBOSProcess):
         self._min_real_power_setpoint = self.device_config.get('min_real_power_setpoint', -109000)
         self._max_real_power_setpoint = self.device_config.get('max_real_power_setpoint', 109000)
 
-        self._default_time_threshold = self.modbus_config.get("time_threshold_revert_to_default", 14400)
+        self._default_time_threshold = self.device_config.get("time_threshold_revert_to_default", 14400)
 
         self._setpoints = {}
         self._actuation_message_path = ".rtacActuationMessage"
         self.device_control_flag = {}
 
+        self.fmu_file = self.device_config.get('fmu_file')
         self.battery = load_fmu(self.fmu_file)
         self.battery.set('simple.SOC_0', self._inital_SOC)
-        self.model_options = self.batter.simulate_options()
+        self.model_options = self.battery.simulate_options()
         self.model_options['initialize'] = True
         self.current_time = 0
-        self.current_real_power_setpoint = 0
+        self.current_real_power_setpoint = self._default_real_power_setpoint
 
         # # Check message bus and extract latest control flag and setpoint list
         # # for device_name in self.service_name_map:
@@ -55,7 +55,7 @@ class EmulatedBatteryDriver(XBOSProcess):
 
         # read controller points every _rate seconds and publish
         schedule(self.call_periodic(self._rate, self._read_and_publish, runfirst=True))
-        # schedule(self.call_periodic(self._model_update_rate, self._advance_time, runfirst=True))
+        schedule(self.call_periodic(self._model_update_rate, self._advance_time, runfirst=True))
         #
         # # periodically check if there is a need to change setpoints
         # schedule(self.call_periodic(self._set_setpoint_rate, self._set_setpoints, runfirst=False))
@@ -71,8 +71,9 @@ class EmulatedBatteryDriver(XBOSProcess):
             ]
         ))
 
-        self.battery.simulate(start, end, power_setpoint, self.options)
+        self.battery.simulate(start, end, power_setpoint, options=self.model_options)
         self.model_options['initialize'] = False
+        self.current_time = self.current_time + self._model_update_rate
 
     def extract_setpoint_dict(self, setpoint_values):
         setpoint_dict = {}
@@ -199,12 +200,12 @@ class EmulatedBatteryDriver(XBOSProcess):
     async def _read_and_publish(self, *args):
 
         try:
-            measurements = {'real_power_setpoint': self.battery.get('PSet', None), 'battery_current_stored_energy': self.battery.get('SOC_meas', None)}
+            measurements = {'real_power_setpoint': self.battery.get('PSet'), 'battery_current_stored_energy': self.battery.get('SOC_meas')}
 
             time_now = time.time() * 1e9
 
             msg = xbos_pb2.XBOS(
-                parker_state=rtac_pb2.RtacState(
+                rtac_state=rtac_pb2.RtacState(
                     time=int(time_now),
                     real_power_setpoint = types.Double(value=measurements.get('real_power_setpoint', None)),
                     battery_current_stored_energy = types.Double(value=measurements.get('battery_current_stored_energy', None))
@@ -236,7 +237,6 @@ rate = xbosConfig.get('publish_rate', 60)
 driver_id = xbosConfig.get('id', 'battery-emulator-driver')
 check_setpoint_rate = xbosConfig.get('check_setpoint_rate', 30)
 device_config = driverConfig.get('device_config')
-fmu_file = driverConfig.get('fmu_file')
 
 xbos_cfg = {
     'waved': waved,
@@ -249,8 +249,7 @@ xbos_cfg = {
     'check_setpoint_rate': check_setpoint_rate,
     'service_name': service_name,
     'config_file': config_file,
-    'device_config': device_config,
-    'fmu_file': fmu_file
+    'device_config': device_config
 }
 
 logging.basicConfig(level="INFO", format='%(asctime)s - %(name)s - %(message)s')

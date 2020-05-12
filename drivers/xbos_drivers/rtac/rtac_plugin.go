@@ -17,6 +17,7 @@ var device_units = map[string]string{
     "target_real_power": "W",
     "target_reactive_power": "VAR",
     "battery_total_capacity": "Wh",
+    "battery_soc": "percent",
     "battery_current_stored_energy": "Wh",
     "total_actual_real_power": "W",
     "total_actual_reactive_power": "VAR",
@@ -80,6 +81,12 @@ var device_lookup = map[string]func(msg xbospb.XBOS) (float64, bool){
     "battery_current_stored_energy": func(msg xbospb.XBOS) (float64, bool) {
         if has_device(msg) && msg.RtacState.BatteryCurrentStoredEnergy != nil {
             return float64(msg.RtacState.BatteryCurrentStoredEnergy.Value), true
+        }
+        return 0, false
+    },
+    "battery_soc": func(msg xbospb.XBOS) (float64, bool) {
+        if has_device(msg) && msg.RtacState.BatterySoc != nil {
+            return float64(msg.RtacState.BatterySoc.Value), true
         }
         return 0, false
     },
