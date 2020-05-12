@@ -22,7 +22,8 @@ def run():
     start = datetime.datetime.now()
     start_time = start.strftime("%Y-%m-%d %H:%M:00")
     start_time_utc = pd.to_datetime(start_time).tz_localize(tz_computer).tz_convert('UTC')
-    mpc_horizon = 24*3600
+    #mpc_horizon = 24*3600
+    mpc_horizon = 6*3600
     # mpc_step = 3600
     print('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     print("The Solar+ Optimizer has begun its operation at {0} UTC...".format(start_time_utc))
