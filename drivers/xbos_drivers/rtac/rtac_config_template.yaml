@@ -1,0 +1,62 @@
+xbos:
+    waved: localhost:777
+    wavemq: localhost:4516
+    base_resource: rtac_test
+    entity:
+    namespace:
+    publish_rate: 60
+    check_setpoint_rate: 30
+    heartbeat_rate: 60
+    service_name: rtac
+    id: rtac-driver
+modbus:
+    UNIT_ID: 1
+    modbus_type: tcp
+    ip: 192.168.117.10
+    port: 502
+
+    default_real_power_setpoint: 0
+    min_real_power_setpoint: -109000
+    max_real_power_setpoint: 109000
+
+    time_threshold_revert_to_default: 14400
+
+    byte_order: big
+    word_order: little
+
+    OFFSET_REGISTERS: 0
+
+    coil_registers:
+      islanding_state: [0x1000]
+      island_type: [0x1001],
+      bess_availability: [0x1002],
+      pge_state: [0x1003],
+      pcc_breaker_state: [0x1004],
+      bess_pv_breaker_state: [0x1005]
+
+    discrete_registers: {}
+    input_registers: {}
+
+    holding_registers:
+      heartbeat: [0x4000, 16uint]
+      real_power_setpoint: [0x4002, 32int]
+      reactive_power_setpoint: [0x4004, 32int]
+      target_real_power: [0x4006, 32int]
+      target_reactive_power: [0x4008, 32int]
+      battery_total_capacity: [0x400A, 32int]
+      battery_current_stored_energy: [0x400C, 32int]
+      total_actual_real_power: [0x400E, 32int]
+      total_actual_reactive_power: [0x4010, 32int]
+      total_actual_apparent_power: [0x4012, 32int]
+      active_power_output_limit: [0x4014, 32uint]
+      current_power_production: [0x4016, 32int]
+      ac_current_phase_a: [0x4018, 32int]
+      ac_current_phase_b: [0x401A, 32int]
+      ac_current_phase_c: [0x401C, 32int]
+      ac_voltage_ab: [0x401E, 32int]
+      ac_voltage_bc: [0x4020, 32int]
+      ac_voltage_ca: [0x4022, 32int]
+      ac_frequency: [0x4024, 32int]
+      fault_condition: [0x4001, 16uint]
+      pge_voltage: [0x4026, 32int]
+      pge_frequency: [0x4028, 32int]

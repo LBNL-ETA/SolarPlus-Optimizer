@@ -4,8 +4,6 @@ import datetime
 import os
 from influxdb import DataFrameClient
 import yaml
-import requests
-import json
 import time
 
 try:
@@ -17,6 +15,7 @@ try:
     from pyxbos import xbos_pb2
     from pyxbos import flexstat_pb2
     from pyxbos import parker_pb2
+    from pyxbos import rtac_pb2
     from pyxbos import nullabletypes_pb2 as types
     import base64
 except ImportError:
@@ -504,6 +503,23 @@ class Data_Manager():
                         setpoints = setpoint_list
                     )
                 )
+            elif device.startswith("emulated_battery"):
+                for index, row in device_df.iterrows():
+                    change_time = int(index.value)
+                    real_power_setpoint = row.get('real_power_setpoint', None)
+
+                    if real_power_setpoint != None:
+                        setpoint = rtac_pb2.RtacSetpoints(change_time=change_time,
+                                                      real_power_setpoint=types.Double(value=real_power_setpoint))
+                        setpoint_list.append(setpoint)
+
+                if len(setpoint_list) > 0:
+                    msg = xbos_pb2.XBOS(
+                        rtac_actuation_message=rtac_pb2.RtacActuationMessage(
+                            time=int(time.time() * 1e9),
+                            setpoints = setpoint_list
+                        )
+                    )
             print("publishing on to wavemq to topic %s"%(device))
             self.publish_on_wavemq(device, msg)
 

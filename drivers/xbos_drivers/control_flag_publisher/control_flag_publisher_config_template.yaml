@@ -9,4 +9,5 @@ xbos:
           flexstat_test/thermostat_east/actuation/control_flag: False
           parker_test/refrigerator/actuation/control_flag: False
           parker_test/freezer/actuation/control_flag: False
+          emulated_battery_test/battery/actuation/control_flag: False
     id: controlflag-driver

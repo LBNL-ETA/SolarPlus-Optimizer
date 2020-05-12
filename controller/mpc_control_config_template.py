@@ -61,8 +61,6 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'uRef_max':('uRef', 'LTE', units.unit1),
                               'uFreCool_min':('uFreCool', 'GTE', units.unit1),
                               'uFreCool_max':('uFreCool', 'LTE', units.unit1),
-                              # 'Pmin': ('Pnet', 'GTE', units.kW),
-                              # 'Pmax': ('Pnet', 'LTE', units.kW)
                               'PMin': ('Pnet', 'GTE', units.kW),
                               'PMax': ('Pnet', 'LTE', units.kW)
                               }
@@ -99,9 +97,9 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         "influxdb": {"config_filename":"database_client/config.yaml",
                      "section": "database"},
         "xbos": {
+            "entity": "",
             "namespace": "",
-            "wavemq": "localhost:4516",
-            "entity": "data_manager.ent"
+            "wavemq": ""
         }
     },
     "weather": {
@@ -148,8 +146,6 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "uRef_max":  {"type": "csv","filename": "Shadow/Constraints_Forecast.csv", "column": "uRef_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
             "uFreCool_min":  {"type": "csv","filename": "Shadow/Constraints_Forecast.csv", "column": "uFreCool_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
             "uFreCool_max":  {"type": "csv","filename": "Shadow/Constraints_Forecast.csv", "column": "uFreCool_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            # "Pmin":  {"type": "csv","filename": "Shadow/Constraints_Forecast.csv", "column": "Pmin", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            # "Pmax":  {"type": "csv", "filename": "Shadow/Constraints_Forecast.csv", "column": "Pmax", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
             "PMin": {"type": "influxdb", "uuid": "6b42adf8-3a48-5ae7-bdc3-19226e602865", "measurement": "timeseries", "agg": "mean", "window": "1m"},
             "PMax": {"type": "influxdb", "uuid": "522605a9-77b1-57e3-9fac-06dd83ab8e89", "measurement": "timeseries", "agg": "mean", "window": "1m"}
         }
@@ -162,13 +158,14 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
         }
     },
     "system": {
+        "type": "influxdb",
         "variables": {
-            "Tref": {"type": "influxdb","uuid": "5c69b4b6-22a0-561b-801b-72aee17c5a94", "window": "5m", "agg": "mean", "measurement": "timeseries"},
-            "Trtu_west": {"type": "influxdb","uuid": "7d48d689-5cf8-50fd-98af-22dd9868b379", "window": "5m", "agg": "mean", "measurement": "timeseries"},
-            "Trtu_east": {"type": "influxdb","uuid": "fd200d7e-0c46-53fc-87e4-6c8639b67b94", "window": "5m", "agg": "mean", "measurement": "timeseries"},
-            "Tfre": {"type": "influxdb","uuid": "3f493b8d-0107-569f-8968-433f46de0fec", "window": "5m", "agg": "mean", "measurement": "timeseries"},
-            "SOC": {"type": "csv", "filename": "Shadow/emulation_states.csv", "column": "SOC", "tz":"America/Los_Angeles", "agg": "mean", "window": "5m"}
-#            "SOC": {"uuid": "86f72439-35a3-4997-a14f-24f8a889b164", "window": "5m", "agg": "mean", "measurement": "timeseries"}
+            "Tref": {"uuid": "5c69b4b6-22a0-561b-801b-72aee17c5a94", "window": "5m", "agg": "mean", "measurement": "timeseries"},
+            "Trtu_west": {"uuid": "7d48d689-5cf8-50fd-98af-22dd9868b379", "window": "5m", "agg": "mean", "measurement": "timeseries"},
+            "Trtu_east": {"uuid": "fd200d7e-0c46-53fc-87e4-6c8639b67b94", "window": "5m", "agg": "mean", "measurement": "timeseries"},
+            "Tfre": {"uuid": "3f493b8d-0107-569f-8968-433f46de0fec", "window": "5m", "agg": "mean", "measurement": "timeseries"},
+            # change UUID
+            "SOC": {"uuid": "cd25d131-8db3-58e6-b218-d728579e2eb1", "window": "5m", "agg": "mean", "measurement": "timeseries"}
         }
     },
 
@@ -180,7 +177,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                 "<thermostat_topic>/thermostat_east/actuation": {"cooling_setpoint": "Trtu_east_cool", "heating_setpoint": "Trtu_east_heat"},
                 "<thermostat_topic>/thermostat_west/actuation": {"cooling_setpoint": "Trtu_west_cool", "heating_setpoint": "Trtu_west_heat"},
                 "<refrigeration_topic>/refrigerator/actuation": {"setpoint": "Tref"},
-                "<refrigeration_topic>/freezer/actuation": {"setpoint": "Tfre"}
+                "<refrigeration_topic>/freezer/actuation": {"setpoint": "Tfre"},
+                "<battery_topic>/battery/actuation": {"real_power_setpoint": "Pbattery"}
             }
         },
         "variables": {
