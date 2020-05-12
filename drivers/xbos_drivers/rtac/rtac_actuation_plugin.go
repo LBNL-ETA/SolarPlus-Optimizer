@@ -90,21 +90,21 @@ func Extract(uri types.SubscriptionURI, msg xbospb.XBOS, add func(types.Extracte
 
 				if _prediction.RealPowerSetpoint != nil {
 					err := ingest_time_series(float64(_prediction.RealPowerSetpoint.Value),
-						"setpoint", extracted, add, prediction_time, step, uri)
+						"real_power_setpoint", extracted, add, prediction_time, step, uri)
 					if err != nil {
 						return err
 					}
 				}
 				if _prediction.ReactivePowerSetpoint != nil {
 					err := ingest_time_series(float64(_prediction.ReactivePowerSetpoint.Value),
-						"differential", extracted, add, prediction_time, step, uri)
+						"reactive_power_setpoint", extracted, add, prediction_time, step, uri)
 					if err != nil {
 						return err
 					}
 				}
 				if _prediction.ActivePowerOutputLimit != nil {
 					err := ingest_time_series(float64(_prediction.ActivePowerOutputLimit.Value),
-						"differential", extracted, add, prediction_time, step, uri)
+						"active_power_output_limit", extracted, add, prediction_time, step, uri)
 					if err != nil {
 						return err
 					}

@@ -57,7 +57,7 @@ class EmulatedBatteryDriver(XBOSProcess):
         schedule(self.call_periodic(self._model_update_rate, self._advance_time, runfirst=True))
         #
         # # periodically check if there is a need to change setpoints
-        # schedule(self.call_periodic(self._set_setpoint_rate, self._set_setpoints, runfirst=False))
+        schedule(self.call_periodic(self._set_setpoint_rate, self._set_setpoints, runfirst=False))
 
     async def _advance_time(self):
         start = self.current_time
