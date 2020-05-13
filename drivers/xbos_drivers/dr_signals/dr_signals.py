@@ -1,9 +1,7 @@
 import argparse
-import calendar
 import datetime
 import logging
 import os
-import time
 from datetime import timedelta
 
 import pandas as pd
@@ -97,25 +95,10 @@ class DRSignalsDriver(XBOSProcess):
             return 'dr-prices'
         elif event_type in ['dr-limit', "dr-shed", "dr-shift", "dr-track"]:
             return event_type
+        elif event_type in ['dr-prices1']:
+            return event_type
         else:
             raise ValueError('Event type does not correspond to a valid DR_MODE')
-
-    # def setup(self, cfg):
-    #     """ DELETED: Not needed for XBOSProcess. """
-    #     self.base_resource = cfg['base_resource']
-    #
-    #     self.namespace = b64decode(cfg['namespace'])
-    #
-    #     # Keeps track of how further into the future should the forecast be
-    #     # Value is in number of hours
-    #     self.FORECAST_PERIOD = cfg['forecast_period']
-    #
-    #     # Store the default values for min and max power
-    #     self.default_pmin = cfg['pmin']
-    #     self.default_pmax = cfg['pmax']
-    #
-    #     # Init the scheduler state to keep track of the updates
-    #     self.init_event_scheduler()
 
     def init_event_scheduler(self):
         """ Populate DR Manager with default events. Current implementation includes dr-prices only.
@@ -191,7 +174,6 @@ class DRSignalsDriver(XBOSProcess):
         TODO: For more robustness, add no_overlapping_events() which ensures there are no custom events with
         overlapping times.
         """
-
         if os.path.isfile(self.CUSTOM_EVENTS_FILE):
             custom_events = read_from_json(self.CUSTOM_EVENTS_FILE)
             assert type(custom_events) == list
@@ -394,7 +376,7 @@ class DRSignalsDriver(XBOSProcess):
         if shift_pmax:
             diff = (shift_pmax[0][0][1] - shift_pmax[0][0][0]).total_seconds() / 60
             for date in (shift_pmax[0][0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
-                result.append([date, shift_pmax[0][1], self.default_pmin, shift_pmax[0][1], 'dr-shift'])
+                result.append([date, shift_pmax[0][1], shift_pmax[0][1], self.default_pmax, 'dr-shift'])
 
             diff = (shift_pmax[1][0][1] - shift_pmax[1][0][0]).total_seconds() / 60
             for date in (shift_pmax[1][0][0] + timedelta(minutes=n) for n in range(0, int(diff), 15)):
@@ -427,8 +409,17 @@ class DRSignalsDriver(XBOSProcess):
         """
         curr_time_formatted = curr_time.strftime('%Y-%m-%dT%H:%M:%S')
         end_time_formatted = end_time.strftime('%Y-%m-%dT%H:%M:%S')
-
         result = self.get_dr_signal('dr-prices', curr_time_formatted, end_time_formatted)
+        #print('result: \n', result)
+
+        # Temp added
+        result1 = self.get_dr_signal('dr-prices1', curr_time_formatted, end_time_formatted)
+        #print('result1: \n', result1)
+        if result1:
+            #print('result1 exists')
+            result = pd.concat([result[0], result1[0]['data_dr']], sort=True)
+            #print('asdlfasjlfds result: ', result)
+            result.to_csv('temp.csv')
 
         # Revert to default event
         if not result:
@@ -448,12 +439,12 @@ class DRSignalsDriver(XBOSProcess):
                 default_result = self.get_default_dr_signal('dr-prices',
                                                             curr_time_formatted,
                                                             custom_st.strftime('%Y-%m-%dT%H:%M:%S'))
-                price_df = pd.concat([default_result['data_dr'], price_df])
+                price_df = pd.concat([default_result['data_dr'], price_df], sort=True)
             if custom_et < end_time:
                 default_result = self.get_default_dr_signal('dr-prices',
                                                             custom_et.strftime('%Y-%m-%dT%H:%M:%S'),
                                                             end_time_formatted)
-                price_df = pd.concat([price_df, default_result['data_dr']])
+                price_df = pd.concat([price_df, default_result['data_dr']], sort=True)
 
         return price_df[['customer_energy_charge', 'customer_demand_charge_tou']]
 
@@ -499,15 +490,13 @@ class DRSignalsDriver(XBOSProcess):
         # Checks if new event(s) have been added
         self.update_dr_events()
 
-        curr_time = datetime.datetime.now()
+        curr_time = datetime.datetime.utcnow()
         end_time = curr_time + timedelta(hours=self.FORECAST_PERIOD)
 
         df_price = self.get_price(curr_time, end_time)
         df_price.index = df_price.index.round(FORECAST_FREQUENCY)
 
         df_power = self.get_power(curr_time, end_time)
-        df_power.index = df_power.index.round(FORECAST_FREQUENCY)
-
 
         df = df_price.join(df_power, how='outer')
         df.index = pd.to_datetime(df.index)
@@ -515,21 +504,8 @@ class DRSignalsDriver(XBOSProcess):
         df['pmax'].fillna(self.default_pmax, inplace=True)
         df['dr-mode'].fillna('none', inplace=True)
 
+        df.to_csv('temp.csv')
         tim = int(time.time() * 1e9)
-
-        event_st_ed_time = []
-        for event in self.dr_manager.custom_dr_events:
-            for key, value in event.items():
-                if key in ['startdate', 'enddate']:
-                    event_st_ed_time.append(calendar.timegm(time.strptime(value, '%Y-%m-%dT%H:%M:%S')))
-                elif key in ['startdate-take_relax']:
-                    event_st_ed_time.append(calendar.timegm(time.strptime(value['start-date-take'], '%Y-%m-%dT%H:%M:%S')))
-                    event_st_ed_time.append(calendar.timegm(time.strptime(value['start-date-relax'], '%Y-%m-%dT%H:%M:%S')))
-                elif key in ['enddate-take_relax']:
-                    event_st_ed_time.append(calendar.timegm(time.strptime(value['end-date-take'], '%Y-%m-%dT%H:%M:%S')))
-                    event_st_ed_time.append(calendar.timegm(time.strptime(value['end-date-relax'], '%Y-%m-%dT%H:%M:%S')))
-
-        print(event_st_ed_time)
 
         # Publish to dr_signals
         # Uncomment once self.get_baseline() works
@@ -566,23 +542,22 @@ class DRSignalsDriver(XBOSProcess):
         message1 = xbos_pb2.XBOS(
             drsigpred=dr_signals_pb2.DRSignalsPrediction(
                 time=tim,
-                predictions=msg_list1,
-                event_st_ed_time=event_st_ed_time
+                predictions=msg_list1
             )
         )
 
         await self.publish(self.namespace, self.base_resource1, False, message1)
 
-        """
         # Publish to constraints forecast
         msg_list2 = []
         for index, row in df.iterrows():
-            msg = constraints_forecast_pb2.ConstraintForecast.Constraints(
-                forecast_time=int(index.tz_localize('US/Pacific').tz_convert('UTC').timestamp()),
+             msg = constraints_forecast_pb2.ConstraintForecast.Constraints(
+                #forecast_time=int(index.tz_localize('US/Pacific').tz_convert('UTC').timestamp()),
+                forecast_time=int(index.timestamp()),
                 PMin=types.Double(value=row['pmin']),
                 PMax=types.Double(value=row['pmax'])
-            )
-            msg_list2.append(msg)
+             )
+             msg_list2.append(msg)
 
         message2 = xbos_pb2.XBOS(
             constraints_forecast=constraints_forecast_pb2.ConstraintForecast(
@@ -590,10 +565,7 @@ class DRSignalsDriver(XBOSProcess):
                 constraints_predictions=msg_list2
             )
         )
-        print('mes2: ', message2)
         await self.publish(self.namespace, self.base_resource2, False, message2)
-        print('base_res2: ', self.base_resource2)
-        """
 
 
 if __name__ == '__main__':

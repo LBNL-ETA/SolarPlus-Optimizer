@@ -2,12 +2,12 @@ __author__ = 'Olivier Van Cutsem, Pranav Gupta'
 
 import json
 import os
+import pytz
 from datetime import timedelta
 from dateutil.parser import parse
 
 import electricitycostcalculator
 import pandas as pd
-from dateutil.parser import parse
 from electricitycostcalculator.cost_calculator.cost_calculator import CostCalculator
 from electricitycostcalculator.cost_calculator.tariff_structure import *
 from electricitycostcalculator.openei_tariff.openei_tariff_analyzer import *
@@ -134,6 +134,18 @@ class DREventManager:
 
         return avail_events
 
+    @staticmethod
+    def convert_to_utc(date, timezone='US/Pacific'):
+        local = pytz.timezone("US/Pacific")
+
+        # NOTE: datetime module is possibly imported from electricitycostcalculator
+        naive = datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
+
+        local_dt = local.localize(naive, is_dst=None)
+        utc_dt = local_dt.astimezone(pytz.utc)
+
+        return utc_dt.strftime("%Y-%m-%dT%H:%M:%S")
+
     def decode_rawjson(self, type_dr, raw_data):
         """ Decode the custom DR events json file.
 
@@ -151,18 +163,18 @@ class DREventManager:
         """
         ret_dict = {}
 
-        if type_dr == 'dr-prices':
-            ret_dict['type_dr'] = 'dr-prices'
-            ret_dict['startdate'] = raw_data["start-date"]
-            ret_dict['enddate'] = raw_data["end-date"]
+        if type_dr == 'dr-prices' or type_dr == 'dr-prices1':
+            ret_dict['type_dr'] = 'dr-prices' if type_dr == 'dr-prices' else 'dr-prices1'
+            ret_dict['startdate'] = self.convert_to_utc(raw_data["start-date"])
+            ret_dict['enddate'] = self.convert_to_utc(raw_data["end-date"])
             ret_dict['data_dr'] = self.get_df_tariff(raw_data["type"], (raw_data["start-date"], raw_data["end-date"]),
                                                      raw_data["data"])
 
         elif type_dr == 'dr-limit' or type_dr == 'dr-shed' or type_dr == 'dr-track':
             raw_data = raw_data["data"]
             ret_dict['type_dr'] = type_dr
-            ret_dict['startdate'] = raw_data["start-date"]
-            ret_dict['enddate'] = raw_data["end-date"]
+            ret_dict['startdate'] = self.convert_to_utc(raw_data["start-date"])
+            ret_dict['enddate'] = self.convert_to_utc(raw_data["end-date"])
 
             if type_dr == 'dr-track':
                 st, et = parse(raw_data["start-date"]), parse(raw_data["end-date"])
@@ -193,12 +205,12 @@ class DREventManager:
                 ret_dict['enddate'] = raw_data["end-date-take"] if et1 > et2 else raw_data["end-date-relax"]
 
                 start_date = {
-                    'start-date-take': raw_data["start-date-take"],
-                    'start-date-relax': raw_data["start-date-relax"]
+                    'start-date-take': self.convert_to_utc(raw_data["start-date-take"]),
+                    'start-date-relax': self.convert_to_utc(raw_data["start-date-relax"])
                 }
                 end_date = {
-                    'end-date-take': raw_data["end-date-take"],
-                    'end-date-relax': raw_data["end-date-relax"]
+                    'end-date-take': self.convert_to_utc(raw_data["end-date-take"]),
+                    'end-date-relax': self.convert_to_utc(raw_data["end-date-relax"])
                 }
                 power = {
                     'power-take': raw_data['power-take'],
@@ -233,7 +245,7 @@ class DREventManager:
         """
         start_date, end_date = date_period
 
-        if type_tariff == 'price-tou':
+        if type_tariff == 'price-tou' or type_tariff == 'dr-prices1':
 
             if 'tariff-json' in raw_json_data:
                 # Init the CostCalculator with the tariff data
@@ -254,10 +266,12 @@ class DREventManager:
                 start_date_sig = parse(start_date)
                 end_date_sig = parse(end_date)
                 price_df, map = self.__tariff_manager.get_electricity_price((start_date_sig, end_date_sig), timestep)
+                price_df['customer_demand_charge_tou'] = price_df['customer_demand_charge_tou'] + price_df['customer_demand_charge_season']
+                price_df = price_df.tz_localize('US/Pacific').tz_convert('UTC').tz_localize(None)
 
             elif 'energy_prices' in raw_json_data and 'demand_prices' in raw_json_data:
                 assert len(raw_json_data['energy_prices']) == len(raw_json_data['demand_prices'])
-                st, et = parse(start_date), parse(end_date)
+                st, et = parse(self.convert_to_utc(start_date)), parse(self.convert_to_utc(end_date))
                 delta_sec = (et - st).total_seconds()
 
                 if self.FORECAST_FREQUENCY == '15min':
@@ -275,6 +289,7 @@ class DREventManager:
                                                         'customer_energy_charge',
                                                         'customer_demand_charge_tou'])
                 price_df.set_index(price_df.columns[0], inplace=True)
+                price_df = price_df.tz_localize('US/Pacific').tz_convert('UTC').tz_localize(None)
             else:
                 raise KeyError('cannot find tariff-json or (energy_prices and demand_prices)')
 
