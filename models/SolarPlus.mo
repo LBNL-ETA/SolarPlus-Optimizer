@@ -961,8 +961,7 @@ package SolarPlus "This package contains models for MPC control optimization."
           Rfre=0.02,
           FreHeatingCap=4500,
           Rref_fre=0.018),
-        multiSum(k={1,1,1,1,1,1,1/4,1/4}, nu=8),
-        Battery(eta=0.88));
+        multiSum(k={1,1,1,1,1,1,1/4,1/4}, nu=8));
       parameter Modelica.SIunits.Temperature TSpRtuEast;
       parameter Modelica.SIunits.Temperature TSpRtuWest;
       parameter Modelica.SIunits.Temperature TSpRef;
