@@ -244,7 +244,7 @@ class mpc(object):
             value = self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1]
             time = self.model.display_measurements('Measured')[self.init_vm[par]].index[-1]
             if par == 'Tfre_0' and value > 10:
-                value = -2
+                value = -3
             if par == 'Tref_0' and value > 36.5:
                 value = 36
             if par == 'SOC_0':
