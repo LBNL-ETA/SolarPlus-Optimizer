@@ -175,7 +175,8 @@ class mpc(object):
             setpoints['Trtu_east_cool'] = setpoints['Trtu_east']
             setpoints['Trtu_east_heat'] = setpoints['Trtu_east'] - 4
         if 'Tfre' in setpoints.columns:
-            setpoints['Tfre'] = (setpoints['Tfre'] - 273.15) * 9/5 + 32
+            # add -5F to the freezer setpoint in case the freezer cabinet temperature is out of bound
+            setpoints['Tfre'] = (setpoints['Tfre'] - 273.15) * 9/5 + 32 - 5
         if 'Tref' in setpoints.columns:
             setpoints['Tref'] = (setpoints['Tref'] - 273.15) * 9/5 + 32
         self.data_manager.set_setpoints(setpoints)
