@@ -642,12 +642,12 @@ package SolarPlus "This package contains models for MPC control optimization."
 
     model Emulator "Emulator model of the battery"
       Simple simple(
-        Ecap(displayUnit="kWh") = 626400000,
-        P_cap=10900,
+        Ecap(displayUnit="kWh") = 97200000,
+        P_cap(displayUnit="kW") = 14000,
         eta=1.0,
         SOC_0=0.5)
         annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
-      Modelica.Blocks.Math.Gain gain(k=1/10900)
+      Modelica.Blocks.Math.Gain gain(k=1/14000)
         annotation (Placement(transformation(extent={{-80,-10},{-60,10}})));
       Modelica.Blocks.Interfaces.RealInput PSet
         "Power setpoint from the controller" annotation (Placement(
@@ -961,7 +961,8 @@ package SolarPlus "This package contains models for MPC control optimization."
           Rfre=0.02,
           FreHeatingCap=4500,
           Rref_fre=0.018),
-        multiSum(k={1,1,1,1,1,1,1/4,1/4}, nu=8));
+        multiSum(k={1,1,1,1,1,1,1/4,1/4}, nu=8),
+        Battery(Ecap=97200000, P_cap=14000));
       parameter Modelica.SIunits.Temperature TSpRtuEast;
       parameter Modelica.SIunits.Temperature TSpRtuWest;
       parameter Modelica.SIunits.Temperature TSpRef;
