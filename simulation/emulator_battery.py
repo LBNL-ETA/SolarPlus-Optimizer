@@ -50,7 +50,7 @@ class battery_emulator(object):
         import matplotlib.pyplot as plt
 
         t = np.linspace(start_time, final_time, num=144)
-        u = np.cos(t/24)*10900
+        u = np.cos(t/24)*10000
         u_traj = np.transpose(np.vstack((t,u)))
         power_setpoint = (['PSet'],u_traj)
         SOC_meas, PSet_in, res = self.simulate_fmu(start_time, final_time, power_setpoint)

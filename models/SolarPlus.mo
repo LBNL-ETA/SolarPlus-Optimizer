@@ -655,8 +655,8 @@ package SolarPlus "This package contains models for MPC control optimization."
               extent={{-140,-20},{-100,20}})));
       Modelica.Blocks.Interfaces.RealOutput SOC_meas
         "Measured state of charge from the emulator" annotation (Placement(
-            transformation(extent={{100,-10},{120,10}}), iconTransformation(
-              extent={{100,-10},{120,10}})));
+            transformation(extent={{160,-10},{180,10}}), iconTransformation(
+              extent={{160,-10},{180,10}})));
       Modelica.Blocks.Logical.LessEqualThreshold SOCmin(threshold=0.25)
         "minimum state of charge"
         annotation (Placement(transformation(extent={{0,-10},{20,10}})));
@@ -664,6 +664,13 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{40,-10},{60,10}})));
       Modelica.Blocks.Sources.Constant const(k=0.25)
         annotation (Placement(transformation(extent={{0,30},{20,50}})));
+      Modelica.Blocks.Logical.LessEqualThreshold SOCmin1(threshold=0.95)
+        "minimum state of charge"
+        annotation (Placement(transformation(extent={{80,-10},{100,10}})));
+      Modelica.Blocks.Sources.Constant const1(k=0.95)
+        annotation (Placement(transformation(extent={{80,30},{100,50}})));
+      Modelica.Blocks.Logical.Switch switch2
+        annotation (Placement(transformation(extent={{120,-10},{140,10}})));
     equation
       connect(gain.y, simple.u)
         annotation (Line(points={{-59,0},{-42,0}},color={0,0,127}));
@@ -677,15 +684,24 @@ package SolarPlus "This package contains models for MPC control optimization."
               8},{38,8}}, color={0,0,127}));
       connect(simple.SOC, switch1.u3) annotation (Line(points={{-18.8,4},{-10,4},
               {-10,-20},{30,-20},{30,-8},{38,-8}}, color={0,0,127}));
-      connect(switch1.y, SOC_meas)
-        annotation (Line(points={{61,0},{110,0}}, color={0,0,127}));
-      annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+      connect(switch1.y, SOCmin1.u)
+        annotation (Line(points={{61,0},{78,0}}, color={0,0,127}));
+      connect(SOCmin1.y, switch2.u2)
+        annotation (Line(points={{101,0},{118,0}}, color={255,0,255}));
+      connect(const1.y, switch2.u3) annotation (Line(points={{101,40},{110,40},
+              {110,-8},{118,-8}}, color={0,0,127}));
+      connect(switch2.y, SOC_meas)
+        annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
+      connect(switch1.y, switch2.u1) annotation (Line(points={{61,0},{70,0},{70,
+              -20},{112,-20},{112,8},{118,8}}, color={0,0,127}));
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{
+                -100,-100},{160,100}}),                             graphics={
                                     Rectangle(
             extent={{-100,-100},{100,100}},
             lineColor={0,0,127},
             fillColor={255,255,255},
             fillPattern=FillPattern.Solid)}), Diagram(coordinateSystem(
-              preserveAspectRatio=false)));
+              preserveAspectRatio=false, extent={{-100,-100},{160,100}})));
     end Emulator;
   end Batteries;
 
