@@ -247,8 +247,8 @@ class mpc(object):
                 value = -3
             if par == 'Tref_0' and value > 36.5:
                 value = 36
-            if par == 'SOC_0':
-                value = 0.4
+            # if par == 'SOC_0':
+            #     value = 0.4
             print('State {0} set to value {1} from measurement at time {2}.'.format(self.init_vm[par], value, time))
             # Set the value in the model
             self.model.parameter_data[par]['Value'].set_data(value)

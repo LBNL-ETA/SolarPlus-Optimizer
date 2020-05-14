@@ -656,7 +656,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       Modelica.Blocks.Interfaces.RealOutput SOC_meas
         "Measured state of charge from the emulator" annotation (Placement(
             transformation(extent={{160,-10},{180,10}}), iconTransformation(
-              extent={{160,-10},{180,10}})));
+              extent={{100,-10},{120,10}})));
       Modelica.Blocks.Logical.LessEqualThreshold SOCmin(threshold=0.25)
         "minimum state of charge"
         annotation (Placement(transformation(extent={{0,-10},{20,10}})));
@@ -694,8 +694,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
       connect(switch1.y, switch2.u1) annotation (Line(points={{61,0},{70,0},{70,
               -20},{112,-20},{112,8},{118,8}}, color={0,0,127}));
-      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{
-                -100,-100},{160,100}}),                             graphics={
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,
+                -100},{100,100}}),                                  graphics={
                                     Rectangle(
             extent={{-100,-100},{100,100}},
             lineColor={0,0,127},
