@@ -25,7 +25,7 @@ class battery_emulator(object):
 
         return battery_emu
 
-    def simulate_fmu(self, start_time, final_time, power_setpoint):
+    def simulate_fmu(self, start_time, final_time, inputs):
         '''
         Simulate fmu that has already been compiled
         Parameters:
@@ -36,13 +36,15 @@ class battery_emulator(object):
         SOC_0 = battery_emu.get('simple.SOC_0')
         SOC_0 = self.SOC_0
         battery_emu.set('simple.SOC_0', SOC_0)
-        res = battery_emu.simulate(start_time, final_time, power_setpoint)
+        res = battery_emu.simulate(start_time, final_time, inputs)
         # Measured SOC from the emulator
         SOC_meas = res['SOC_meas']
+        # Measured PV generation from emulator
+        PPv = res['PPv']
         # Power setpoint coming from the controller
         PSet_in = res['PSet']
 
-        return SOC_meas, PSet_in, res
+        return SOC_meas, PSet_in, PPv, res
 
     def plot_fmu(self, start_time, final_time, with_plot=True):
 
@@ -50,19 +52,25 @@ class battery_emulator(object):
         import matplotlib.pyplot as plt
 
         t = np.linspace(start_time, final_time, num=144)
-        u = np.cos(t/24)*10000
-        u_traj = np.transpose(np.vstack((t,u)))
-        power_setpoint = (['PSet'],u_traj)
-        SOC_meas, PSet_in, res = self.simulate_fmu(start_time, final_time, power_setpoint)
+        u1 = np.cos(t/24)*10000
+        u2 = np.sin(t/24)*500
+        u2[u2<0] = 0
+        u_traj = np.transpose(np.vstack((t,u1,u2)))
+        inputs = (['PSet', 'weaPoaPv'],u_traj)
+        #poa_pv = (['weaPoaPv'], u2_traj)
+        SOC_meas, PSet_in, PPv, res = self.simulate_fmu(start_time, final_time, inputs)
         time_sim = res['time']
 
         if with_plot:
             fig = plt.figure()
-            plt.subplot(2,1,1)
+            plt.subplot(3,1,1)
             plt.plot(time_sim, PSet_in, label='Power setpoint')
             plt.legend()
-            plt.subplot(2,1,2)
+            plt.subplot(3,1,2)
             plt.plot(time_sim, SOC_meas, label='SOC')
+            plt.legend()
+            plt.subplot(3,1,3)
+            plt.plot(time_sim, PPv, label='PV generation')
             plt.legend()
             plt.show()
 
