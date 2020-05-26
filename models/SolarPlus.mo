@@ -113,8 +113,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Line(points={{60,0},{110,0}}, color={0,0,127}));
       connect(senTzone.port, r1C1_1.port_cap)
         annotation (Line(points={{40,0},{0.2,0}}, color={191,0,0}));
-        annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics
-              ={
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
                 extent={{-100,100},{100,-100}},
                 lineColor={0,0,0},
@@ -1451,244 +1450,10 @@ package SolarPlus "This package contains models for MPC control optimization."
 
     package Optimization
       extends Modelica.Icons.Package;
-      package BaseClasses
-        model partialStore
-          parameter Modelica.SIunits.Temperature Trtu_west_0 = 21+273.15 "Initial temperature of rtu west zone";
-          parameter Modelica.SIunits.Temperature Trtu_east_0 = 21+273.15 "Initial temperature of rtu east zone";
-          parameter Modelica.SIunits.Temperature Tref_0 = 3.5+273.15 "Initial temperature of ref zone";
-          parameter Modelica.SIunits.Temperature Tfre_0 = -25+273.15 "Initial temperature of fre zone";
-          parameter Modelica.SIunits.DimensionlessRatio SOC_0 = 0.5 "Initial SOC of battery";
-          SolarPlus.Building.BaseClasses.Whole_Inputs store(
-            Trtu_west_0=Trtu_west_0,
-            Trtu_east_0=Trtu_east_0,
-            Tref_0=Tref_0,
-            Tfre_0=Tfre_0,
-            SOC_0=SOC_0)
-            annotation (Placement(transformation(extent={{-10,28},{10,60}})));
-            Modelica.Blocks.Interfaces.RealInput weaPoaPv "plane of array solar radiation on pv"
-            annotation (Placement(transformation(
-                  extent={{-160,90},{-120,130}}),iconTransformation(extent={{-160,40},
-                    {-120,80}})));
-        Modelica.Blocks.Interfaces.RealInput weaPoaWin "plane of array solar radiation on Windows"
-            annotation (Placement(
-                transformation(extent={{-160,60},{-120,100}}),iconTransformation(extent={{-160,80},
-                    {-120,120}})));
-        Modelica.Blocks.Interfaces.RealInput uCool "RTU cooling signal input"
-            annotation (Placement(transformation(extent={{-160,0},{-120,40}}),
-                iconTransformation(extent={{-160,-80},{-120,-40}})));
-        Modelica.Blocks.Interfaces.RealInput uBattery
-            "Control signal for battery"
-          annotation (Placement(transformation(
-                  extent={{-160,-90},{-120,-50}}),  iconTransformation(extent={{-160,
-                    -160},{-120,-120}})));
-        Modelica.Blocks.Interfaces.RealInput uRef
-            "Cooling signal input for refrigerator"
-          annotation (Placement(transformation(extent={{-160,-120},{-120,-80}}),
-                iconTransformation(extent={{-160,-200},{-120,-160}})));
-        Modelica.Blocks.Interfaces.RealInput uFreCool
-          "Cooling signal input for freezer"
-          annotation (Placement(transformation(extent={{-160,-200},{-120,-160}}),
-                iconTransformation(extent={{-160,-240},{-120,-200}})));
-        Modelica.Blocks.Math.Product squareHeat
-          annotation (Placement(transformation(extent={{38,-146},{44,-140}})));
-        Modelica.Blocks.Math.Product squareCool
-          annotation (Placement(transformation(extent={{38,-156},{44,-150}})));
-        Modelica.Blocks.Math.Product squareCharge
-          annotation (Placement(transformation(extent={{38,-166},{44,-160}})));
-        Modelica.Blocks.Math.Gain gainCharge(k=1)
-          annotation (Placement(transformation(extent={{50,-166},{56,-160}})));
-        Modelica.Blocks.Math.Gain gainCool(k=1)
-          annotation (Placement(transformation(extent={{50,-156},{56,-150}})));
-        Modelica.Blocks.Math.Gain gainHeat(k=1)
-          annotation (Placement(transformation(extent={{50,-146},{56,-140}})));
-          Modelica.Blocks.Math.MultiSum sumJ(nu=7)
-          annotation (Placement(transformation(extent={{84,-166},{96,-154}})));
-        Modelica.Blocks.Math.Gain gainRef(k=1)
-            annotation (Placement(transformation(extent={{50,-186},{56,-180}})));
-        Modelica.Blocks.Math.Product squareDischarge1
-          annotation (Placement(transformation(extent={{38,-186},{44,-180}})));
-        Modelica.Blocks.Math.Gain gainDischarge2(k=1)
-          annotation (Placement(transformation(extent={{50,-196},{56,-190}})));
-        Modelica.Blocks.Math.Product squareDischarge2
-          annotation (Placement(transformation(extent={{38,-196},{44,-190}})));
-        Modelica.Blocks.Math.Gain gainFreCool(k=1)
-            annotation (Placement(transformation(extent={{50,-206},{56,-200}})));
-        Modelica.Blocks.Math.Product squareDischarge3
-          annotation (Placement(transformation(extent={{38,-206},{44,-200}})));
-          Modelica.Blocks.Interfaces.RealOutput J
-          "Objective function for optimization"
-          annotation (Placement(transformation(extent={{120,-148},{140,-128}}),
-                iconTransformation(extent={{120,-170},{140,-150}})));
-          Modelica.Blocks.Interfaces.RealOutput Ppv "Power generated by PV system"
-            annotation (Placement(transformation(extent={{120,130},{140,150}}),
-                iconTransformation(extent={{120,110},{140,130}})));
-          Modelica.Blocks.Interfaces.RealOutput Prtu_west
-            "RTU west electrical power consumption" annotation (Placement(
-                transformation(extent={{120,110},{140,130}}),
-                iconTransformation(extent={{120,70},{140,90}})));
-        Modelica.Blocks.Interfaces.RealOutput Pref "Refrigerator power"
-          annotation (Placement(transformation(extent={{120,70},{140,90}}),
-                iconTransformation(extent={{120,50},{140,70}})));
-        Modelica.Blocks.Interfaces.RealOutput Pfre "Freezer power"
-          annotation (Placement(transformation(extent={{120,50},{140,70}}),
-                iconTransformation(extent={{120,30},{140,50}})));
-          Modelica.Blocks.Interfaces.RealOutput Pbattery "Battery power output"
-            annotation (Placement(transformation(extent={{120,30},{140,50}}),
-                iconTransformation(extent={{120,10},{140,30}})));
-          Modelica.Blocks.Interfaces.RealOutput Pnet
-            annotation (Placement(transformation(extent={{120,-30},{140,-10}}),
-                iconTransformation(extent={{120,-50},{140,-30}})));
-          Modelica.Blocks.Interfaces.RealOutput Trtu_west
-            "Rtu west zone air temperature" annotation (Placement(
-                transformation(extent={{120,-50},{140,-30}}),
-                iconTransformation(extent={{120,-70},{140,-50}})));
-          Modelica.Blocks.Interfaces.RealOutput SOC "Battery state of charge"
-            annotation (Placement(transformation(extent={{120,-88},{140,-68}}),
-                iconTransformation(extent={{120,-110},{140,-90}})));
-        Modelica.Blocks.Interfaces.RealOutput Tref "Refrigerator air temperature"
-          annotation (Placement(transformation(extent={{120,-108},{140,-88}}),
-                iconTransformation(extent={{120,-130},{140,-110}})));
-        Modelica.Blocks.Interfaces.RealOutput Tfre "Freezer air temperature"
-          annotation (Placement(transformation(extent={{120,-128},{140,-108}}),
-                iconTransformation(extent={{120,-150},{140,-130}})));
-        Modelica.Blocks.Interfaces.RealInput weaTDryBul "Outdoor dry bulb temperature"
-            annotation (Placement(transformation(extent={{-160,120},{-120,160}}),
-                iconTransformation(extent={{-160,120},{-120,160}})));
-
-          Modelica.Blocks.Interfaces.RealOutput Prtu_east
-            "RTU east electrical power consumption" annotation (Placement(
-                transformation(extent={{120,90},{140,110}}), iconTransformation(
-                  extent={{120,90},{140,110}})));
-          Modelica.Blocks.Interfaces.RealOutput Trtu_east
-            "Rtu east zone air temperature" annotation (Placement(
-                transformation(extent={{120,-70},{140,-50}}),
-                iconTransformation(extent={{120,-90},{140,-70}})));
-        equation
-          connect(store.uCool, uCool) annotation (Line(points={{-11,47},{-100,
-                  47},{-100,20},{-140,20}}, color={0,0,127}));
-          connect(uBattery, store.uBattery) annotation (Line(points={{-140,-70},
-                  {-96,-70},{-96,38},{-11,38}},
-                                              color={0,0,127}));
-          connect(uRef, store.uRef) annotation (Line(points={{-140,-100},{-84,
-                  -100},{-84,35},{-11,35}}, color={0,0,127}));
-          connect(store.uFreCool, uFreCool) annotation (Line(points={{-11,29},{
-                  -80,29},{-80,-180},{-140,-180}},  color={0,0,127}));
-        connect(squareCharge.y,gainCharge. u)
-          annotation (Line(points={{44.3,-163},{49.4,-163}},
-                                                           color={0,0,127}));
-        connect(squareCool.y,gainCool. u)
-          annotation (Line(points={{44.3,-153},{49.4,-153}},
-                                                           color={0,0,127}));
-        connect(squareHeat.y,gainHeat. u)
-          annotation (Line(points={{44.3,-143},{49.4,-143}},
-                                                           color={0,0,127}));
-        connect(gainHeat.y,sumJ. u[1]) annotation (Line(points={{56.3,-143},{62,
-                  -143},{62,-156},{84,-156},{84,-156.4}},
-                                          color={0,0,127}));
-        connect(gainCool.y,sumJ. u[2]) annotation (Line(points={{56.3,-153},{58,
-                  -153},{58,-154},{60,-154},{60,-157.6},{84,-157.6}},
-                                    color={0,0,127}));
-        connect(gainCharge.y,sumJ. u[3]) annotation (Line(points={{56.3,-163},{
-                  58,-163},{58,-158.8},{84,-158.8}},
-                                               color={0,0,127}));
-        connect(squareHeat.u2,squareHeat. u1) annotation (Line(points={{37.4,
-                  -144.8},{16,-144.8},{16,-141.2},{37.4,-141.2}},
-                                                     color={0,0,127}));
-          connect(uCool, squareCool.u1) annotation (Line(points={{-140,20},{-116,
-                  20},{-116,-151.2},{37.4,-151.2}}, color={0,0,127}));
-        connect(squareCool.u2,squareCool. u1) annotation (Line(points={{37.4,
-                  -154.8},{16,-154.8},{16,-151.2},{37.4,-151.2}},
-                                                     color={0,0,127}));
-          connect(uBattery, squareCharge.u1) annotation (Line(points={{-140,-70},
-                  {-100,-70},{-100,-161.2},{37.4,-161.2}},
-                color={0,0,127}));
-        connect(squareCharge.u2,squareCharge. u1) annotation (Line(points={{37.4,
-                  -164.8},{16,-164.8},{16,-161.2},{37.4,-161.2}},
-                                                            color={0,0,127}));
-          connect(squareDischarge1.y,gainRef. u)
-            annotation (Line(points={{44.3,-183},{49.4,-183}}, color={0,0,127}));
-        connect(squareDischarge2.y,gainDischarge2. u)
-          annotation (Line(points={{44.3,-193},{49.4,-193}},
-                                                           color={0,0,127}));
-          connect(squareDischarge3.y,gainFreCool. u)
-            annotation (Line(points={{44.3,-203},{49.4,-203}}, color={0,0,127}));
-          connect(gainRef.y,sumJ. u[4]) annotation (Line(points={{56.3,-183},{
-                  58,-183},{58,-174},{60,-174},{60,-160},{84,-160}},
-                color={0,0,127}));
-        connect(gainDischarge2.y,sumJ. u[5]) annotation (Line(points={{56.3,
-                  -193},{58,-193},{58,-184},{62,-184},{62,-161.2},{84,-161.2}},
-                                                    color={0,0,127}));
-          connect(gainFreCool.y,sumJ. u[6]) annotation (Line(points={{56.3,-203},
-                  {60,-203},{60,-194},{64,-194},{64,-162.4},{84,-162.4}},    color=
-                  {0,0,127}));
-        connect(uRef,squareDischarge1. u1) annotation (Line(points={{-140,-100},
-                  {-106,-100},{-106,-172},{-34,-172},{-34,-181.2},{37.4,-181.2}},
-                                                                           color={0,
-                0,127}));
-        connect(squareDischarge1.u2,squareDischarge1. u1) annotation (Line(points={{37.4,
-                  -184.8},{16,-184.8},{16,-181.2},{37.4,-181.2}}, color={0,0,127}));
-        connect(squareDischarge2.u2,squareDischarge2. u1) annotation (Line(points={{37.4,
-                  -194.8},{16,-194.8},{16,-191.2},{37.4,-191.2}},   color={0,0,127}));
-        connect(uFreCool,squareDischarge3. u1) annotation (Line(points={{-140,
-                  -180},{-84,-180},{-84,-200},{8,-200},{8,-201.2},{37.4,-201.2}},
-                                                    color={0,0,127}));
-        connect(squareDischarge3.u2,squareDischarge3. u1) annotation (Line(points={{37.4,
-                  -204.8},{16,-204.8},{16,-201.2},{37.4,-201.2}},     color={0,0,
-                127}));
-          connect(Ppv, store.Ppv) annotation (Line(points={{130,140},{40,140},{
-                  40,58.4},{11,58.4}},
-                                color={0,0,127}));
-          connect(store.Prtu_west, Prtu_west) annotation (Line(points={{11,56.4},
-                  {44,56.4},{44,120},{130,120}}, color={0,0,127}));
-          connect(Pref, store.Pref) annotation (Line(points={{130,80},{52,80},{
-                  52,52.4},{11,52.4}},
-                                color={0,0,127}));
-          connect(Pfre, store.Pfre) annotation (Line(points={{130,60},{54,60},{
-                  54,50.4},{11,50.4}},
-                                color={0,0,127}));
-          connect(Pbattery, store.Pbattery) annotation (Line(points={{130,40},{
-                  56,40},{56,48.4},{11,48.4}},
-                                           color={0,0,127}));
-          connect(store.Pnet, Pnet) annotation (Line(points={{11,42.2},{52,42.2},
-                  {52,-20},{130,-20}},
-                                   color={0,0,127}));
-          connect(store.Trtu_west, Trtu_west) annotation (Line(points={{11,40.2},
-                  {48,40.2},{48,-40},{130,-40}}, color={0,0,127}));
-          connect(SOC, store.SOC) annotation (Line(points={{130,-78},{44,-78},{
-                  44,36.2},{11,36.2}},
-                                 color={0,0,127}));
-          connect(Tref, store.Tref) annotation (Line(points={{130,-98},{40,-98},
-                  {40,34.2},{11,34.2}},
-                                    color={0,0,127}));
-          connect(Tfre, store.Tfre) annotation (Line(points={{130,-118},{100,
-                  -118},{100,-110},{36,-110},{36,32.2},{11,32.2}},
-                                    color={0,0,127}));
-          connect(weaTDryBul, store.weaTDryBul) annotation (Line(points={{-140,
-                  140},{-100,140},{-100,59},{-11,59}},
-                                                     color={0,0,127}));
-          connect(weaPoaPv, store.weaPoaPv) annotation (Line(points={{-140,110},
-                  {-106,110},{-106,56},{-11,56}},
-                                               color={0,0,127}));
-          connect(weaPoaWin, store.weaPoaWin) annotation (Line(points={{-140,80},
-                  {-110,80},{-110,53},{-11,53}},
-                                               color={0,0,127}));
-          connect(store.Prtu_east, Prtu_east) annotation (Line(points={{11,54.4},
-                  {48,54.4},{48,100},{130,100}}, color={0,0,127}));
-          connect(store.Trtu_east, Trtu_east) annotation (Line(points={{11,38.2},
-                  {46,38.2},{46,-60},{130,-60}}, color={0,0,127}));
-          connect(store.Pnet_pen, sumJ.u[7]) annotation (Line(points={{11,29},{
-                  28,29},{28,-114},{76,-114},{76,-159.475},{84,-159.475},{84,
-                  -163.6}},   color={0,0,127}));
-          connect(sumJ.y, J) annotation (Line(points={{97.02,-160},{108,-160},{
-                  108,-138},{130,-138}}, color={0,0,127}));
-          annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-120,
-                    -220},{120,140}})),      Diagram(coordinateSystem(
-                  preserveAspectRatio=false, extent={{-120,-220},{120,140}})));
-        end partialStore;
-      end BaseClasses;
 
       model Store
-        extends BaseClasses.partialStore(store(
+        extends SolarPlus.Building.BaseClasses.partialStore(
+                                         store(
             TSpRtuEast=22.5 + 273.15,
             TSpRtuWest=20.6 + 273.15,
             TSpRef=0 + 273.15,
@@ -1727,7 +1492,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       end Store;
 
       model StoreSim
-        extends BaseClasses.partialStore;
+        extends SolarPlus.Building.BaseClasses.partialStore;
         Modelica.Blocks.Sources.Constant const(k=20 + 273.15)
           annotation (Placement(transformation(extent={{-120,-10},{-100,10}})));
         HVACR.Controllers.SingleStageHeatingController
@@ -1761,6 +1526,65 @@ package SolarPlus "This package contains models for MPC control optimization."
                 46.2},{80,0},{110,0}},
                                 color={0,0,127}));
       end StoreSim;
+
+      block StoreIsland "This store model is for island mode optimization"
+        BaseClasses.StoreIsland storeIsland
+          annotation (Placement(transformation(extent={{-40,0},{-20,20}})));
+        Modelica.Blocks.Interfaces.RealInput weaTDryBul
+          "Outdoor dry bulb temperature" annotation (Placement(transformation(
+                extent={{-140,70},{-100,110}}), iconTransformation(extent={{-120,80},
+                  {-100,100}})));
+        Modelica.Blocks.Interfaces.RealInput weaPoaPv
+          "plane of array solar radiation on pv" annotation (Placement(
+              transformation(extent={{-140,40},{-100,80}}), iconTransformation(
+                extent={{-120,50},{-100,70}})));
+        Modelica.Blocks.Interfaces.RealInput weaPoaWin
+          "plane of array solar radiation on Windows" annotation (Placement(
+              transformation(extent={{-140,10},{-100,50}}),iconTransformation(
+                extent={{-120,20},{-100,40}})));
+        Modelica.Blocks.Interfaces.RealInput uHeat "RTU heating signal input"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}}),
+              iconTransformation(extent={{-120,-10},{-100,10}})));
+        Modelica.Blocks.Interfaces.RealInput uCool "RTU cooling signal input"
+          annotation (Placement(transformation(extent={{-140,-50},{-100,-10}}),
+              iconTransformation(extent={{-120,-40},{-100,-20}})));
+        Modelica.Blocks.Interfaces.RealInput uRef
+        "Cooling signal input for refrigerator"
+        annotation (Placement(transformation(extent={{-140,-80},{-100,-40}}),
+              iconTransformation(extent={{-120,-70},{-100,-50}})));
+        Modelica.Blocks.Interfaces.RealInput uFreCool
+        "Cooling signal input for freezer"
+        annotation (Placement(transformation(extent={{-140,-110},{-100,-70}}),
+              iconTransformation(extent={{-120,-100},{-100,-80}})));
+        Modelica.Blocks.Interfaces.RealOutput J annotation (Placement(
+              transformation(extent={{100,10},{120,30}}), iconTransformation(
+                extent={{100,-24},{114,-10}})));
+      equation
+        connect(weaTDryBul, storeIsland.weaTDryBul) annotation (Line(points={{
+                -120,90},{-88,90},{-88,19},{-41,19}}, color={0,0,127}));
+        connect(weaPoaPv, storeIsland.weaPoaPv) annotation (Line(points={{-120,
+                60},{-90,60},{-90,16},{-41,16}}, color={0,0,127}));
+        connect(weaPoaWin, storeIsland.weaPoaWin) annotation (Line(points={{
+                -120,30},{-92,30},{-92,13},{-41,13}}, color={0,0,127}));
+        connect(uHeat, storeIsland.uHeat) annotation (Line(points={{-120,0},{
+                -72,0},{-72,10},{-41,10}}, color={0,0,127}));
+        connect(uCool, storeIsland.uCool) annotation (Line(points={{-120,-30},{
+                -70,-30},{-70,7},{-41,7}}, color={0,0,127}));
+        connect(uRef, storeIsland.uRef) annotation (Line(points={{-120,-60},{
+                -66,-60},{-66,4},{-41,4}}, color={0,0,127}));
+        connect(uFreCool, storeIsland.uFreCool) annotation (Line(points={{-120,
+                -90},{-60,-90},{-60,1},{-41,1}}, color={0,0,127}));
+        connect(storeIsland.Pnet, J) annotation (Line(points={{-19.3,8.3},{40,
+                8.3},{40,20},{110,20}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics
+              ={
+              Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                fillColor={255,255,255},
+                fillPattern=FillPattern.Solid)}), Diagram(coordinateSystem(
+                preserveAspectRatio=false)));
+      end StoreIsland;
     end Optimization;
 
     package BaseClasses
@@ -2991,6 +2815,397 @@ package SolarPlus "This package contains models for MPC control optimization."
                 lineColor={0,0,255})}),                                Diagram(
               coordinateSystem(preserveAspectRatio=false, extent={{-100,-260},{100,100}})));
       end Whole_Inputs;
+
+      model partialStore
+        parameter Modelica.SIunits.Temperature Trtu_west_0 = 21+273.15 "Initial temperature of rtu west zone";
+        parameter Modelica.SIunits.Temperature Trtu_east_0 = 21+273.15 "Initial temperature of rtu east zone";
+        parameter Modelica.SIunits.Temperature Tref_0 = 3.5+273.15 "Initial temperature of ref zone";
+        parameter Modelica.SIunits.Temperature Tfre_0 = -25+273.15 "Initial temperature of fre zone";
+        parameter Modelica.SIunits.DimensionlessRatio SOC_0 = 0.5 "Initial SOC of battery";
+        SolarPlus.Building.BaseClasses.Whole_Inputs store(
+          Trtu_west_0=Trtu_west_0,
+          Trtu_east_0=Trtu_east_0,
+          Tref_0=Tref_0,
+          Tfre_0=Tfre_0,
+          SOC_0=SOC_0)
+          annotation (Placement(transformation(extent={{-10,28},{10,60}})));
+          Modelica.Blocks.Interfaces.RealInput weaPoaPv "plane of array solar radiation on pv"
+          annotation (Placement(transformation(
+                extent={{-160,90},{-120,130}}),iconTransformation(extent={{-160,40},
+                  {-120,80}})));
+      Modelica.Blocks.Interfaces.RealInput weaPoaWin "plane of array solar radiation on Windows"
+          annotation (Placement(
+              transformation(extent={{-160,60},{-120,100}}),iconTransformation(extent={{-160,80},
+                  {-120,120}})));
+      Modelica.Blocks.Interfaces.RealInput uCool "RTU cooling signal input"
+          annotation (Placement(transformation(extent={{-160,0},{-120,40}}),
+              iconTransformation(extent={{-160,-80},{-120,-40}})));
+      Modelica.Blocks.Interfaces.RealInput uBattery
+          "Control signal for battery"
+        annotation (Placement(transformation(
+                extent={{-160,-90},{-120,-50}}),  iconTransformation(extent={{-160,
+                  -160},{-120,-120}})));
+      Modelica.Blocks.Interfaces.RealInput uRef
+          "Cooling signal input for refrigerator"
+        annotation (Placement(transformation(extent={{-160,-120},{-120,-80}}),
+              iconTransformation(extent={{-160,-200},{-120,-160}})));
+      Modelica.Blocks.Interfaces.RealInput uFreCool
+        "Cooling signal input for freezer"
+        annotation (Placement(transformation(extent={{-160,-200},{-120,-160}}),
+              iconTransformation(extent={{-160,-240},{-120,-200}})));
+      Modelica.Blocks.Math.Product squareHeat
+        annotation (Placement(transformation(extent={{38,-146},{44,-140}})));
+      Modelica.Blocks.Math.Product squareCool
+        annotation (Placement(transformation(extent={{38,-156},{44,-150}})));
+      Modelica.Blocks.Math.Product squareCharge
+        annotation (Placement(transformation(extent={{38,-166},{44,-160}})));
+      Modelica.Blocks.Math.Gain gainCharge(k=1)
+        annotation (Placement(transformation(extent={{50,-166},{56,-160}})));
+      Modelica.Blocks.Math.Gain gainCool(k=1)
+        annotation (Placement(transformation(extent={{50,-156},{56,-150}})));
+      Modelica.Blocks.Math.Gain gainHeat(k=1)
+        annotation (Placement(transformation(extent={{50,-146},{56,-140}})));
+        Modelica.Blocks.Math.MultiSum sumJ(nu=7)
+        annotation (Placement(transformation(extent={{84,-166},{96,-154}})));
+      Modelica.Blocks.Math.Gain gainRef(k=1)
+          annotation (Placement(transformation(extent={{50,-186},{56,-180}})));
+      Modelica.Blocks.Math.Product squareDischarge1
+        annotation (Placement(transformation(extent={{38,-186},{44,-180}})));
+      Modelica.Blocks.Math.Gain gainDischarge2(k=1)
+        annotation (Placement(transformation(extent={{50,-196},{56,-190}})));
+      Modelica.Blocks.Math.Product squareDischarge2
+        annotation (Placement(transformation(extent={{38,-196},{44,-190}})));
+      Modelica.Blocks.Math.Gain gainFreCool(k=1)
+          annotation (Placement(transformation(extent={{50,-206},{56,-200}})));
+      Modelica.Blocks.Math.Product squareDischarge3
+        annotation (Placement(transformation(extent={{38,-206},{44,-200}})));
+        Modelica.Blocks.Interfaces.RealOutput J
+        "Objective function for optimization"
+        annotation (Placement(transformation(extent={{120,-148},{140,-128}}),
+              iconTransformation(extent={{120,-170},{140,-150}})));
+        Modelica.Blocks.Interfaces.RealOutput Ppv "Power generated by PV system"
+          annotation (Placement(transformation(extent={{120,130},{140,150}}),
+              iconTransformation(extent={{120,110},{140,130}})));
+        Modelica.Blocks.Interfaces.RealOutput Prtu_west
+          "RTU west electrical power consumption" annotation (Placement(
+              transformation(extent={{120,110},{140,130}}),
+              iconTransformation(extent={{120,70},{140,90}})));
+      Modelica.Blocks.Interfaces.RealOutput Pref "Refrigerator power"
+        annotation (Placement(transformation(extent={{120,70},{140,90}}),
+              iconTransformation(extent={{120,50},{140,70}})));
+      Modelica.Blocks.Interfaces.RealOutput Pfre "Freezer power"
+        annotation (Placement(transformation(extent={{120,50},{140,70}}),
+              iconTransformation(extent={{120,30},{140,50}})));
+        Modelica.Blocks.Interfaces.RealOutput Pbattery "Battery power output"
+          annotation (Placement(transformation(extent={{120,30},{140,50}}),
+              iconTransformation(extent={{120,10},{140,30}})));
+        Modelica.Blocks.Interfaces.RealOutput Pnet
+          annotation (Placement(transformation(extent={{120,-30},{140,-10}}),
+              iconTransformation(extent={{120,-50},{140,-30}})));
+        Modelica.Blocks.Interfaces.RealOutput Trtu_west
+          "Rtu west zone air temperature" annotation (Placement(
+              transformation(extent={{120,-50},{140,-30}}),
+              iconTransformation(extent={{120,-70},{140,-50}})));
+        Modelica.Blocks.Interfaces.RealOutput SOC "Battery state of charge"
+          annotation (Placement(transformation(extent={{120,-88},{140,-68}}),
+              iconTransformation(extent={{120,-110},{140,-90}})));
+      Modelica.Blocks.Interfaces.RealOutput Tref "Refrigerator air temperature"
+        annotation (Placement(transformation(extent={{120,-108},{140,-88}}),
+              iconTransformation(extent={{120,-130},{140,-110}})));
+      Modelica.Blocks.Interfaces.RealOutput Tfre "Freezer air temperature"
+        annotation (Placement(transformation(extent={{120,-128},{140,-108}}),
+              iconTransformation(extent={{120,-150},{140,-130}})));
+      Modelica.Blocks.Interfaces.RealInput weaTDryBul "Outdoor dry bulb temperature"
+          annotation (Placement(transformation(extent={{-160,120},{-120,160}}),
+              iconTransformation(extent={{-160,120},{-120,160}})));
+
+        Modelica.Blocks.Interfaces.RealOutput Prtu_east
+          "RTU east electrical power consumption" annotation (Placement(
+              transformation(extent={{120,90},{140,110}}), iconTransformation(
+                extent={{120,90},{140,110}})));
+        Modelica.Blocks.Interfaces.RealOutput Trtu_east
+          "Rtu east zone air temperature" annotation (Placement(
+              transformation(extent={{120,-70},{140,-50}}),
+              iconTransformation(extent={{120,-90},{140,-70}})));
+      equation
+        connect(store.uCool, uCool) annotation (Line(points={{-11,47},{-100,
+                47},{-100,20},{-140,20}}, color={0,0,127}));
+        connect(uBattery, store.uBattery) annotation (Line(points={{-140,-70},
+                {-96,-70},{-96,38},{-11,38}},
+                                            color={0,0,127}));
+        connect(uRef, store.uRef) annotation (Line(points={{-140,-100},{-84,
+                -100},{-84,35},{-11,35}}, color={0,0,127}));
+        connect(store.uFreCool, uFreCool) annotation (Line(points={{-11,29},{
+                -80,29},{-80,-180},{-140,-180}},  color={0,0,127}));
+      connect(squareCharge.y,gainCharge. u)
+        annotation (Line(points={{44.3,-163},{49.4,-163}},
+                                                         color={0,0,127}));
+      connect(squareCool.y,gainCool. u)
+        annotation (Line(points={{44.3,-153},{49.4,-153}},
+                                                         color={0,0,127}));
+      connect(squareHeat.y,gainHeat. u)
+        annotation (Line(points={{44.3,-143},{49.4,-143}},
+                                                         color={0,0,127}));
+      connect(gainHeat.y,sumJ. u[1]) annotation (Line(points={{56.3,-143},{62,
+                -143},{62,-156},{84,-156},{84,-156.4}},
+                                        color={0,0,127}));
+      connect(gainCool.y,sumJ. u[2]) annotation (Line(points={{56.3,-153},{58,
+                -153},{58,-154},{60,-154},{60,-157.6},{84,-157.6}},
+                                  color={0,0,127}));
+      connect(gainCharge.y,sumJ. u[3]) annotation (Line(points={{56.3,-163},{
+                58,-163},{58,-158.8},{84,-158.8}},
+                                             color={0,0,127}));
+      connect(squareHeat.u2,squareHeat. u1) annotation (Line(points={{37.4,
+                -144.8},{16,-144.8},{16,-141.2},{37.4,-141.2}},
+                                                   color={0,0,127}));
+        connect(uCool, squareCool.u1) annotation (Line(points={{-140,20},{-116,
+                20},{-116,-151.2},{37.4,-151.2}}, color={0,0,127}));
+      connect(squareCool.u2,squareCool. u1) annotation (Line(points={{37.4,
+                -154.8},{16,-154.8},{16,-151.2},{37.4,-151.2}},
+                                                   color={0,0,127}));
+        connect(uBattery, squareCharge.u1) annotation (Line(points={{-140,-70},
+                {-100,-70},{-100,-161.2},{37.4,-161.2}},
+              color={0,0,127}));
+      connect(squareCharge.u2,squareCharge. u1) annotation (Line(points={{37.4,
+                -164.8},{16,-164.8},{16,-161.2},{37.4,-161.2}},
+                                                          color={0,0,127}));
+        connect(squareDischarge1.y,gainRef. u)
+          annotation (Line(points={{44.3,-183},{49.4,-183}}, color={0,0,127}));
+      connect(squareDischarge2.y,gainDischarge2. u)
+        annotation (Line(points={{44.3,-193},{49.4,-193}},
+                                                         color={0,0,127}));
+        connect(squareDischarge3.y,gainFreCool. u)
+          annotation (Line(points={{44.3,-203},{49.4,-203}}, color={0,0,127}));
+        connect(gainRef.y,sumJ. u[4]) annotation (Line(points={{56.3,-183},{
+                58,-183},{58,-174},{60,-174},{60,-160},{84,-160}},
+              color={0,0,127}));
+      connect(gainDischarge2.y,sumJ. u[5]) annotation (Line(points={{56.3,
+                -193},{58,-193},{58,-184},{62,-184},{62,-161.2},{84,-161.2}},
+                                                  color={0,0,127}));
+        connect(gainFreCool.y,sumJ. u[6]) annotation (Line(points={{56.3,-203},
+                {60,-203},{60,-194},{64,-194},{64,-162.4},{84,-162.4}},    color=
+                {0,0,127}));
+      connect(uRef,squareDischarge1. u1) annotation (Line(points={{-140,-100},
+                {-106,-100},{-106,-172},{-34,-172},{-34,-181.2},{37.4,-181.2}},
+                                                                         color={0,
+              0,127}));
+      connect(squareDischarge1.u2,squareDischarge1. u1) annotation (Line(points={{37.4,
+                -184.8},{16,-184.8},{16,-181.2},{37.4,-181.2}}, color={0,0,127}));
+      connect(squareDischarge2.u2,squareDischarge2. u1) annotation (Line(points={{37.4,
+                -194.8},{16,-194.8},{16,-191.2},{37.4,-191.2}},   color={0,0,127}));
+      connect(uFreCool,squareDischarge3. u1) annotation (Line(points={{-140,
+                -180},{-84,-180},{-84,-200},{8,-200},{8,-201.2},{37.4,-201.2}},
+                                                  color={0,0,127}));
+      connect(squareDischarge3.u2,squareDischarge3. u1) annotation (Line(points={{37.4,
+                -204.8},{16,-204.8},{16,-201.2},{37.4,-201.2}},     color={0,0,
+              127}));
+        connect(Ppv, store.Ppv) annotation (Line(points={{130,140},{40,140},{
+                40,58.4},{11,58.4}},
+                              color={0,0,127}));
+        connect(store.Prtu_west, Prtu_west) annotation (Line(points={{11,56.4},
+                {44,56.4},{44,120},{130,120}}, color={0,0,127}));
+        connect(Pref, store.Pref) annotation (Line(points={{130,80},{52,80},{
+                52,52.4},{11,52.4}},
+                              color={0,0,127}));
+        connect(Pfre, store.Pfre) annotation (Line(points={{130,60},{54,60},{
+                54,50.4},{11,50.4}},
+                              color={0,0,127}));
+        connect(Pbattery, store.Pbattery) annotation (Line(points={{130,40},{
+                56,40},{56,48.4},{11,48.4}},
+                                         color={0,0,127}));
+        connect(store.Pnet, Pnet) annotation (Line(points={{11,42.2},{52,42.2},
+                {52,-20},{130,-20}},
+                                 color={0,0,127}));
+        connect(store.Trtu_west, Trtu_west) annotation (Line(points={{11,40.2},
+                {48,40.2},{48,-40},{130,-40}}, color={0,0,127}));
+        connect(SOC, store.SOC) annotation (Line(points={{130,-78},{44,-78},{
+                44,36.2},{11,36.2}},
+                               color={0,0,127}));
+        connect(Tref, store.Tref) annotation (Line(points={{130,-98},{40,-98},
+                {40,34.2},{11,34.2}},
+                                  color={0,0,127}));
+        connect(Tfre, store.Tfre) annotation (Line(points={{130,-118},{100,
+                -118},{100,-110},{36,-110},{36,32.2},{11,32.2}},
+                                  color={0,0,127}));
+        connect(weaTDryBul, store.weaTDryBul) annotation (Line(points={{-140,
+                140},{-100,140},{-100,59},{-11,59}},
+                                                   color={0,0,127}));
+        connect(weaPoaPv, store.weaPoaPv) annotation (Line(points={{-140,110},
+                {-106,110},{-106,56},{-11,56}},
+                                             color={0,0,127}));
+        connect(weaPoaWin, store.weaPoaWin) annotation (Line(points={{-140,80},
+                {-110,80},{-110,53},{-11,53}},
+                                             color={0,0,127}));
+        connect(store.Prtu_east, Prtu_east) annotation (Line(points={{11,54.4},
+                {48,54.4},{48,100},{130,100}}, color={0,0,127}));
+        connect(store.Trtu_east, Trtu_east) annotation (Line(points={{11,38.2},
+                {46,38.2},{46,-60},{130,-60}}, color={0,0,127}));
+        connect(store.Pnet_pen, sumJ.u[7]) annotation (Line(points={{11,29},{
+                28,29},{28,-114},{76,-114},{76,-159.475},{84,-159.475},{84,
+                -163.6}},   color={0,0,127}));
+        connect(sumJ.y, J) annotation (Line(points={{97.02,-160},{108,-160},{
+                108,-138},{130,-138}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-120,
+                  -220},{120,140}})),      Diagram(coordinateSystem(
+                preserveAspectRatio=false, extent={{-120,-220},{120,140}})));
+      end partialStore;
+
+      block StoreIsland
+        "This store model is used for islanding mode optimization"
+        BaseClasses.Thermal thermal
+          annotation (Placement(transformation(extent={{-40,-20},{-20,0}})));
+        PV.Simple simple(A=300)
+          annotation (Placement(transformation(extent={{-40,50},{-20,70}})));
+        Modelica.Blocks.Interfaces.RealInput weaTDryBul
+          "Outdoor dry bulb temperature" annotation (Placement(transformation(
+                extent={{-140,70},{-100,110}}), iconTransformation(extent={{-120,80},
+                  {-100,100}})));
+        Modelica.Blocks.Interfaces.RealInput weaPoaPv
+          "plane of array solar radiation on pv" annotation (Placement(
+              transformation(extent={{-140,40},{-100,80}}), iconTransformation(
+                extent={{-120,50},{-100,70}})));
+        Modelica.Blocks.Interfaces.RealInput weaPoaWin
+          "plane of array solar radiation on Windows" annotation (Placement(
+              transformation(extent={{-140,10},{-100,50}}),iconTransformation(
+                extent={{-120,20},{-100,40}})));
+        Modelica.Blocks.Interfaces.RealInput uHeat "RTU heating signal input"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}}),
+              iconTransformation(extent={{-120,-10},{-100,10}})));
+        Modelica.Blocks.Interfaces.RealInput uCool "RTU cooling signal input"
+          annotation (Placement(transformation(extent={{-140,-50},{-100,-10}}),
+              iconTransformation(extent={{-120,-40},{-100,-20}})));
+        Modelica.Blocks.Interfaces.RealInput uRef
+        "Cooling signal input for refrigerator"
+        annotation (Placement(transformation(extent={{-140,-80},{-100,-40}}),
+              iconTransformation(extent={{-120,-70},{-100,-50}})));
+        Modelica.Blocks.Interfaces.RealInput uFreCool
+        "Cooling signal input for freezer"
+        annotation (Placement(transformation(extent={{-140,-110},{-100,-70}}),
+              iconTransformation(extent={{-120,-100},{-100,-80}})));
+        Modelica.Blocks.Interfaces.RealOutput Ppv "Power generated by PV system"
+          annotation (Placement(transformation(extent={{100,86},{120,106}}),
+              iconTransformation(extent={{100,86},{114,100}})));
+        Modelica.Blocks.Interfaces.RealOutput Prtu_west
+          "RTU electrical power consumption" annotation (Placement(
+              transformation(extent={{100,70},{120,90}}), iconTransformation(
+                extent={{100,70},{114,84}})));
+        Modelica.Blocks.Interfaces.RealOutput Prtu_east
+          "RTU electrical power consumption" annotation (Placement(
+              transformation(extent={{100,56},{120,76}}), iconTransformation(
+                extent={{100,54},{114,68}})));
+        Modelica.Blocks.Interfaces.RealOutput Pref "Refrigerator power"
+        annotation (Placement(transformation(extent={{100,42},{120,62}}),
+              iconTransformation(extent={{100,38},{114,52}})));
+        Modelica.Blocks.Interfaces.RealOutput Pfre "Freezer power"
+        annotation (Placement(transformation(extent={{100,30},{120,50}}),
+              iconTransformation(extent={{100,22},{114,36}})));
+        Modelica.Blocks.Interfaces.RealOutput Grtu_west "RTU gas power"
+          annotation (Placement(transformation(extent={{100,14},{120,34}}),
+              iconTransformation(extent={{100,8},{114,22}})));
+        Modelica.Blocks.Interfaces.RealOutput Grtu_east "RTU gas power"
+          annotation (Placement(transformation(extent={{100,-2},{120,18}}),
+              iconTransformation(extent={{100,-8},{114,6}})));
+        Modelica.Blocks.Interfaces.RealOutput Pnet
+          annotation (Placement(transformation(extent={{100,-18},{120,2}}),
+              iconTransformation(extent={{100,-24},{114,-10}})));
+        Modelica.Blocks.Interfaces.RealOutput Trtu_west
+          "Rtu zone air temperature" annotation (Placement(transformation(
+                extent={{100,-58},{120,-38}}), iconTransformation(extent={{100,-40},
+                  {114,-26}})));
+        Modelica.Blocks.Interfaces.RealOutput Trtu_east
+          "Rtu zone air temperature" annotation (Placement(transformation(
+                extent={{100,-76},{120,-56}}),  iconTransformation(extent={{100,-58},
+                  {114,-44}})));
+        Modelica.Blocks.Interfaces.RealOutput Tref "Refrigerator air temperature"
+        annotation (Placement(transformation(extent={{100,-90},{120,-70}}),
+              iconTransformation(extent={{100,-78},{114,-64}})));
+        Modelica.Blocks.Interfaces.RealOutput Tfre "Freezer air temperature"
+        annotation (Placement(transformation(extent={{100,-104},{120,-84}}),
+              iconTransformation(extent={{100,-100},{114,-86}})));
+        Modelica.Blocks.Math.MultiSum multiSum(nu=8)
+          annotation (Placement(transformation(extent={{44,-66},{56,-54}})));
+        Modelica.Blocks.Math.Gain gain(k=-1)
+          annotation (Placement(transformation(extent={{0,30},{20,50}})));
+        Modelica.Blocks.Math.Gain gain1(k=0.25)
+          annotation (Placement(transformation(extent={{0,-50},{20,-30}})));
+        Modelica.Blocks.Math.Gain gain2(k=0.25)
+          annotation (Placement(transformation(extent={{0,-80},{20,-60}})));
+      equation
+        connect(weaPoaPv, simple.Iinc)
+          annotation (Line(points={{-120,60},{-42,60}}, color={0,0,127}));
+        connect(simple.Pgen, Ppv) annotation (Line(points={{-18.8,60},{50,60},{
+                50,96},{110,96}}, color={0,0,127}));
+        connect(weaTDryBul, thermal.Tout) annotation (Line(points={{-120,90},{
+                -80,90},{-80,-0.1},{-40.7,-0.1}}, color={0,0,127}));
+        connect(weaPoaWin, thermal.poaWin) annotation (Line(points={{-120,30},{
+                -84,30},{-84,-2.3},{-40.7,-2.3}}, color={0,0,127}));
+        connect(uHeat, thermal.uHeatWest) annotation (Line(points={{-120,0},{
+                -88,0},{-88,-4.7},{-40.7,-4.7}}, color={0,0,127}));
+        connect(uCool, thermal.uCoolWest) annotation (Line(points={{-120,-30},{
+                -80,-30},{-80,-7.1},{-40.7,-7.1}}, color={0,0,127}));
+        connect(uHeat, thermal.uHeatEast) annotation (Line(points={{-120,0},{
+                -88,0},{-88,-9.5},{-40.7,-9.5}}, color={0,0,127}));
+        connect(uCool, thermal.uCoolEast) annotation (Line(points={{-120,-30},{
+                -80,-30},{-80,-11.9},{-40.7,-11.9}}, color={0,0,127}));
+        connect(uRef, thermal.uRef) annotation (Line(points={{-120,-60},{-78,
+                -60},{-78,-14.9},{-40.7,-14.9}}, color={0,0,127}));
+        connect(uFreCool, thermal.uFreCool) annotation (Line(points={{-120,-90},
+                {-76,-90},{-76,-19.9},{-40.7,-19.9}}, color={0,0,127}));
+        connect(thermal.Trtu_west, Trtu_west) annotation (Line(points={{-19.3,
+                -0.7},{84,-0.7},{84,-48},{110,-48}}, color={0,0,127}));
+        connect(thermal.Grtu_west, Grtu_west) annotation (Line(points={{-19.3,
+                -4.7},{80,-4.7},{80,24},{110,24}}, color={0,0,127}));
+        connect(thermal.Prtu_west, Prtu_west) annotation (Line(points={{-19.3,
+                -2.9},{74,-2.9},{74,80},{110,80}}, color={0,0,127}));
+        connect(thermal.Trtu_east, Trtu_east) annotation (Line(points={{-19.3,
+                -8.1},{80,-8.1},{80,-66},{110,-66}}, color={0,0,127}));
+        connect(thermal.Prtu_east, Prtu_east) annotation (Line(points={{-19.3,
+                -9.9},{70,-9.9},{70,66},{110,66}}, color={0,0,127}));
+        connect(thermal.Grtu_east, Grtu_east) annotation (Line(points={{-19.3,
+                -11.7},{66,-11.7},{66,8},{110,8}}, color={0,0,127}));
+        connect(thermal.Tref, Tref) annotation (Line(points={{-19.3,-13.5},{74,
+                -13.5},{74,-80},{110,-80}}, color={0,0,127}));
+        connect(thermal.Pref, Pref) annotation (Line(points={{-19.3,-15.5},{60,
+                -15.5},{60,52},{110,52}}, color={0,0,127}));
+        connect(thermal.Tfre, Tfre) annotation (Line(points={{-19.3,-17.5},{70,
+                -17.5},{70,-94},{110,-94}}, color={0,0,127}));
+        connect(thermal.Pfre, Pfre) annotation (Line(points={{-19.3,-19.3},{54,
+                -19.3},{54,40},{110,40}}, color={0,0,127}));
+        connect(multiSum.y, Pnet) annotation (Line(points={{57.02,-60},{60,-60},
+                {60,-24},{92,-24},{92,-8},{110,-8}}, color={0,0,127}));
+        connect(thermal.Prtu_west, multiSum.u[1]) annotation (Line(points={{
+                -19.3,-2.9},{40,-2.9},{40,-56.325},{44,-56.325}}, color={0,0,
+                127}));
+        connect(thermal.Prtu_east, multiSum.u[2]) annotation (Line(points={{
+                -19.3,-9.9},{38,-9.9},{38,-57.375},{44,-57.375}}, color={0,0,
+                127}));
+        connect(thermal.Pref, multiSum.u[3]) annotation (Line(points={{-19.3,
+                -15.5},{36,-15.5},{36,-58.425},{44,-58.425}}, color={0,0,127}));
+        connect(thermal.Pfre, multiSum.u[4]) annotation (Line(points={{-19.3,
+                -19.3},{34,-19.3},{34,-59.475},{44,-59.475}}, color={0,0,127}));
+        connect(simple.Pgen, gain.u) annotation (Line(points={{-18.8,60},{-10,
+                60},{-10,40},{-2,40}}, color={0,0,127}));
+        connect(gain.y, multiSum.u[5]) annotation (Line(points={{21,40},{32,40},
+                {32,-60.525},{44,-60.525}}, color={0,0,127}));
+        connect(thermal.Pload, multiSum.u[6]) annotation (Line(points={{-19.3,
+                -6.3},{30,-6.3},{30,-62},{44,-62},{44,-61.575}}, color={0,0,127}));
+        connect(thermal.Grtu_west, gain1.u) annotation (Line(points={{-19.3,
+                -4.7},{-8,-4.7},{-8,-40},{-2,-40}}, color={0,0,127}));
+        connect(thermal.Grtu_east, gain2.u) annotation (Line(points={{-19.3,
+                -11.7},{-10,-11.7},{-10,-70},{-2,-70}}, color={0,0,127}));
+        connect(gain1.y, multiSum.u[7]) annotation (Line(points={{21,-40},{26,
+                -40},{26,-62.625},{44,-62.625}}, color={0,0,127}));
+        connect(gain2.y, multiSum.u[8]) annotation (Line(points={{21,-70},{26,
+                -70},{26,-63.675},{44,-63.675}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics
+              ={
+              Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                fillColor={255,255,255},
+                fillPattern=FillPattern.Solid)}), Diagram(coordinateSystem(
+                preserveAspectRatio=false)));
+      end StoreIsland;
     end BaseClasses;
 
     package Validation
