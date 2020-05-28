@@ -1,9 +1,18 @@
 [
     {
+        "type": "price-tou",
+        "default": true,
+        "notification-date": "2020-05-28T00:00:00Z",
+        "data":
+        {
+            "tariff-json": "openei_tariff/u14328_Commercial_E-19_TOU_gridlevelSecondary_revised.json"
+        }
+    },
+    {
         "type": "price-rtp",
         "notification-date": "2020-05-28T00:00:00Z",
-        "start-date": "2020-05-28T22:00:00Z",
-        "end-date": "2020-05-28T23:00:00Z",
+        "start-date": "2020-05-29T22:00:00Z",
+        "end-date": "2020-05-29T23:00:00Z",
         "data":
         {
             "energy_prices": [2, 2, 3, 3],
@@ -11,21 +20,10 @@
         }
     },
     {
-        "type": "price-tou",
-        "default": true,
-        "notification-date": "2020-05-28T00:00:00Z",
-        "start-date": "2020-05-28T00:00:00Z",
-        "end-date": "2020-05-28T23:59:59Z",
-        "data":
-        {
-            "tariff-json": "openei_tariff/u14328_Commercial_E-19_TOU_gridlevelSecondary_revised.json"
-        }
-    },
-    {
         "type": "dr-limit",
         "notification-date": "2020-05-28T00:00:00Z",
-        "start-date": "2020-05-28T14:00:00Z",
-        "end-date": "2020-05-28T16:00:00Z",
+        "start-date": "2020-05-29T00:00:00Z",
+        "end-date": "2020-05-29T02:00:00Z",
         "data":
         {
             "power": 35
@@ -34,8 +32,8 @@
     {
         "type": "dr-shed",
         "notification-date": "2020-05-28T00:00:00Z",
-        "start-date": "2020-05-28T03:00:00Z",
-        "end-date": "2020-05-28T05:00:00Z",
+        "start-date": "2020-05-29T03:00:00Z",
+        "end-date": "2020-05-29T05:00:00Z",
         "data":
         {
             "power": -5,
@@ -45,22 +43,23 @@
     {
         "type": "dr-shift",
         "notification-date": "2020-05-28T00:00:00Z",
-        "start-date-take": "2020-05-28T06:00:00Z",
-        "end-date-take": "2020-05-28T08:00:00Z",
-        "start-date-relax": "2020-05-28T08:00:00Z",
-        "end-date-relax": "2020-05-28T10:00:00Z",
+        "start-date-take": "2020-05-29T06:00:00Z",
+        "end-date-take": "2020-05-29T08:00:00Z",
+        "start-date-relax": "2020-05-29T08:00:00Z",
+        "end-date-relax": "2020-05-29T10:00:00Z",
         "data":
         {
             "power-take": 5,
             "power-relax": -5,
-            "baseline": [100, 99, 98, 97, 96, 95, 94, 93, 93, 94, 95, 96, 97, 98, 99, 100]
+            "baseline-take": [100, 99, 98, 97, 96, 95, 94, 93],
+            "baseline-relax": [93, 94, 95, 96, 97, 98, 99, 100]
         }
     },
     {
         "type": "dr-track",
         "notification-date": "2020-05-28T00:00:00Z",
-        "start-date": "2020-05-28T11:00:00Z",
-        "end-date": "2020-05-28T13:00:00Z",
+        "start-date": "2020-05-29T11:00:00Z",
+        "end-date": "2020-05-29T13:00:00Z",
         "data":
         {
             "profile": [40, 40, 40, 40, 40, 40, 40, 40]
