@@ -15,12 +15,19 @@ xbos:
   entity:
 
 data_source:
-  solar_production:
-  building_load:
-  battery_soc:
+  variables:
+    solar_production:
+    building_load:
+    battery_soc:
+  agg:
+  window:
+  max_battery_soc:
+  min_battery_soc:
 
 data_sink:
   output_format:
   filename:
   topic_map:
-    battery_rate:
+    battery_setpoint:
+  max_battery_rate:
+  min_battery_rate:
