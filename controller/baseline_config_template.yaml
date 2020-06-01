@@ -1,0 +1,26 @@
+database:
+  host:
+  port:
+  username:
+  password:
+  database:
+  ssl:
+  verify_ssl:
+  measurement:
+
+xbos:
+  wave:
+  wavemq:
+  namespace:
+  entity:
+
+data_source:
+  solar_production:
+  building_load:
+  battery_soc:
+
+data_sink:
+  output_format:
+  filename:
+  topic_map:
+    battery_rate:
