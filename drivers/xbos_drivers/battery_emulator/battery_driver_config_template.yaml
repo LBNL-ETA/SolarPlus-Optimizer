@@ -14,6 +14,9 @@ device_config:
     fmu_file: SolarPlus_Batteries_Emulator.fmu
     model_update_rate: 30
     initial_SOC: 0.5
+    initial_real_power_setpoint: 0
+    initial_poa_pv: 0
+    dark_sky_topic: dark_sky/blr
     default_real_power_setpoint: 0
     min_real_power_setpoint: -109000
     max_real_power_setpoint: 109000
