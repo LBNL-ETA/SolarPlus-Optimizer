@@ -113,8 +113,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Line(points={{60,0},{110,0}}, color={0,0,127}));
       connect(senTzone.port, r1C1_1.port_cap)
         annotation (Line(points={{40,0},{0.2,0}}, color={191,0,0}));
-        annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics
-              ={
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics=
+               {
               Rectangle(
                 extent={{-100,100},{100,-100}},
                 lineColor={0,0,0},
@@ -1689,8 +1689,8 @@ package SolarPlus "This package contains models for MPC control optimization."
 
       model Store
         extends BaseClasses.partialStore(store(
-            TSpRtuEast=22.5 + 273.15,
-            TSpRtuWest=20.6 + 273.15,
+            TSpRtuEast=20.5 + 273.15,
+            TSpRtuWest=20.5 + 273.15,
             TSpRef=0 + 273.15,
             TSpFre=-22 + 273.15));
         Modelica.Blocks.Interfaces.RealInput uHeat "RTU heating signal input"
