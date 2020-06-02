@@ -154,10 +154,10 @@ class Baseline_Controller:
 
     def generate_setpoints(self):
         end_time = datetime.datetime.utcnow()
-        start_time = end_time - datetime.timedelta('60T')
+        start_time = end_time - datetime.timedelta('15T')
 
         input_df = self.get_data(start_time=start_time, end_time=end_time)
-        input_df.resample('60T').mean()
+        input_df.resample('15T').mean()
 
         solar_production = input_df.solar_production.values[0]
         building_load = input_df.building_load.values[0]
