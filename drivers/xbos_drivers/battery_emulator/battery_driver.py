@@ -70,7 +70,7 @@ class EmulatedBatteryDriver(XBOSProcess):
         schedule(self.call_periodic(self._set_setpoint_rate, self._set_setpoints, runfirst=False))
 
     def _update_poa_pv(self, resp):
-        print('inside update POA')
+        print('updating POA')
         # device = resp.uri.split("/")[1]
 
         response_content = resp.values[0]
