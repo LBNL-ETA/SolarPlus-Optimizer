@@ -60,7 +60,7 @@ class EmulatedBatteryDriver(XBOSProcess):
         # # set subscription to any new action message that is published and extract setpoint list
         schedule(self.subscribe_extract(self.namespace, actuation_message_uri, self._actuation_message_path, self._save_setpoints, "save_setpoints"))
         schedule(self.subscribe_extract(self.namespace, actuation_message_uri+"/control_flag", self._actuation_message_path, self._save_setpoints, "save_setpoints"))
-        schedule(self.subscribe_extract(self.namespace, self.dark_sky_topic, ".weatherStation", self._update_poa_pv, "update_poa_pv"))
+        schedule(self.subscribe_extract(self.namespace, self.dark_sky_topic, ".", self._update_poa_pv, "update_poa_pv"))
 
         # read controller points every _rate seconds and publish
         schedule(self.call_periodic(self._rate, self._read_and_publish, runfirst=True))
@@ -71,10 +71,8 @@ class EmulatedBatteryDriver(XBOSProcess):
 
     def _update_poa_pv(self, resp):
         print('updating POA')
-        # device = resp.uri.split("/")[1]
-
         response_content = resp.values[0]
-        poaSrOnPV = response_content.get('poaSrOnPV', None)
+        poaSrOnPV = response_content.get('XBOSIoTDeviceState').get('weatherStation').get('poaSrOnPV').get('value')
         print("extracted poaSrOnPV = {0}".format(poaSrOnPV))
 
         if poaSrOnPV != None:
