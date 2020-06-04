@@ -67,7 +67,7 @@ class Baseline_Controller:
         print("\n")
         print("New battery_setpoint = {0}".format(battery_setpoint))
         setpoint_df = pd.DataFrame(data={'battery_setpoint': [battery_setpoint]}, index=[end_time])
-        setpoint_df.index.name=['Time']
+        setpoint_df.index.name='Time'
         setpoint_df = setpoint_df.resample('1T').mean()
         self.data_manager.set_setpoints(df=setpoint_df)
 
