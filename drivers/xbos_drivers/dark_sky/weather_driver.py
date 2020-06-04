@@ -120,7 +120,10 @@ class WeatherDriver(Driver):
                 hourly_df = self.plane_of_array(df=hourly_df)
                 hourly_df = hourly_df.reset_index()
                 hourly_df['time'] = hourly_df['time'].astype(int)
-                hourly_dict = hourly_df.drop(columns=['precipType']).to_dict('records')
+                if 'precipType' in hourly_df.columns:
+                    hourly_dict = hourly_df.drop(columns=['precipType']).to_dict('records')
+                else:
+                    hourly_dict = hourly_df.to_dict('records')
                 json_data['hourly']['data'] = hourly_dict
 
             hourly = json_data['hourly']
@@ -179,9 +182,17 @@ class WeatherDriver(Driver):
             self.report(self.service_name+ '/prediction', hourly_msg)
 
             if 'currently' not in json_data: return
-            currently_output = {}
-            for key, value in json_data['currently'].items():
-                currently_output[key] = value
+
+            current_df = pd.DataFrame(index=[0], data=json_data['currently'])
+            current_df.time = pd.to_datetime(current_df.time, unit='s', utc=True)
+            current_df = current_df.set_index('time')
+
+            current_df = self.Perez_split(forecast_df=current_df)
+            current_df = self.plane_of_array(df=current_df)
+
+            current_df = current_df.reset_index()
+            current_df['time'] = current_df['time'].astype(int)
+            currently_output = current_df.to_dict('records')[0]
 
             if 'humidity' in currently_output:
                 currently_output['humidity'] *= 100 # change from decimal to percent
@@ -210,6 +221,11 @@ class WeatherDriver(Driver):
                         uvIndex  =   types.Double(value=currently_output.get('uvIndex',None)),
                         visibility  =   types.Double(value=currently_output.get('visibility',None)),
                         ozone  =   types.Double(value=currently_output.get('ozone',None)),
+                        estimatedGhi=types.Double(value=currently_output.get('estimatedGhi', None)),
+                        beamRadiation=types.Double(value=currently_output.get('beamRadiation', None)),
+                        diffuseRadiation=types.Double(value=currently_output.get('diffuseRadiation', None)),
+                        poaSrOnPV=types.Double(value=currently_output.get('poaSrOnPV', None)),
+                        poaSrOnWindows=types.Double(value=currently_output.get('poaSrOnWindows', None)),
                     )
                 )
             )

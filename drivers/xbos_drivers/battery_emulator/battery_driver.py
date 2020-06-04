@@ -25,9 +25,13 @@ class EmulatedBatteryDriver(XBOSProcess):
 
         self._model_update_rate = self.device_config.get('model_update_rate', 30)
         self._initial_SOC = self.device_config.get('initial_SOC', 0.5)
+        self._initial_real_power_setpoint = self.device_config.get('initial_real_power_setpoint', 0)
+        self._initial_poa_pv = self.device_config.get('initial_poa_pv', 0)
         self._default_real_power_setpoint = self.device_config.get('default_real_power_setpoint', 0)
         self._min_real_power_setpoint = self.device_config.get('min_real_power_setpoint', -109000)
         self._max_real_power_setpoint = self.device_config.get('max_real_power_setpoint', 109000)
+
+        self.dark_sky_topic = self.device_config.get('dark_sky_topic', 'dark_sky/blr')
 
         self._default_time_threshold = self.device_config.get("time_threshold_revert_to_default", 14400)
 
@@ -38,10 +42,15 @@ class EmulatedBatteryDriver(XBOSProcess):
         self.fmu_file = self.device_config.get('fmu_file')
         self.battery = load_fmu(self.fmu_file)
         self.battery.set('simple.SOC_0', self._initial_SOC)
+        self.current_SOC = self._initial_SOC
         self.model_options = self.battery.simulate_options()
         self.model_options['initialize'] = True
-        self.current_time = 0
-        self.current_real_power_setpoint = self._default_real_power_setpoint
+        self.current_real_power_setpoint = self._initial_real_power_setpoint
+        self.current_poa_pv = self._initial_poa_pv
+        pset = (['PSet', 'weaPoaPv'], np.array([[0, self.current_real_power_setpoint, self.current_poa_pv], [30, self.current_real_power_setpoint, self.current_poa_pv]]))
+        self.battery.simulate(0, 30, pset, options=self.model_options)
+        self.model_options['initialize'] = False
+        self.current_time = 30
 
         # Check message bus and extract latest control flag and setpoint list
         actuation_message_uri = self.base_resource+"/"+self.service_name+"/actuation"
@@ -51,6 +60,7 @@ class EmulatedBatteryDriver(XBOSProcess):
         # # set subscription to any new action message that is published and extract setpoint list
         schedule(self.subscribe_extract(self.namespace, actuation_message_uri, self._actuation_message_path, self._save_setpoints, "save_setpoints"))
         schedule(self.subscribe_extract(self.namespace, actuation_message_uri+"/control_flag", self._actuation_message_path, self._save_setpoints, "save_setpoints"))
+        schedule(self.subscribe_extract(self.namespace, self.dark_sky_topic, ".", self._update_poa_pv, "update_poa_pv"))
 
         # read controller points every _rate seconds and publish
         schedule(self.call_periodic(self._rate, self._read_and_publish, runfirst=True))
@@ -59,19 +69,27 @@ class EmulatedBatteryDriver(XBOSProcess):
         # # periodically check if there is a need to change setpoints
         schedule(self.call_periodic(self._set_setpoint_rate, self._set_setpoints, runfirst=False))
 
+    def _update_poa_pv(self, resp):
+        print('updating POA')
+        response_content = resp.values[0]
+        poaSrOnPV = response_content.get('XBOSIoTDeviceState').get('weatherStation').get('poaSrOnPV').get('value')
+        print("extracted poaSrOnPV = {0}".format(poaSrOnPV))
+
+        if poaSrOnPV != None:
+            self.current_poa_pv = poaSrOnPV
+
     async def _advance_time(self):
         start = self.current_time
         end = self.current_time + self._model_update_rate
 
-        print("simulating with setpoints: {}".format(self.current_real_power_setpoint))
-        power_setpoint = (['PSet'], np.array(
+        print("simulating with setpoints: {} and poaPV: {}".format(self.current_real_power_setpoint, self.current_poa_pv))
+        setpoint = (['PSet', 'weaPoaPv'], np.array(
             [
-                [start, self.current_real_power_setpoint],
-                [end, self.current_real_power_setpoint]
+                [start, self.current_real_power_setpoint, self.current_poa_pv],
+                [end, self.current_real_power_setpoint, self.current_poa_pv]
             ]
         ))
-        self.battery.simulate(start, end, power_setpoint, options=self.model_options)
-        self.model_options['initialize'] = False
+        self.battery.simulate(start, end, setpoint, options=self.model_options)
         self.current_time = self.current_time + self._model_update_rate
 
     def extract_setpoint_dict(self, setpoint_values):
@@ -177,6 +195,13 @@ class EmulatedBatteryDriver(XBOSProcess):
                     new_value = self._min_real_power_setpoint
 
                 current_value = self.current_real_power_setpoint
+                if self.current_SOC == 0.95 and new_value > 0:
+                    print("current SOC already at SOC max of 0.95, resetting setpoint to 0")
+                    new_value = 0
+
+                if self.current_SOC == 0.25 and new_value < 0:
+                    print("current SOC already at SOC min of 0.25, resetting setpoint to 0")
+                    new_value = 0
 
                 if current_value != new_value:
                     value_to_be_written = new_value
@@ -196,7 +221,9 @@ class EmulatedBatteryDriver(XBOSProcess):
     async def _read_and_publish(self, *args):
 
         try:
-            measurements = {'real_power_setpoint': self.battery.get('PSet'), 'battery_soc': self.battery.get('SOC_meas')}
+            self.current_SOC = self.battery.get('SOC_meas')
+            measurements = {'real_power_setpoint': self.battery.get('PSet'), 'battery_soc': self.current_SOC, 'pv_production': self.battery.get('PPv')}
+            print(measurements)
 
             time_now = time.time() * 1e9
 
@@ -204,7 +231,8 @@ class EmulatedBatteryDriver(XBOSProcess):
                 rtac_state=rtac_pb2.RtacState(
                     time=int(time_now),
                     real_power_setpoint = types.Double(value=measurements.get('real_power_setpoint', None)),
-                    battery_soc = types.Double(value=measurements.get('battery_soc', None))
+                    battery_soc = types.Double(value=measurements.get('battery_soc', None)),
+                    current_power_production=types.Double(value=measurements.get('pv_production', None))
                 )
             )
             resource = self.base_resource + "/" + self.service_name
