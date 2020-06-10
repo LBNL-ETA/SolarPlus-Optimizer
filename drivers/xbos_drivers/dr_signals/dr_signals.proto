@@ -30,5 +30,6 @@ message DRSignalsPrediction {
     uint64 time = 1;
     
     repeated Prediction predictions = 3;
+    repeated uint64 event_st_ed_time = 4;
 
 }

@@ -163,8 +163,8 @@ class DREventManager:
         """
         ret_dict = {}
 
-        if type_dr == 'dr-prices':
-            ret_dict['type_dr'] = 'dr-prices'
+        if type_dr == 'dr-prices' or type_dr == 'dr-prices1':
+            ret_dict['type_dr'] = 'dr-prices' if type_dr == 'dr-prices' else 'dr-prices1'
             ret_dict['startdate'] = self.convert_to_utc(raw_data["start-date"])
             ret_dict['enddate'] = self.convert_to_utc(raw_data["end-date"])
             ret_dict['data_dr'] = self.get_df_tariff(raw_data["type"], (raw_data["start-date"], raw_data["end-date"]),
@@ -245,7 +245,7 @@ class DREventManager:
         """
         start_date, end_date = date_period
 
-        if type_tariff == 'price-tou':
+        if type_tariff == 'price-tou' or type_tariff == 'dr-prices1':
 
             if 'tariff-json' in raw_json_data:
                 # Init the CostCalculator with the tariff data
