@@ -272,13 +272,11 @@ class DRSignalsDriver(XBOSProcess):
 
         idx = pd.date_range(start_time_local, end_time_local, freq='15T', closed='left')
         num_elem = idx.shape[0]
-        df = pd.DataFrame(index=idx, data={'pi_e': np.zeros(num_elem), 'pi_d': np.zeros(num_elem),
-                                           'pmax': num_elem * [self.default_pmax], 'pmin': num_elem * [self.default_pmin]})
 
         tariff_data = OpenEI_tariff(utility_id='rcea',
                                     sector='Commercial',
                                     tariff_rate_of_interest='E-19S',
-                                    distrib_level_of_interest='secondary',
+                                    distrib_level_of_interest='Secondary',
                                     phasewing=None,
                                     tou=True)
         tariff_data.read_from_json()
@@ -291,8 +289,11 @@ class DRSignalsDriver(XBOSProcess):
         price.columns = ['pi_e']
         price['pi_d'] = p_df.customer_demand_charge_season + p_df.customer_demand_charge_tou
         price = price.tz_localize(self.tz_local).tz_convert(self.tz_utc).tz_localize(None)
+        df = price.copy()
         df['pi_e'] = price['pi_e']
         df['pi_d'] = price['pi_d']
+        df['pmax'] = self.default_pmax
+        df['pmin'] = self.default_pmin
         df['dr-mode'] = 0
         return df
 
@@ -386,7 +387,7 @@ class DRSignalsDriver(XBOSProcess):
         # Publish to constraints forecast
         msg_list2 = []
         for index, row in df.iterrows():
-            forecast_time = int(index.value)
+             forecast_time = int(index.value)
              msg = constraints_forecast_pb2.ConstraintForecast.Constraints(
                 forecast_time=forecast_time,
                 PMin=types.Double(value=row['pmin']),
