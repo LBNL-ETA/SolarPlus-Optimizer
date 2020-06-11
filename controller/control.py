@@ -6,7 +6,7 @@ Since it relies on data manager that gives data at 5 minute intervals,
 it can only be run at xx:x5:00 successfully.
 
 """
-islanding = True
+islanding = False
 
 import os
 import datetime
