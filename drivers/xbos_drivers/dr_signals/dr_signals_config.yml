@@ -7,5 +7,7 @@ entity: drsignals.ent
 namespace:
 id: dr-signals-driver
 forecast_period: 48
-pmin: -999999
-pmax: 999999
+default_pmin: -999999
+default_pmax: 999999
+dr_events_file: dr_events.json
+forecast_frequency: 15

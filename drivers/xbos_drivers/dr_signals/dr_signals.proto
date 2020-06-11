@@ -15,7 +15,7 @@ message DRSignalsPrediction {
 
 		// 0 - none, 1 - limit,
 		// 2 - shed, 3 - shift,
-		// 4 - track
+		// 4 - track, 5 - rtp, 6 - tou
 		Uint64 signal_type = 4;
 
 		Double power_limit = 5;
@@ -30,5 +30,6 @@ message DRSignalsPrediction {
     uint64 time = 1;
     
     repeated Prediction predictions = 3;
+    repeated uint64 event_st_ed_time = 4;
 
 }
