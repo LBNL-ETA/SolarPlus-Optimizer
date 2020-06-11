@@ -293,6 +293,7 @@ class DRSignalsDriver(XBOSProcess):
         price = price.tz_localize(self.tz_local).tz_convert(self.tz_utc).tz_localize(None)
         df['pi_e'] = price['pi_e']
         df['pi_d'] = price['pi_d']
+        df['dr-mode'] = 0
         return df
 
     async def read(self):
@@ -304,53 +305,52 @@ class DRSignalsDriver(XBOSProcess):
 
         for event in current_events:
             event_type = event['type']
-            print(event_type)
+
             if event_type == 'price-rtp':
                 price_df = self.get_rtp(event=event)
                 idx = df.merge(price_df, left_index=True, right_index=True, how='inner').index
                 df.loc[idx, 'pi_e'] = price_df.loc[idx, 'pi_e']
                 df.loc[idx, 'pi_d'] = price_df.loc[idx, 'pi_d']
-                df.loc[idx, 'dr-mode'] = 'price-rtp'
+                df.loc[idx, 'dr-mode'] = 5
             elif event_type == 'price-tou':
                 price_df = self.get_tou(event=event)
                 idx = df.merge(price_df, left_index=True, right_index=True, how='inner').index
                 df.loc[idx, 'pi_e'] = price_df.loc[idx, 'pi_e']
                 df.loc[idx, 'pi_d'] = price_df.loc[idx, 'pi_d']
-                df.loc[idx, 'dr-mode'] = 'price-tou'
+                df.loc[idx, 'dr-mode'] = 6
             elif event_type == 'dr-limit':
                 power_df = self.get_dr_limit(event=event)
                 idx = df.merge(power_df, left_index=True, right_index=True, how='inner').index
                 df.loc[idx, 'pmax'] = power_df.loc[idx, 'pmax']
-                df.loc[idx, 'dr-mode'] = 'dr-limit'
+                df.loc[idx, 'dr-mode'] = 1
             elif event_type == 'dr-shed':
                 power_df = self.get_dr_shed(event=event)
                 idx = df.merge(power_df, left_index=True, right_index=True, how='inner').index
                 df.loc[idx, 'pmax'] = power_df.loc[idx, 'pmax']
-                df.loc[idx, 'dr-mode'] = 'dr-shed'
+                df.loc[idx, 'dr-mode'] = 2
             elif event_type == 'dr-shift':
                 take_df, relax_df = self.get_dr_shift(event=event)
                 idx1 = df.merge(take_df, left_index=True, right_index=True, how='inner').index
                 df.loc[idx1, 'pmin'] = take_df.loc[idx1, 'pmin']
-                df.loc[idx1, 'dr-mode'] = 'dr-shift'
+                df.loc[idx1, 'dr-mode'] = 3
                 idx2 = df.merge(relax_df, left_index=True, right_index=True, how='inner').index
                 df.loc[idx2, 'pmax'] = relax_df.loc[idx2, 'pmax']
-                df.loc[idx2, 'dr-mode'] = 'dr-shift'
+                df.loc[idx2, 'dr-mode'] = 3
             elif event_type == 'dr-track':
                 power_df = self.get_dr_track(event=event)
                 idx = df.merge(power_df, left_index=True, right_index=True, how='inner').index
                 df.loc[idx, 'pmax'] = power_df.loc[idx, 'pmax']
                 df.loc[idx, 'pmin'] = power_df.loc[idx, 'pmin']
-                df.loc[idx, 'dr-mode'] = 'dr-track'
+                df.loc[idx, 'dr-mode'] = 4
                 df.loc[idx, 'profile'] = power_df.loc[idx, 'profile']
         tim = int(time.time() * 1e9)
 
         msg_list1 = []
         for index, row in df.iterrows():
             forecast_time = int(index.value)
-            row = row.dropna()
 
-            if 'dr-mode' in row['dr-mode']:
-                    if row['dr-mode'] == 'dr-track':
+            if row['dr-mode'] > 0  and row['dr-mode'] < 5:
+                    if row['dr-mode'] == 4:
                         msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
                             forecast_time=forecast_time,
                             price_energy=types.Double(value=row['pi_e']),
@@ -371,7 +371,7 @@ class DRSignalsDriver(XBOSProcess):
                     forecast_time=change_time,
                     price_energy=types.Double(value=row['pi_e']),
                     price_demand=types.Double(value=row['pi_d']),
-                    signal_type=types.Uint64(value=0),
+                    signal_type=types.Uint64(value=row['dr-mode']),
                 )
             msg_list1.append(msg)
 
