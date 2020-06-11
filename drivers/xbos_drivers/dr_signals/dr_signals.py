@@ -270,9 +270,6 @@ class DRSignalsDriver(XBOSProcess):
         start_time_local = self.tz_utc.localize(start_time_utc).astimezone(self.tz_local).replace(tzinfo=None)
         end_time_local = self.tz_utc.localize(end_time_utc).astimezone(self.tz_local).replace(tzinfo=None)
 
-        idx = pd.date_range(start_time_local, end_time_local, freq='15T', closed='left')
-        num_elem = idx.shape[0]
-
         tariff_data = OpenEI_tariff(utility_id='rcea',
                                     sector='Commercial',
                                     tariff_rate_of_interest='E-19S',
@@ -306,6 +303,7 @@ class DRSignalsDriver(XBOSProcess):
 
         for event in current_events:
             event_type = event['type']
+            print(event_type)
 
             if event_type == 'price-rtp':
                 price_df = self.get_rtp(event=event)
@@ -356,23 +354,23 @@ class DRSignalsDriver(XBOSProcess):
                             forecast_time=forecast_time,
                             price_energy=types.Double(value=row['pi_e']),
                             price_demand=types.Double(value=row['pi_d']),
-                            signal_type=types.Uint64(value=row['dr-mode']),
+                            signal_type=types.Uint64(value=int(row['dr-mode'])),
                             power_track=types.Double(value=row['profile'])
                         )
                     else:
                         msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
-                            forecast_time=change_time,
+                            forecast_time=forecast_time,
                             price_energy=types.Double(value=row['pi_e']),
                             price_demand=types.Double(value=row['pi_d']),
-                            signal_type=types.Uint64(value=row['dr-mode']),
+                            signal_type=types.Uint64(value=int(row['dr-mode'])),
                             power_limit=types.Double(value=row['pmax'])
                         )
             else:
                 msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
-                    forecast_time=change_time,
+                    forecast_time=forecast_time,
                     price_energy=types.Double(value=row['pi_e']),
                     price_demand=types.Double(value=row['pi_d']),
-                    signal_type=types.Uint64(value=row['dr-mode']),
+                    signal_type=types.Uint64(value=int(row['dr-mode'])),
                 )
             msg_list1.append(msg)
 
@@ -383,6 +381,8 @@ class DRSignalsDriver(XBOSProcess):
             )
         )
         await self.publish(self.namespace, self.base_resource1, False, message1)
+        print("publishing at time={0} to topic={1}".format(
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.base_resource1))
 
         # Publish to constraints forecast
         msg_list2 = []
@@ -402,6 +402,8 @@ class DRSignalsDriver(XBOSProcess):
             )
         )
         await self.publish(self.namespace, self.base_resource2, False, message2)
+        print("publishing at time={0} to topic={1}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                                           self.base_resource2))
 
 
 parser = argparse.ArgumentParser()
