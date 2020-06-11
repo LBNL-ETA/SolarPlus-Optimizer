@@ -34,6 +34,7 @@ controller/validation/*
 # MPC config files
 ####################
 */mpc_config.py
+*/baseline_config.py
 
 # Results files
 ###############

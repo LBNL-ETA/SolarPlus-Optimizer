@@ -1,0 +1,64 @@
+[
+    {
+        "type": "price-rtp",
+        "start-date": "2020-06-10T18:00:00Z",
+        "end-date": "2020-06-10T19:00:00Z",
+        "data":
+        {
+            "energy_prices": [2, 2, 3, 3],
+            "demand_prices": [4, 4, 5, 5]
+        }
+    },
+       {
+        "type": "price-tou",
+        "start-date": "2020-06-10T19:00:00Z",
+        "end-date": "2020-06-10T23:00:00Z",
+        "data":
+        {
+            "tariff-json": "u14328_Commercial_B-19_TOU_gridlevelSecondary_revised.json"
+        }
+    },
+    {
+        "type": "dr-limit",
+        "start-date": "2020-06-01T19:00:00Z",
+        "end-date": "2020-06-01T21:00:00Z",
+        "data":
+        {
+            "power": 35000
+        }
+    },
+    {
+        "type": "dr-shed",
+        "start-date": "2020-06-12T19:00:00Z",
+        "end-date": "2020-06-12T21:00:00Z",
+        "data":
+        {
+            "power": -5,
+            "baseline": [100, 99, 98, 97, 96, 95, 94, 93]
+        }
+    },
+    {
+        "type": "dr-shift",
+        "start-date-take": "2020-06-02T19:00:00Z",
+        "end-date-take": "2020-06-02T21:00:00Z",
+        "start-date-relax": "2020-06-02T21:00:00Z",
+        "end-date-relax": "2020-06-02T23:00:00Z",
+        "data":
+        {
+            "power-take": 15,
+            "power-relax": -5,
+            "baseline-take": [100, 99, 98, 97, 96, 95, 94, 93],
+            "baseline-relax": [93, 94, 95, 96, 97, 98, 99, 100]
+        }
+    },
+    {
+        "type": "dr-track",
+        "start-date": "2020-06-10T19:00:00Z",
+        "end-date": "2020-06-10T21:00:00Z",
+        "data":
+        {
+            "profile": [40, 40, 40, 40, 40, 40, 40, 40],
+            "tolerance": 5
+        }
+    }
+  ]
