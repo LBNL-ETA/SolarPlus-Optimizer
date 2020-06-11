@@ -3146,13 +3146,22 @@ package SolarPlus "This package contains models for MPC control optimization."
           "Measured battery power";
 
         BaseClasses.Thermal thermal(
+          Rrtu_west=0.0005,
+          Rrtu_east=0.0005,
+          Rwest_east=0.01,
         Trtu_west_0 = Trtu_west_0,
         Trtu_east_0 = Trtu_east_0,
+          Cref=1e7,
+          Rref=0.01,
         Tref_0 = Tref_0,
-        Tfre_0 = Tfre_0)
-          annotation (Placement(transformation(extent={{-40,-20},{-20,0}})));
+          Cfre=1e7,
+          Rfre=0.02,
+          FreHeatingCap=4500,
+        Tfre_0 = Tfre_0,
+          Rref_fre=0.018)
+          annotation (Placement(transformation(extent={{-52,-20},{-32,0}})));
         PV.Simple simple(A=300)
-          annotation (Placement(transformation(extent={{-40,50},{-20,70}})));
+          annotation (Placement(transformation(extent={{-52,50},{-32,70}})));
         Modelica.Blocks.Interfaces.RealInput weaTDryBul
           "Outdoor dry bulb temperature" annotation (Placement(transformation(
                 extent={{-140,60},{-100,100}}), iconTransformation(extent={{-120,80},
@@ -3220,86 +3229,93 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{100,-104},{120,-84}}),
               iconTransformation(extent={{100,-100},{114,-86}})));
         Modelica.Blocks.Math.MultiSum multiSum(nu=8)
-          annotation (Placement(transformation(extent={{44,-66},{56,-54}})));
+          annotation (Placement(transformation(extent={{32,-66},{44,-54}})));
         Modelica.Blocks.Math.Gain gain(k=-1)
-          annotation (Placement(transformation(extent={{0,30},{20,50}})));
-        Modelica.Blocks.Math.Gain gain1(k=0)
-          annotation (Placement(transformation(extent={{0,-50},{20,-30}})));
-        Modelica.Blocks.Math.Gain gain2(k=0)
-          annotation (Placement(transformation(extent={{0,-80},{20,-60}})));
+          annotation (Placement(transformation(extent={{-12,30},{8,50}})));
+        Modelica.Blocks.Math.Gain gain1(k=0.25)
+          annotation (Placement(transformation(extent={{-12,-50},{8,-30}})));
+        Modelica.Blocks.Math.Gain gain2(k=0.25)
+          annotation (Placement(transformation(extent={{-12,-80},{8,-60}})));
         Modelica.Blocks.Sources.Constant uFreDef(k=0) "Freezer defrost control"
           annotation (Placement(transformation(extent={{-80,-100},{-60,-80}})));
+        Modelica.Blocks.Math.Gain gain3(k=0.001/3600)
+          "Scale energy unit from jour to kWh"
+          annotation (Placement(transformation(extent={{52,-48},{72,-28}})));
       equation
         connect(weaPoaPv, simple.Iinc)   annotation (Line(points={{-120,50},{
-                -82,50},{-82,60},{-42,60}},             color={0,0,127}));
-        connect(simple.Pgen, Ppv) annotation (Line(points={{-18.8,60},{50,60},{
-                50,96},{110,96}}, color={0,0,127}));
+                -82,50},{-82,60},{-54,60}},             color={0,0,127}));
+        connect(simple.Pgen, Ppv) annotation (Line(points={{-30.8,60},{42,60},{
+                42,96},{110,96}}, color={0,0,127}));
         connect(weaTDryBul, thermal.Tout) annotation (Line(points={{-120,80},{
-                -80,80},{-80,-0.1},{-40.7,-0.1}}, color={0,0,127}));
+                -80,80},{-80,-0.1},{-52.7,-0.1}}, color={0,0,127}));
         connect(weaPoaWin, thermal.poaWin) annotation (Line(points={{-120,20},{
-                -84,20},{-84,-2.3},{-40.7,-2.3}}, color={0,0,127}));
+                -84,20},{-84,-2.3},{-52.7,-2.3}}, color={0,0,127}));
         connect(uHeat, thermal.uHeatWest) annotation (Line(points={{-120,-10},{
-                -88,-10},{-88,-4.7},{-40.7,-4.7}},
+                -88,-10},{-88,-4.7},{-52.7,-4.7}},
                                                  color={0,0,127}));
         connect(uCool, thermal.uCoolWest) annotation (Line(points={{-120,-40},{
-                -86,-40},{-86,-7.1},{-40.7,-7.1}}, color={0,0,127}));
+                -86,-40},{-86,-7.1},{-52.7,-7.1}}, color={0,0,127}));
         connect(uHeat, thermal.uHeatEast) annotation (Line(points={{-120,-10},{
-                -88,-10},{-88,-9.5},{-40.7,-9.5}},
+                -88,-10},{-88,-9.5},{-52.7,-9.5}},
                                                  color={0,0,127}));
         connect(uCool, thermal.uCoolEast) annotation (Line(points={{-120,-40},{
-                -86,-40},{-86,-11.9},{-40.7,-11.9}}, color={0,0,127}));
+                -86,-40},{-86,-11.9},{-52.7,-11.9}}, color={0,0,127}));
         connect(uRef, thermal.uRef) annotation (Line(points={{-120,-70},{-84,
-                -70},{-84,-14.9},{-40.7,-14.9}}, color={0,0,127}));
+                -70},{-84,-14.9},{-52.7,-14.9}}, color={0,0,127}));
         connect(uFreCool, thermal.uFreCool) annotation (Line(points={{-120,-100},
-                {-82,-100},{-82,-19.9},{-40.7,-19.9}},color={0,0,127}));
-        connect(thermal.Trtu_west, Trtu_west) annotation (Line(points={{-19.3,
-                -0.7},{84,-0.7},{84,-48},{110,-48}}, color={0,0,127}));
-        connect(thermal.Grtu_west, Grtu_west) annotation (Line(points={{-19.3,
-                -4.7},{80,-4.7},{80,24},{110,24}}, color={0,0,127}));
-        connect(thermal.Prtu_west, Prtu_west) annotation (Line(points={{-19.3,
-                -2.9},{74,-2.9},{74,80},{110,80}}, color={0,0,127}));
-        connect(thermal.Trtu_east, Trtu_east) annotation (Line(points={{-19.3,
-                -8.1},{80,-8.1},{80,-66},{110,-66}}, color={0,0,127}));
-        connect(thermal.Prtu_east, Prtu_east) annotation (Line(points={{-19.3,
-                -9.9},{70,-9.9},{70,66},{110,66}}, color={0,0,127}));
-        connect(thermal.Grtu_east, Grtu_east) annotation (Line(points={{-19.3,
-                -11.7},{66,-11.7},{66,8},{110,8}}, color={0,0,127}));
-        connect(thermal.Tref, Tref) annotation (Line(points={{-19.3,-13.5},{74,
-                -13.5},{74,-80},{110,-80}}, color={0,0,127}));
-        connect(thermal.Pref, Pref) annotation (Line(points={{-19.3,-15.5},{60,
-                -15.5},{60,52},{110,52}}, color={0,0,127}));
-        connect(thermal.Tfre, Tfre) annotation (Line(points={{-19.3,-17.5},{70,
-                -17.5},{70,-94},{110,-94}}, color={0,0,127}));
-        connect(thermal.Pfre, Pfre) annotation (Line(points={{-19.3,-19.3},{54,
-                -19.3},{54,40},{110,40}}, color={0,0,127}));
-        connect(multiSum.y, Pnet) annotation (Line(points={{57.02,-60},{60,-60},
-                {60,-24},{92,-24},{92,-8},{110,-8}}, color={0,0,127}));
-        connect(thermal.Prtu_west, multiSum.u[1]) annotation (Line(points={{-19.3,
-                -2.9},{40,-2.9},{40,-56.325},{44,-56.325}},       color={0,0,
+                {-82,-100},{-82,-19.9},{-52.7,-19.9}},color={0,0,127}));
+        connect(thermal.Trtu_west, Trtu_west) annotation (Line(points={{-31.3,
+                -0.7},{72,-0.7},{72,-48},{110,-48}}, color={0,0,127}));
+        connect(thermal.Grtu_west, Grtu_west) annotation (Line(points={{-31.3,
+                -4.7},{68,-4.7},{68,24},{110,24}}, color={0,0,127}));
+        connect(thermal.Prtu_west, Prtu_west) annotation (Line(points={{-31.3,
+                -2.9},{62,-2.9},{62,80},{110,80}}, color={0,0,127}));
+        connect(thermal.Trtu_east, Trtu_east) annotation (Line(points={{-31.3,
+                -8.1},{68,-8.1},{68,-66},{110,-66}}, color={0,0,127}));
+        connect(thermal.Prtu_east, Prtu_east) annotation (Line(points={{-31.3,
+                -9.9},{58,-9.9},{58,66},{110,66}}, color={0,0,127}));
+        connect(thermal.Grtu_east, Grtu_east) annotation (Line(points={{-31.3,
+                -11.7},{54,-11.7},{54,8},{110,8}}, color={0,0,127}));
+        connect(thermal.Tref, Tref) annotation (Line(points={{-31.3,-13.5},{62,
+                -13.5},{62,-80},{110,-80}}, color={0,0,127}));
+        connect(thermal.Pref, Pref) annotation (Line(points={{-31.3,-15.5},{48,
+                -15.5},{48,52},{110,52}}, color={0,0,127}));
+        connect(thermal.Tfre, Tfre) annotation (Line(points={{-31.3,-17.5},{58,
+                -17.5},{58,-94},{110,-94}}, color={0,0,127}));
+        connect(thermal.Pfre, Pfre) annotation (Line(points={{-31.3,-19.3},{42,
+                -19.3},{42,40},{110,40}}, color={0,0,127}));
+        connect(thermal.Prtu_west, multiSum.u[1]) annotation (Line(points={{-31.3,
+                -2.9},{28,-2.9},{28,-56.325},{32,-56.325}},       color={0,0,
                 127}));
-        connect(thermal.Prtu_east, multiSum.u[2]) annotation (Line(points={{-19.3,
-                -9.9},{38,-9.9},{38,-57.375},{44,-57.375}},       color={0,0,
+        connect(thermal.Prtu_east, multiSum.u[2]) annotation (Line(points={{-31.3,
+                -9.9},{26,-9.9},{26,-57.375},{32,-57.375}},       color={0,0,
                 127}));
-        connect(thermal.Pref, multiSum.u[3]) annotation (Line(points={{-19.3,
-                -15.5},{36,-15.5},{36,-58.425},{44,-58.425}}, color={0,0,127}));
-        connect(thermal.Pfre, multiSum.u[4]) annotation (Line(points={{-19.3,
-                -19.3},{34,-19.3},{34,-59.475},{44,-59.475}}, color={0,0,127}));
-        connect(simple.Pgen, gain.u) annotation (Line(points={{-18.8,60},{-10,
-                60},{-10,40},{-2,40}}, color={0,0,127}));
-        connect(gain.y, multiSum.u[5]) annotation (Line(points={{21,40},{32,40},
-                {32,-60.525},{44,-60.525}}, color={0,0,127}));
-        connect(thermal.Pload, multiSum.u[6]) annotation (Line(points={{-19.3,
-                -6.3},{30,-6.3},{30,-62},{44,-62},{44,-61.575}}, color={0,0,127}));
-        connect(thermal.Grtu_west, gain1.u) annotation (Line(points={{-19.3,
-                -4.7},{-8,-4.7},{-8,-40},{-2,-40}}, color={0,0,127}));
-        connect(thermal.Grtu_east, gain2.u) annotation (Line(points={{-19.3,
-                -11.7},{-10,-11.7},{-10,-70},{-2,-70}}, color={0,0,127}));
-        connect(gain1.y, multiSum.u[7]) annotation (Line(points={{21,-40},{26,
-                -40},{26,-62.625},{44,-62.625}}, color={0,0,127}));
-        connect(gain2.y, multiSum.u[8]) annotation (Line(points={{21,-70},{26,
-                -70},{26,-63.675},{44,-63.675}}, color={0,0,127}));
-        connect(uFreDef.y, thermal.uFreDef) annotation (Line(points={{-59,-90},{-52,-90},
-                {-52,-17.3},{-40.7,-17.3}}, color={0,0,127}));
+        connect(thermal.Pref, multiSum.u[3]) annotation (Line(points={{-31.3,
+                -15.5},{24,-15.5},{24,-58.425},{32,-58.425}}, color={0,0,127}));
+        connect(thermal.Pfre, multiSum.u[4]) annotation (Line(points={{-31.3,
+                -19.3},{22,-19.3},{22,-59.475},{32,-59.475}}, color={0,0,127}));
+        connect(simple.Pgen, gain.u) annotation (Line(points={{-30.8,60},{-22,
+                60},{-22,40},{-14,40}},color={0,0,127}));
+        connect(gain.y, multiSum.u[5]) annotation (Line(points={{9,40},{20,40},
+                {20,-60.525},{32,-60.525}}, color={0,0,127}));
+        connect(thermal.Pload, multiSum.u[6]) annotation (Line(points={{-31.3,
+                -6.3},{18,-6.3},{18,-62},{32,-62},{32,-61.575}}, color={0,0,127}));
+        connect(thermal.Grtu_west, gain1.u) annotation (Line(points={{-31.3,
+                -4.7},{-20,-4.7},{-20,-40},{-14,-40}},
+                                                    color={0,0,127}));
+        connect(thermal.Grtu_east, gain2.u) annotation (Line(points={{-31.3,
+                -11.7},{-22,-11.7},{-22,-70},{-14,-70}},color={0,0,127}));
+        connect(gain1.y, multiSum.u[7]) annotation (Line(points={{9,-40},{14,
+                -40},{14,-62.625},{32,-62.625}}, color={0,0,127}));
+        connect(gain2.y, multiSum.u[8]) annotation (Line(points={{9,-70},{14,
+                -70},{14,-63.675},{32,-63.675}}, color={0,0,127}));
+        connect(uFreDef.y, thermal.uFreDef) annotation (Line(points={{-59,-90},
+                {-56,-90},{-56,-17.3},{-52.7,-17.3}},
+                                            color={0,0,127}));
+        connect(gain3.y, Pnet) annotation (Line(points={{73,-38},{80,-38},{80,
+                -8},{110,-8}}, color={0,0,127}));
+        connect(multiSum.y, gain3.u) annotation (Line(points={{45.02,-60},{50,
+                -60},{50,-46},{44,-46},{44,-38},{50,-38}}, color={0,0,127}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
                 extent={{-100,100},{100,-100}},
