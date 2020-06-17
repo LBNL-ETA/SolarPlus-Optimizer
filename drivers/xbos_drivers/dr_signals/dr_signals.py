@@ -351,7 +351,7 @@ class DRSignalsDriver(XBOSProcess):
             if row['dr-mode'] > 0  and row['dr-mode'] < 5:
                     if row['dr-mode'] == 4:
                         msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
-                            forecast_time=forecast_time,
+                            forecast_time=int(forecast_time/1e9),
                             price_energy=types.Double(value=row['pi_e']),
                             price_demand=types.Double(value=row['pi_d']),
                             signal_type=types.Uint64(value=int(row['dr-mode'])),
@@ -359,7 +359,7 @@ class DRSignalsDriver(XBOSProcess):
                         )
                     else:
                         msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
-                            forecast_time=forecast_time,
+                            forecast_time=int(forecast_time/1e9),
                             price_energy=types.Double(value=row['pi_e']),
                             price_demand=types.Double(value=row['pi_d']),
                             signal_type=types.Uint64(value=int(row['dr-mode'])),
@@ -367,7 +367,7 @@ class DRSignalsDriver(XBOSProcess):
                         )
             else:
                 msg = dr_signals_pb2.DRSignalsPrediction.Prediction(
-                    forecast_time=forecast_time,
+                    forecast_time=int(forecast_time/1e9),
                     price_energy=types.Double(value=row['pi_e']),
                     price_demand=types.Double(value=row['pi_d']),
                     signal_type=types.Uint64(value=int(row['dr-mode'])),
