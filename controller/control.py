@@ -27,7 +27,6 @@ def run():
     start = datetime.datetime.now()
     start_time = start.strftime("%Y-%m-%d %H:%M:00")
     start_time_utc = pd.to_datetime(start_time).tz_localize(tz_computer).tz_convert('UTC')
-    #mpc_horizon = 24*3600
     mpc_horizon = 12*3600
     # mpc_step = 3600
     print('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
@@ -81,11 +80,10 @@ if __name__ == '__main__':
         time.sleep(1)
         t = datetime.datetime.now()
         print(t)
-        if (t.minute in [0,5,10,15,20,25,30,35,40,45,50,55]) and (t.minute != minute):
+        if (t.minute%5==0) and (t.minute != minute):
             minute = t.minute
             try:
                 run()
                 print('Run ended ok.')
-                # time.sleep(300)
             except Exception as e :
                print('Run ended in error')
