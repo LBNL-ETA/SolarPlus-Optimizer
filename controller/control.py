@@ -6,13 +6,18 @@ Since it relies on data manager that gives data at 5 minute intervals,
 it can only be run at xx:x5:00 successfully.
 
 """
+islanding = False
 
 import os
 import datetime
 import time
 import pandas as pd
-import mpc_config
-from mpc_config import tz_computer
+if islanding:
+    import mpc_island_config as mpc_config
+    from mpc_island_config import tz_computer
+else:
+    import mpc_config as mpc_config
+    from mpc_config import tz_computer
 from mpc import mpc
 
 def run():
