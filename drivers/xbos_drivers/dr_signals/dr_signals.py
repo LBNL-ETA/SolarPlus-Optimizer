@@ -389,7 +389,7 @@ class DRSignalsDriver(XBOSProcess):
         for index, row in df.iterrows():
              forecast_time = int(index.value)
              msg = constraints_forecast_pb2.ConstraintForecast.Constraints(
-                forecast_time=forecast_time,
+                forecast_time=int(forecast_time/1e9),
                 PMin=types.Double(value=row['pmin']),
                 PMax=types.Double(value=row['pmax'])
              )
