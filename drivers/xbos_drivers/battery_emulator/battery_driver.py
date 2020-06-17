@@ -77,6 +77,8 @@ class EmulatedBatteryDriver(XBOSProcess):
 
         if poaSrOnPV != None:
             self.current_poa_pv = poaSrOnPV
+        else:
+            self.current_poa_pv = 0
 
     async def _advance_time(self):
         start = self.current_time

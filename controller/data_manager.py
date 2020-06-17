@@ -368,7 +368,7 @@ class Data_Manager():
         '''
         if not overwrite:
             if os.path.exists(filename):
-                existing_df = pd.read_csv(filename, index_col=0, parse_dates=True)
+                existing_df = pd.read_csv(filename, index_col=0, parse_dates=True).tz_localize(self.tz_utc)
                 new_df = pd.concat([existing_df, df], axis=0)
                 new_df.to_csv(filename)
             else:
@@ -523,7 +523,7 @@ class Data_Manager():
             print("publishing on to wavemq to topic %s"%(device))
             self.publish_on_wavemq(device, msg)
 
-    def set_setpoints(self, df):
+    def set_setpoints(self, df, overwrite=True):
         '''Set following variables: uCharge, uDischarge, Trtu, Tref, Tfre, Trtu_cool, Trtu_heat
 
             Parameters
@@ -540,7 +540,7 @@ class Data_Manager():
         for source_type in self.data_sink["setpoints"]["type"].split('|'):
             if source_type == "csv":
                 filename = self.data_path + self.data_sink["setpoints"]["filename"]
-                self.write_df_to_csv(df=df, filename=filename)
+                self.write_df_to_csv(df=df, filename=filename, overwrite=overwrite)
             elif source_type == "influxdb":
                 measurement = self.data_sink["setpoints"]["measurement"]
                 self.write_df_to_influx(df=df, influx_dataframe_client=self.influx_client, measurement=measurement)

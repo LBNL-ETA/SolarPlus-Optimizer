@@ -1,9 +1,9 @@
-import yaml
 import datetime
 import pandas as pd
 import time
 from data_manager import Data_Manager
 import baseline_config
+import pytz
 
 class Baseline_Controller:
     def __init__(self, config):
@@ -15,6 +15,7 @@ class Baseline_Controller:
         self.min_battery_rate = self.config.get('min_battery_rate', -14000)
         self.max_battery_soc = self.config.get('max_battery_soc', 0.95)
         self.min_battery_soc = self.config.get('min_battery_soc', 0.25)
+        self.battery_total_capacity = self.config.get('battery_total_capacity', 27000)
 
         self.historical_data_interval = self.config.get('historical_data_interval_minutes', 15)
 
@@ -64,12 +65,20 @@ class Baseline_Controller:
                 print("Battery already empty, new battery_setpoint = 0")
                 battery_setpoint = 0
 
+        time_now = pytz.timezone("UTC").localize(datetime.datetime.utcnow()).astimezone(pytz.timezone("America/Los_Angeles")).replace(tzinfo = None)
+        if time_now.hour >= 0 and time_now.hour <= 5:
+            hour_now = round(time_now.hour + time_now.minute/60 + time_now.second/3600, 2)
+            print("low price time - charging battery so that it reaches maximum SOC by 6AM")
+            battery_setpoint = (self.max_battery_soc - battery_soc)*self.battery_total_capacity/(6-hour_now)
+            if battery_setpoint > self.max_battery_rate:
+                battery_setpoint = self.max_battery_rate
+
         print("\n")
         print("New battery_setpoint = {0}".format(battery_setpoint))
-        setpoint_df = pd.DataFrame(data={'battery_setpoint': [battery_setpoint]}, index=[end_time])
+        setpoint_df = pd.DataFrame(data={'battery_setpoint': [battery_setpoint]}, index=[end_time+datetime.timedelta(minutes=5)])
         setpoint_df.index.name='Time'
-        setpoint_df = setpoint_df.resample('1T').mean()
-        self.data_manager.set_setpoints(df=setpoint_df)
+        setpoint_df = setpoint_df.resample('1T').mean().tz_localize("UTC")
+        self.data_manager.set_setpoints(df=setpoint_df, overwrite=False)
 
 if __name__ == '__main__':
     minute = -1

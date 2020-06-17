@@ -31,6 +31,8 @@ def create_setpoints_df(start_date):
     setpoint_df = pd.DataFrame(index=pd.date_range(start=start_datetime, end=end_datetime, freq='5T'))
     setpoint_df = setpoint_df.tz_localize(tz_local)
 
+    setpoint_df['PBattery'] = 10000
+
     setpoint_df['Trtu_west_heat'] = 67
     setpoint_df['Trtu_west_cool'] = 71
 
@@ -145,8 +147,9 @@ start_date = datetime.date(2020, 5, 4)
 setpoint_df = create_setpoints_df(start_date)
 
 device_config = {
-    "flexstat/thermostat_east/actuation": {"cooling_setpoint": "Trtu_east_cool", "heating_setpoint": "Trtu_east_heat"},
-    "flexstat/thermostat_west/actuation": {"cooling_setpoint": "Trtu_west_cool", "heating_setpoint": "Trtu_west_heat"},
+    # "flexstat/thermostat_east/actuation": {"cooling_setpoint": "Trtu_east_cool", "heating_setpoint": "Trtu_east_heat"},
+    # "flexstat/thermostat_west/actuation": {"cooling_setpoint": "Trtu_west_cool", "heating_setpoint": "Trtu_west_heat"},
+    "emulated_battery_test/battery/actuation": {"real_power_setpoint": "PBattery"}
 }
 
 msg_dictionary = get_wavemq_msg_dictionary(setpoint_df=setpoint_df, device_config=device_config)
