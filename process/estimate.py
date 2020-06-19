@@ -11,12 +11,12 @@ from matplotlib import pyplot as plt
 # Setup
 # --------------------------------------------------------------------------
 # Estimation periods
-start_time = '2019-11-12 00:00:00+00:00' # UTC time
-final_time = '2019-11-15 00:00:00+00:00' # UTC time
-start_time_train = '2019-11-12 00:00:00+00:00'
-final_time_train = '2019-11-12 18:00:00+00:00'
-start_time_validate = '2019-11-12 18:00:00+00:00'
-final_time_validate = '2019-11-15 00:00:00+00:00'
+start_time = '2020-05-04 07:00:00+00:00' # UTC time
+final_time = '2020-05-08 00:00:00+00:00' # UTC time
+start_time_train = '2020-05-04 07:00:00+00:00'
+final_time_train = '2020-05-05 07:00:00+00:00'
+start_time_validate = '2020-05-04 07:00:00+00:00'
+final_time_validate = '2020-05-05 07:00:00+00:00'
 # local_time = 'America/Los_Angeles'
 # Model definition
 mopath = 'models/SolarPlus.mo'
@@ -40,7 +40,7 @@ vm_weather = {'temperature_k' : ('weaTDryBul', units.K),
               'poa_win': ('weaPoaWin', units.W_m2),
               'poa_pv': ('weaPoaPv', units.W_m2)}
 geography = (37.8771, -122.2485)
-csv_weather = 'controller/validation/weather_input_201911.csv'
+csv_weather = 'controller/validation/solar_estimation_202005.csv'
 weather = exodata.WeatherFromCSV(csv_weather,vm_weather,geography, tz_name='UTC')
 weather.collect_data(start_time, final_time);
 plt.figure(1)
@@ -59,7 +59,7 @@ vm_controls = {'HVAC_West_Norm' : ('uCoolWest', units.unit1),
                'uFreDef' : ('uFreDef', units.unit1),
                # 'RefComp_Norm' : ('uRef', units.unit1)}
                'refrigerator_CompressorStatus' : ('uRef', units.unit1)}
-csv_power = 'controller/validation/normalized_power_201911.csv'
+csv_power = 'controller/validation/normalized_power_202005.csv'
 controls = exodata.ControlFromCSV(csv_power, vm_controls, tz_name=weather.tz_name)
 controls.collect_data(start_time, final_time);
 plt.figure(3)
@@ -82,7 +82,7 @@ vm_measurements = {'temp_rtu_west_k' : ('Trtu_west', units.K),
                    'temp_rtu_east_k' : ('Trtu_east', units.K),
                    'ref_k' : ('Tref', units.K),
                    'fre_k' : ('Tfre', units.K)}
-csv_measurements = 'controller/validation/temperature_201911.csv'
+csv_measurements = 'controller/validation/temperature_202005.csv'
 store = systems.RealFromCSV(csv_measurements, measurements, vm_measurements, tz_name = weather.tz_name)
 store.collect_measurements(start_time, final_time)
 # plt.figure(4)
@@ -132,7 +132,7 @@ if simulate_initial:
 
 # Solve
 # --------------------------------------------------------------------------
-model.estimate(start_time_train, final_time_train, ['Trtu_west','Trtu_east','Tref','Tfre'])
+model.parameter_estimate(start_time_train, final_time_train, ['Trtu_west','Trtu_east','Tref','Tfre'])
 model.validate(start_time_train, final_time_train, 'validate', plot=0)
 # model.validate(start_time_validate, final_time_validate, 'validate', plot=0)
 plt.figure(5)

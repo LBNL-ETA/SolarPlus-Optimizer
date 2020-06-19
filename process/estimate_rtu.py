@@ -11,10 +11,10 @@ from matplotlib import pyplot as plt
 # Setup
 # --------------------------------------------------------------------------
 # Estimation periods
-start_time = '2019-11-12 00:00:00+00:00' # UTC time
-final_time = '2019-11-12 09:00:00+00:00' # UTC time
-start_time_validate = '2019-11-14 00:00:00+00:00'
-final_time_validate = '2019-11-15 00:00:00+00:00'
+start_time = '2020-05-05 06:00:00+00:00' # UTC time
+final_time = '2020-05-05 13:00:00+00:00' # UTC time
+start_time_validate = '2020-05-05 06:00:00+00:00'
+final_time_validate = '2020-05-05 13:00:00+00:00'
 # local_time = 'America/Los_Angeles'
 # Model definition
 mopath = 'models/SolarPlus.mo'
@@ -40,7 +40,7 @@ vm_weather = {'temperature_k' : ('weaTDryBul', units.K),
               'poa_win': ('weaPoaWin', units.W_m2),
               'poa_pv': ('weaPoaPv', units.W_m2)}
 geography = (37.8771, -122.2485)
-csv_weather = 'controller/validation/weather_input_201911.csv'
+csv_weather = 'controller/validation/solar_estimation_202005.csv'
 weather = exodata.WeatherFromCSV(csv_weather,vm_weather,geography, tz_name='UTC')
 weather.collect_data(start_time, final_time);
 fig1 = plt.figure(1)
@@ -64,7 +64,7 @@ vm_controls = {'HVAC_West_Norm' : ('uCoolWest', units.unit1),
                # 'uFreDef' : ('uFreDef', units.unit1),
                # 'RefComp_Norm' : ('uRef', units.unit1)}
                # 'refrigerator_CompressorStatus' : ('uRef', units.unit1)}
-csv_power = 'controller/validation/normalized_power_201911.csv'
+csv_power = 'controller/validation/normalized_power_202005.csv'
 controls = exodata.ControlFromCSV(csv_power, vm_controls, tz_name=weather.tz_name)
 controls.collect_data(start_time, final_time);
 fig3 = plt.figure(3)
@@ -89,7 +89,7 @@ for meas in meas_list:
     measurements[meas] = {'Sample' : variables.Static('{0}_sample'.format(meas), sample_rate, units.s)};
 vm_measurements = {'temp_rtu_west_k' : ('Trtu_west', units.K),
                    'temp_rtu_east_k' : ('Trtu_east', units.K)}
-csv_measurements = 'controller/validation/temperature_201911.csv'
+csv_measurements = 'controller/validation/temperature_202005.csv'
 store = systems.RealFromCSV(csv_measurements, measurements, vm_measurements, tz_name = weather.tz_name)
 store.collect_measurements(start_time, final_time)
 # plt.figure(4)
@@ -145,7 +145,6 @@ opt_options = model._parameter_estimate_method.opt_problem.get_optimization_opti
 opt_options['IPOPT_options']['ma27_liw_init_factor'] = 5*16
 opt_options['IPOPT_options']['ma27_la_init_factor'] = 5*16
 opt_options['IPOPT_options']['max_iter'] = 3000
-#opt_options['IPOPT_options']['tol'] = 0.00001
 # model._estimate_method.opt_problem.set_optimization_options(opt_options)
 model._parameter_estimate_method.opt_problem.set_optimization_options(opt_options)
 model.parameter_estimate(start_time, final_time, ['Trtu_west','Trtu_east'], global_start=0, seed=None)
