@@ -5,7 +5,8 @@
 from mpcpy import units
 import os
 
-tz_computer = 'America/Los_Angeles'
+tz_computer = 'UTC'
+islanding = True
 config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                          'modelpath' : 'SolarPlus.Building.Optimization.StoreIsland',
                          'libraries' : os.getenv('MODELICAPATH'),
@@ -129,18 +130,18 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
             "uRef_max":  {"type": "csv","filename": "Shadow/Constraints_Forecast_Island.csv", "column": "uRef_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
             "uFreCool_min":  {"type": "csv","filename": "Shadow/Constraints_Forecast_Island.csv", "column": "uFreCool_min", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
             "uFreCool_max":  {"type": "csv","filename": "Shadow/Constraints_Forecast_Island.csv", "column": "uFreCool_max", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "PMin":  {"type": "csv","filename": "Shadow/Constraints_Forecast_Island.csv", "column": "Pmin", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "PMax":  {"type": "csv", "filename": "Shadow/Constraints_Forecast_Island.csv", "column": "Pmax", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
-            #"PMin": {"type": "influxdb", "uuid": "6b42adf8-3a48-5ae7-bdc3-19226e602865", "measurement": "timeseries", "agg": "mean", "window": "1m"},
-            #"PMax": {"type": "influxdb", "uuid": "522605a9-77b1-57e3-9fac-06dd83ab8e89", "measurement": "timeseries", "agg": "mean", "window": "1m"}
+            # "PMin":  {"type": "csv","filename": "Shadow/Constraints_Forecast_Island.csv", "column": "Pmin", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            # "PMax":  {"type": "csv", "filename": "Shadow/Constraints_Forecast_Island.csv", "column": "Pmax", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
+            "PMin": {"type": "influxdb", "uuid": "6b42adf8-3a48-5ae7-bdc3-19226e602865", "measurement": "timeseries", "agg": "mean", "window": "1m"},
+            "PMax": {"type": "influxdb", "uuid": "522605a9-77b1-57e3-9fac-06dd83ab8e89", "measurement": "timeseries", "agg": "mean", "window": "1m"}
         }
     },
     "price": {
         "variables": {
-            #"pi_e": {"type": "influxdb", "uuid": "3be4c234-a38a-5e73-9d53-4503751592be", "window": "1m", "agg": "mean", "measurement": "timeseries"},
-            #"pi_d": {"type": "influxdb", "uuid": "90928e8d-df40-5e75-9ddb-7ee444bc187f", "window": "1m", "agg": "mean", "measurement": "timeseries"},
-            "pi_e": {"type": "csv", "filename": "Shadow/Price_Forecast.csv", "column": "pi_e", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
-            "pi_d": {"type": "csv", "filename": "Shadow/Price_Forecast.csv", "column": "pi_d", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            "pi_e": {"type": "influxdb", "uuid": "3be4c234-a38a-5e73-9d53-4503751592be", "window": "1m", "agg": "mean", "measurement": "timeseries"},
+            "pi_d": {"type": "influxdb", "uuid": "90928e8d-df40-5e75-9ddb-7ee444bc187f", "window": "1m", "agg": "mean", "measurement": "timeseries"},
+            # "pi_e": {"type": "csv", "filename": "Shadow/Price_Forecast.csv", "column": "pi_e", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
+            # "pi_d": {"type": "csv", "filename": "Shadow/Price_Forecast.csv", "column": "pi_d", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"},
             "P_est": {"type": "csv", "filename": "Shadow/Price_Forecast.csv", "column": "P_est", "tz":"America/Los_Angeles", "agg": "mean", "window": "1m"}
         }
     },
