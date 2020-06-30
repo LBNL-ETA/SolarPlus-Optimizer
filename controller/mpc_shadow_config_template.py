@@ -64,8 +64,8 @@ config={"model_config" :{'mopath' : os.path.join('models','SolarPlus.mo'),
                               'uFreCool_max':('uFreCool', 'LTE', units.unit1),
                               # 'Pmin': ('Pnet', 'GTE', units.kW),
                               # 'Pmax': ('Pnet', 'LTE', units.kW)
-                              'PMin': ('Pnet', 'GTE', units.kW),
-                              'PMax': ('Pnet', 'LTE', units.kW)
+                              'PMin': ('Pnet', 'GTE', units.W),
+                              'PMax': ('Pnet', 'LTE', units.W)
                               }
                               },
 

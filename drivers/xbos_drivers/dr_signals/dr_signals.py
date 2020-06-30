@@ -300,6 +300,9 @@ class DRSignalsDriver(XBOSProcess):
         end_time_utc = curr_time_utc + datetime.timedelta(hours=self.FORECAST_PERIOD)
         df = self.get_default_df(start_time_utc=curr_time_utc, end_time_utc=end_time_utc)
         current_events = self.get_current_events(start_time_utc=curr_time_utc, end_time_utc=end_time_utc)
+        print("current events :")
+        print(current_events)
+
 
         for event in current_events:
             event_type = event['type']
