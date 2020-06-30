@@ -1453,10 +1453,10 @@ package SolarPlus "This package contains models for MPC control optimization."
 
       model Store
         extends BaseClasses.partialStore(store(
-            TSpRtuEast=20.5 + 273.15,
-            TSpRtuWest=20.5 + 273.15,
-            TSpRef=0 + 273.15,
-            TSpFre=-22 + 273.15));
+            TSpRtuEast=293.65,
+            TSpRtuWest=293.65,
+            TSpRef=273.15,
+            TSpFre=251.15));
         Modelica.Blocks.Interfaces.RealInput uHeat
           "RTU heating signal input"   annotation (Placement(transformation(extent={{-160,30},{-120,70}}),
               iconTransformation(extent={{-160,-40},{-120,0}})));
@@ -1953,10 +1953,10 @@ package SolarPlus "This package contains models for MPC control optimization."
           annotation (Placement(transformation(extent={{-160,-10},{-140,10}})));
         Modelica.Blocks.Math.Add3 heatEast
           annotation (Placement(transformation(extent={{-60,-20},{-40,0}})));
-        Modelica.Blocks.Math.Gain IntHeaGaiWest(k=0.35)
+        Modelica.Blocks.Math.Gain IntHeaGaiWest(k=0.4)
           "Internal heat gains on the west side"
           annotation (Placement(transformation(extent={{-120,80},{-100,100}})));
-        Modelica.Blocks.Math.Gain IntHeaGaiEast(k=0.65)
+        Modelica.Blocks.Math.Gain IntHeaGaiEast(k=0.6)
           "Internal heat gains on the east side"
           annotation (Placement(transformation(extent={{-120,20},{-100,40}})));
         Modelica.Blocks.Interfaces.RealOutput Trtu_east(unit="K")
@@ -1983,6 +1983,9 @@ package SolarPlus "This package contains models for MPC control optimization."
           "Cooling signal input for RTU on the east side" annotation (Placement(
               transformation(extent={{-228,-54},{-200,-26}}),
               iconTransformation(extent={{-114,-26},{-100,-12}})));
+        Modelica.Blocks.Math.Gain gaiHeaToPow(k=1.25)
+          "Considering 80% of power is transmited to heat"
+          annotation (Placement(transformation(extent={{-20,60},{0,80}})));
       equation
         connect(RTU_west.qCool, rtuZone_west.qCool) annotation (Line(points={{-119,
                 136},{-60,136},{-60,162},{-22,162}}, color={0,0,127}));
@@ -2054,8 +2057,6 @@ package SolarPlus "This package contains models for MPC control optimization."
                 {180,132},{180,160},{210,160}}, color={0,0,127}));
         connect(RTU_west.PHeat, Grtu_west) annotation (Line(points={{-119,142},
                 {46,142},{46,120},{210,120}}, color={0,0,127}));
-        connect(gamingHeat.y, Pload) annotation (Line(points={{-139,60},{40,60},
-                {40,80},{210,80}},    color={0,0,127}));
         connect(RTU_west.qHeat, heatWest.u1) annotation (Line(points={{-119,146},
                 {-108,146},{-108,118},{-62,118}}, color={0,0,127}));
         connect(heatWest.y, rtuZone_west.qHeat) annotation (Line(points={{-39,
@@ -2113,6 +2114,10 @@ package SolarPlus "This package contains models for MPC control optimization."
                 0,0,127}));
         connect(uCoolEast, RTU_east.uCool) annotation (Line(points={{-214,-40},
                 {-192,-40},{-192,-58},{-142,-58}}, color={0,0,127}));
+        connect(gamingHeat.y, gaiHeaToPow.u) annotation (Line(points={{-139,60},
+                {-72,60},{-72,70},{-22,70}}, color={0,0,127}));
+        connect(gaiHeaToPow.y, Pload) annotation (Line(points={{1,70},{80,70},{
+                80,80},{210,80}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
               Rectangle(
               extent={{-100,100},{100,-100}},
@@ -2699,10 +2704,10 @@ package SolarPlus "This package contains models for MPC control optimization."
           thermal(
             RTUWestHeatingCap=29300,
             RTUEastHeatingCap=29300,
-            RTUWestCoolingCap=24910,
-            RTUEastCoolingCap=24910,
-            RTUWestCoolingCOP=2.59,
-            RTUEastCoolingCOP=2.59,
+            RTUWestCoolingCap(displayUnit="kW") = 15000,
+            RTUEastCoolingCap(displayUnit="kW") = 15000,
+            RTUWestCoolingCOP=2,
+            RTUEastCoolingCOP=3,
             Rrtu_west=0.0005,
             Rrtu_east=0.0005,
             Rwest_east=0.01,
@@ -2713,6 +2718,7 @@ package SolarPlus "This package contains models for MPC control optimization."
             Cfre=1e7,
             Rfre=0.02,
             FreHeatingCap=4500,
+            FreCoolingCOP=1.15,
             Rref_fre=0.018),
           multiSum(k={1,1,1,1,1,1,1/4,1/4}, nu=8),
           Battery(Ecap=97200000, P_cap=14000));
@@ -2742,7 +2748,8 @@ package SolarPlus "This package contains models for MPC control optimization."
         "Cooling signal input for freezer"
         annotation (Placement(transformation(extent={{-140,-240},{-100,-200}}),
               iconTransformation(extent={{-120,-220},{-100,-200}})));
-        Modelica.Blocks.Math.MultiSum multiSum1(k={1,3,1,1}, nu=4)
+        Modelica.Blocks.Math.MultiSum multiSum1(k={1.5,1.5,1,1},
+                                                             nu=4)
           annotation (Placement(transformation(extent={{44,-214},{56,-202}})));
         Modelica.Blocks.Math.Product squareTrtu
         annotation (Placement(transformation(extent={{14,-172},{20,-166}})));
