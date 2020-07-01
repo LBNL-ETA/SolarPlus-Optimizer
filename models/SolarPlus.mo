@@ -1916,7 +1916,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{140,-80},{160,-60}})));
         Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor senTfre
         annotation (Placement(transformation(extent={{142,-160},{162,-140}})));
-        Modelica.Blocks.Sources.Constant gamingHeat(k=20000)
+        Modelica.Blocks.Sources.Constant gamingHeat(k=30000)
           annotation (Placement(transformation(extent={{-160,50},{-140,70}})));
         Modelica.Blocks.Interfaces.RealOutput Grtu_west "West RTU gas power"
           annotation (Placement(transformation(extent={{200,110},{220,130}}),
@@ -1953,10 +1953,10 @@ package SolarPlus "This package contains models for MPC control optimization."
           annotation (Placement(transformation(extent={{-160,-10},{-140,10}})));
         Modelica.Blocks.Math.Add3 heatEast
           annotation (Placement(transformation(extent={{-60,-20},{-40,0}})));
-        Modelica.Blocks.Math.Gain IntHeaGaiWest(k=0.4)
+        Modelica.Blocks.Math.Gain IntHeaGaiWest(k=0.45)
           "Internal heat gains on the west side"
           annotation (Placement(transformation(extent={{-120,80},{-100,100}})));
-        Modelica.Blocks.Math.Gain IntHeaGaiEast(k=0.6)
+        Modelica.Blocks.Math.Gain IntHeaGaiEast(k=0.55)
           "Internal heat gains on the east side"
           annotation (Placement(transformation(extent={{-120,20},{-100,40}})));
         Modelica.Blocks.Interfaces.RealOutput Trtu_east(unit="K")
@@ -1983,7 +1983,7 @@ package SolarPlus "This package contains models for MPC control optimization."
           "Cooling signal input for RTU on the east side" annotation (Placement(
               transformation(extent={{-228,-54},{-200,-26}}),
               iconTransformation(extent={{-114,-26},{-100,-12}})));
-        Modelica.Blocks.Math.Gain gaiHeaToPow(k=1.25)
+        Modelica.Blocks.Math.Gain gaiHeaToPow(k=1.3)
           "Considering 80% of power is transmited to heat"
           annotation (Placement(transformation(extent={{-20,60},{0,80}})));
       equation
@@ -2711,15 +2711,15 @@ package SolarPlus "This package contains models for MPC control optimization."
             Rrtu_west=0.0005,
             Rrtu_east=0.0005,
             Rwest_east=0.01,
-            Crtu_west=1e6,
-            Crtu_east=1e6,
-            Cref=1e7,
-            Rref=0.01,
-            Cfre=1e7,
-            Rfre=0.02,
+            Crtu_west=0.5e5,
+            Crtu_east=0.5e5,
+            Cref=0.5e7,
+            Rref=0.1,
+            Cfre=0.5e7,
+            Rfre=0.1,
             FreHeatingCap=4500,
             FreCoolingCOP=1.15,
-            Rref_fre=0.018),
+            Rref_fre=0.1),
           multiSum(k={1,1,1,1,1,1,1/4,1/4}, nu=8),
           Battery(Ecap=97200000, P_cap=14000));
         parameter Modelica.SIunits.Temperature TSpRtuEast;
