@@ -7,7 +7,7 @@ xbos:
     publish_rate: 60
     check_setpoint_rate: 30
     heartbeat_rate: 60
-    service_name: rtac
+    service_name: blr
     id: rtac-driver
 modbus:
     UNIT_ID: 1
