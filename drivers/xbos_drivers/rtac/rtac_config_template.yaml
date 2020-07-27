@@ -14,6 +14,7 @@ modbus:
     modbus_type: tcp
     ip: 192.168.117.10
     port: 502
+    enable_logging: False
 
     default_real_power_setpoint: 0
     min_real_power_setpoint: -109000

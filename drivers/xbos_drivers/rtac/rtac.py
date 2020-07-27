@@ -215,7 +215,7 @@ class RTACDriver(XBOSProcess):
                 measurements['battery_soc'] = measurements['battery_current_stored_energy'] / measurements['battery_total_capacity'] * 1.0
 
             msg = xbos_pb2.XBOS(
-                parker_state=rtac_pb2.RtacState(
+                rtac_state=rtac_pb2.RtacState(
                     time=int(time_now),
                     #heartbeat = types.Int64(value=measurements.get('heartbeat', None)),
                     #real_power_setpoint = types.Double(value=measurements.get('real_power_setpoint', None)),
