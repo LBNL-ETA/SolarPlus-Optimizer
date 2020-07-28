@@ -259,7 +259,6 @@ class Modbus_Driver(object):
         return output
 
     def decode_input_register(self,register,type):
-        try:
         #omitting string for now since it requires a specified length
 
         if type == '8int':
