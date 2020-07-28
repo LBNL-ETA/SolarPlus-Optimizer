@@ -45,5 +45,5 @@ modbus:
       fault_condition: [0x402A, 32uint]
       pge_voltage: [0x4026, 32float]
       pge_frequency: [0x4028, 32float]
-      #microgrid_voltage: [0x403C, 32float]
+      microgrid_voltage: [0x402C, 32float]
 
