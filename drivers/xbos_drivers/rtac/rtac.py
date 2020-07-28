@@ -19,7 +19,7 @@ class RTACDriver(XBOSProcess):
         self.base_resource = cfg['base_resource']
         self._rate = cfg['publish_rate']
         self._set_setpoint_rate = cfg["check_setpoint_rate"]
-        self._heartbeat_rate = cfg['heartbeat_rate']
+        self._heartbeat_rate = cfg.get('heartbeat_rate', None)
         self.service_name = cfg['service_name']
         self.modbus_config = cfg['modbus_config']
         self.unit_id = self.modbus_config.get('UNIT_ID', 1)
