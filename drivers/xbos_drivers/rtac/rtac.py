@@ -207,11 +207,15 @@ class RTACDriver(XBOSProcess):
     async def _read_and_publish(self, *args):
 
         try:
+            self.modbus_device.reconnect()
             measurements = self.modbus_device.get_data(unit=self.unit_id)
+            self.modbus_device.kill_modbus()
 
             time_now = time.time() * 1e9
 
             if not measurements.get('battery_current_stored_energy', None) is None and not measurements.get('battery_total_capacity', None) is None:
+                if measurements.get('battery_total_capacity') != 0:
+                    measurements['battery_soc'] = None
                 measurements['battery_soc'] = measurements['battery_current_stored_energy'] / measurements['battery_total_capacity'] * 1.0
 
             msg = xbos_pb2.XBOS(
