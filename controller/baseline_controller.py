@@ -26,11 +26,11 @@ class Baseline_Controller:
         start_time = end_time - datetime.timedelta(minutes=self.historical_data_interval)
 
         input_df = self.data_manager.get_timeseries_from_config(config='baseline', start_time=start_time, end_time=end_time)
-        average_values = input_df.mean()
+        average_values = input_df.last('5T')
 
-        solar_production = average_values.pv_generation
-        building_load = average_values.building_load
-        battery_soc = average_values.battery_soc
+        solar_production = average_values.pv_generation.values[0]
+        building_load = average_values.building_load.values[0]
+        battery_soc = average_values.battery_soc.values[0]
 
         net_load = building_load - solar_production
 

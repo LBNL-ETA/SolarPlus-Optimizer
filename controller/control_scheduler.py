@@ -12,7 +12,6 @@ df = pd.read_csv("controller/test_schedule.csv", index_col=0)
 df.start_time = pd.to_datetime(df.start_time)
 df.end_time = pd.to_datetime(df.end_time)
 
-
 minute = -1
 
 baseline_controller = Baseline_Controller(config=baseline_config.get_config())
