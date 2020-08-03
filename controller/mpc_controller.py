@@ -52,7 +52,7 @@ class MPC_Controller:
         print("The Solar+ Optimizer has begun its operation at {0} UTC...".format(start_time_utc))
         print("The prediction horizon is {} hours.".format(self.mpc_horizon/3600))
         if self.islanding:
-            print ("Running in islading mode")
+            print ("Running in islanding mode")
         print('\n')
         
         final_time_utc = start_time_utc + datetime.timedelta(seconds=self.mpc_horizon)
