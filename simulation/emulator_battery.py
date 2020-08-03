@@ -12,7 +12,7 @@ class battery_emulator(object):
         self.tz_name = tz_name
 
 
-    def load_battery_fmu(self, compiled_fmu=False):
+    def load_battery_fmu(self, compiled_fmu=True):
         '''
         Load compiled FMU
         '''
