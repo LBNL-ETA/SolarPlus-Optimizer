@@ -2700,7 +2700,7 @@ package SolarPlus "This package contains models for MPC control optimization."
 
       model Whole_Inputs
         extends BaseClasses.Whole_partial(
-          pv(A=300),
+          pv(A=300, eff=0.3),
           thermal(
             RTUWestHeatingCap=29300,
             RTUEastHeatingCap=29300,
@@ -2721,7 +2721,7 @@ package SolarPlus "This package contains models for MPC control optimization."
             FreCoolingCOP=1.15,
             Rref_fre=0.1),
           multiSum(k={1,1,1,1,1,1,1/4,1/4}, nu=8),
-          Battery(Ecap=97200000, P_cap=14000));
+          Battery(Ecap=145800000, P_cap=21000));
         parameter Modelica.SIunits.Temperature TSpRtuEast;
         parameter Modelica.SIunits.Temperature TSpRtuWest;
         parameter Modelica.SIunits.Temperature TSpRef;
