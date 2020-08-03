@@ -15,7 +15,7 @@ class Baseline_Controller:
         self.min_battery_rate = self.config.get('min_battery_rate', -14000)
         self.max_battery_soc = self.config.get('max_battery_soc', 0.95)
         self.min_battery_soc = self.config.get('min_battery_soc', 0.25)
-        self.battery_total_capacity = self.config.get('battery_total_capacity', 27000)
+        self.battery_total_capacity = self.config.get('battery_total_capacity', 40500)
 
         self.historical_data_interval = self.config.get('historical_data_interval_minutes', 15)
         

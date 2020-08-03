@@ -8,7 +8,7 @@ config={
     'max_battery_soc': 0.95,
     'min_battery_soc': 0.25,
     'historical_data_interval_minutes': 15,
-    'battery_total_capacity': 27000,
+    'battery_total_capacity': 40500,
     "data_manager_config": {
         "site": "blr",
         "source": {
