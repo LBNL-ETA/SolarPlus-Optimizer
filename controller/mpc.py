@@ -179,6 +179,13 @@ class mpc(object):
             setpoints['Tfre'] = (setpoints['Tfre'] - 273.15) * 9/5 + 32 - 5
         if 'Tref' in setpoints.columns:
             setpoints['Tref'] = (setpoints['Tref'] - 273.15) * 9/5 + 32
+        if self.model_config['modelpath'] == 'SolarPlus.Building.Optimization.StoreIsland':
+            setpoints['Trtu_east_cool'] = 77
+            setpoints['Trtu_east_heat'] = 65
+            setpoints['Trtu_west_cool'] = setpoints['Trtu_east_cool']
+            setpoints['Trtu_west_heat'] = setpoints['Trtu_east_heat']
+            setpoints['Tfre'] = -7
+            setpoints['Tref'] = 33
         self.data_manager.set_setpoints(setpoints)
 
         return setpoints
