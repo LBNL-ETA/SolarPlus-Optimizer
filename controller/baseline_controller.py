@@ -18,6 +18,8 @@ class Baseline_Controller:
         self.battery_total_capacity = self.config.get('battery_total_capacity', 27000)
 
         self.historical_data_interval = self.config.get('historical_data_interval_minutes', 15)
+        
+        print("The baseline controller has been instantiated")
 
     def generate_setpoints(self):
         end_time = datetime.datetime.utcnow()

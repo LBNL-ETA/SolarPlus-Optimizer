@@ -4,6 +4,7 @@
 *.png
 *.yaml
 *.csv
+!controller/test_schedule.csv
 
 # Folders
 #########
