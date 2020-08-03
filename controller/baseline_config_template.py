@@ -9,6 +9,10 @@ config={
     'min_battery_soc': 0.25,
     'historical_data_interval_minutes': 15,
     'battery_total_capacity': 40500,
+    'default_flexstat_hsp': 68,
+    'default_flexstat_csp': 70,
+    'default_freezer_sp': -7,
+    'default_refrigerator_sp': 33,
     "data_manager_config": {
         "site": "blr",
         "source": {
@@ -31,6 +35,10 @@ config={
                 # "type": "csv|xbos",
                 "filename": "Shadow/setpoints_baseline.csv",
                 "devices": {
+                    # "flexstat/thermostat_east/actuation": {"cooling_setpoint": "Trtu_east_cool", "heating_setpoint": "Trtu_east_heat"},
+                    # "flexstat/thermostat_west/actuation": {"cooling_setpoint": "Trtu_west_cool", "heating_setpoint": "Trtu_west_heat"},
+                    # "parker/refrigerator/actuation": {"setpoint": "Tref"},
+                    # "parker/freezer/actuation": {"setpoint": "Tfre"},
                     # "emulated_battery/battery/actuation": {"real_power_setpoint": "battery_setpoint"}
                 }
             },

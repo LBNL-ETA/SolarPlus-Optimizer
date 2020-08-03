@@ -17,6 +17,11 @@ class Baseline_Controller:
         self.min_battery_soc = self.config.get('min_battery_soc', 0.25)
         self.battery_total_capacity = self.config.get('battery_total_capacity', 40500)
 
+        self.default_flexstat_hsp = self.config.get('default_flexstat_hsp', 68)
+        self.default_flexstat_csp = self.config.get('default_flexstat_csp', 70)
+        self.default_freezer_sp = self.config.get('default_freezer_sp', -7)
+        self.default_refrigerator_sp = self.config.get('default_refrigerator_sp', 33)
+
         self.historical_data_interval = self.config.get('historical_data_interval_minutes', 15)
         
         print("The baseline controller has been instantiated")
@@ -77,7 +82,11 @@ class Baseline_Controller:
 
         print("\n")
         print("New battery_setpoint = {0}".format(battery_setpoint))
-        setpoint_df = pd.DataFrame(data={'battery_setpoint': [battery_setpoint]}, index=[end_time+datetime.timedelta(minutes=5)])
+        setpoint_df = pd.DataFrame(data={'battery_setpoint': [battery_setpoint],
+                                         'Trtu_east_cool': [self.default_flexstat_csp], 'Trtu_east_heat': [self.default_flexstat_hsp],
+                                         'Trtu_west_cool': [self.default_flexstat_csp], 'Trtu_west_heat': [self.default_flexstat_hsp],
+                                         'Tref': [self.default_refrigerator_sp], 'Tfre': [self.default_freezer_sp]},
+                                   index=[end_time+datetime.timedelta(minutes=5)])
         setpoint_df.index.name='Time'
         setpoint_df = setpoint_df.resample('1T').mean().tz_localize("UTC")
         self.data_manager.set_setpoints(df=setpoint_df, overwrite=False)
