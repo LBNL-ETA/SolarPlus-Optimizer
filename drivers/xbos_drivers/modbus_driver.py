@@ -636,23 +636,35 @@ class Modbus_Driver(object):
         if unit is None:
             unit = self.UNIT_ID
 
-        for key in self.coil_registers[unit]:
-            output[key] = self.read_coil(self.coil_registers[unit][key][0],unit)
+        try:
+            for key in self.coil_registers[unit]:
+                output[key] = self.read_coil(self.coil_registers[unit][key][0],unit)
+        except:
+            print("error while reading coil register %s"%key)
 
-        for key in self.discrete_registers[unit]:
-            output[key] = self.read_discrete(self.discrete_registers[unit][key][0],unit)
+        try:
+            for key in self.discrete_registers[unit]:
+                output[key] = self.read_discrete(self.discrete_registers[unit][key][0],unit)
+        except:
+            print("error while reading discrete register %s"%key)
 
-        for key in self.input_registers[unit]:
-            output[key] = self.decode_input_register(self.input_registers[unit][key][0],self.input_registers[unit][key][1],unit)
+        try:
+            for key in self.input_registers[unit]:
+                output[key] = self.decode_input_register(self.input_registers[unit][key][0],self.input_registers[unit][key][1],unit)
+        except:
+            print("error while reading input register %s"%key)
             
-        for key in self.holding_registers[unit]:
-            if (len(self.holding_registers[unit][key]) == 3):
-                # Check Read/Write Flag
-                if (self.holding_registers[unit][key][2].find('R') != -1):
+        try:
+            for key in self.holding_registers[unit]:
+                if (len(self.holding_registers[unit][key]) == 3):
+                    # Check Read/Write Flag
+                    if (self.holding_registers[unit][key][2].find('R') != -1):
+                        output[key] = self.decode_register(self.holding_registers[unit][key][0],self.holding_registers[unit][key][1],unit)
+                else:
+                    # Register list does not contain a Read/Write Flag assume R
                     output[key] = self.decode_register(self.holding_registers[unit][key][0],self.holding_registers[unit][key][1],unit)
-            else:
-                # Register list does not contain a Read/Write Flag assume R
-                output[key] = self.decode_register(self.holding_registers[unit][key][0],self.holding_registers[unit][key][1],unit)
+        except:
+            print("error while reading holding register %s"%key)
 
         return output
 

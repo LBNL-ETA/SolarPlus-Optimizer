@@ -349,16 +349,28 @@ class Modbus_Driver(object):
     def get_data(self):
         output = {}
         for key in self.coil_register_dict:
-            output[key] = self.read_coil(self.coil_register_dict[key][0])
+            try:
+                output[key] = self.read_coil(self.coil_register_dict[key][0])
+            except:
+                print("error while reading coil register: "+key)
 
         for key in self.discrete_register_dict:
-            output[key] = self.read_discrete(self.discrete_register_dict[key][0])
+            try:
+                output[key] = self.read_discrete(self.discrete_register_dict[key][0])
+            except:
+                print("error while reading discrete register: "+key)
 
         for key in self.holding_register_dict:
-            output[key] = self.decode_holding_register(self.holding_register_dict[key][0],self.holding_register_dict[key][1])
+            try:
+                output[key] = self.decode_holding_register(self.holding_register_dict[key][0],self.holding_register_dict[key][1])
+            except:
+                print("error while reading holding register: "+key)
 
         for key in self.input_register_dict:
-            output[key] = self.decode_input_register(self.input_register_dict[key][0],self.input_register_dict[key][1])
+            try:
+                output[key] = self.decode_input_register(self.input_register_dict[key][0],self.input_register_dict[key][1])
+            except:
+                print("error while reading input register: "+key)
 
         return output
 

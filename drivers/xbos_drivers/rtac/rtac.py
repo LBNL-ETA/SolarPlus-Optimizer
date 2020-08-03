@@ -19,7 +19,7 @@ class RTACDriver(XBOSProcess):
         self.base_resource = cfg['base_resource']
         self._rate = cfg['publish_rate']
         self._set_setpoint_rate = cfg["check_setpoint_rate"]
-        self._heartbeat_rate = cfg['heartbeat_rate']
+        self._heartbeat_rate = cfg.get('heartbeat_rate', None)
         self.service_name = cfg['service_name']
         self.modbus_config = cfg['modbus_config']
         self.unit_id = self.modbus_config.get('UNIT_ID', 1)
@@ -45,21 +45,21 @@ class RTACDriver(XBOSProcess):
         # Check message bus and extract latest control flag and setpoint list
         # for device_name in self.service_name_map:
         actuation_message_uri = self.base_resource+"/"+self.service_name+"/actuation"
-        schedule(self._query_existing(uri=actuation_message_uri))
-        schedule(self._query_existing(uri=actuation_message_uri+"/control_flag"))
+        #schedule(self._query_existing(uri=actuation_message_uri))
+        #schedule(self._query_existing(uri=actuation_message_uri+"/control_flag"))
 
         # set subscription to any new action message that is published and extract setpoint list
-        schedule(self.subscribe_extract(self.namespace, actuation_message_uri, self._actuation_message_path, self._save_setpoints, "save_setpoints"))
-        schedule(self.subscribe_extract(self.namespace, actuation_message_uri+"/control_flag", self._actuation_message_path, self._save_setpoints, "save_setpoints"))
+        #schedule(self.subscribe_extract(self.namespace, actuation_message_uri, self._actuation_message_path, self._save_setpoints, "save_setpoints"))
+        #schedule(self.subscribe_extract(self.namespace, actuation_message_uri+"/control_flag", self._actuation_message_path, self._save_setpoints, "save_setpoints"))
 
         # read controller points every _rate seconds and publish
         schedule(self.call_periodic(self._rate, self._read_and_publish, runfirst=True))
 
         # periodically write heartbeat values
-        schedule(self.call_periodic(self._heartbeat_rate, self._write_heartbeat, runfirst=False))
+        #schedule(self.call_periodic(self._heartbeat_rate, self._write_heartbeat, runfirst=False))
 
         # periodically check if there is a need to change setpoints
-        schedule(self.call_periodic(self._set_setpoint_rate, self._set_setpoints, runfirst=False))
+        #schedule(self.call_periodic(self._set_setpoint_rate, self._set_setpoints, runfirst=False))
 
     async def _write_heartbeat(self, *args):
         new_heartbeat = self.heartbeat_list[self.current_heartbeat_index]
@@ -207,24 +207,33 @@ class RTACDriver(XBOSProcess):
     async def _read_and_publish(self, *args):
 
         try:
+            self.modbus_device.reconnect()
             measurements = self.modbus_device.get_data(unit=self.unit_id)
+            self.modbus_device.kill_modbus()
 
             time_now = time.time() * 1e9
 
+            if not measurements.get('battery_current_stored_energy', None) is None and not measurements.get('battery_total_capacity', None) is None:
+                if measurements.get('battery_total_capacity') == 0:
+                    measurements['battery_soc'] = None
+                else:
+                    measurements['battery_soc'] = measurements['battery_current_stored_energy'] / measurements['battery_total_capacity'] * 1.0
+
             msg = xbos_pb2.XBOS(
-                parker_state=rtac_pb2.RtacState(
+                rtac_state=rtac_pb2.RtacState(
                     time=int(time_now),
-                    heartbeat = types.Int64(value=measurements.get('heartbeat', None)),
-                    real_power_setpoint = types.Double(value=measurements.get('real_power_setpoint', None)),
-                    reactive_power_setpoint = types.Double(value=measurements.get('reactive_power_setpoint', None)),
+                    #heartbeat = types.Int64(value=measurements.get('heartbeat', None)),
+                    #real_power_setpoint = types.Double(value=measurements.get('real_power_setpoint', None)),
+                    #reactive_power_setpoint = types.Double(value=measurements.get('reactive_power_setpoint', None)),
                     target_real_power = types.Double(value=measurements.get('target_real_power', None)),
                     target_reactive_power = types.Double(value=measurements.get('target_reactive_power', None)),
                     battery_total_capacity = types.Double(value=measurements.get('battery_total_capacity', None)),
                     battery_current_stored_energy = types.Double(value=measurements.get('battery_current_stored_energy', None)),
+                    battery_soc=types.Double(value=measurements.get('battery_soc', None)),
                     total_actual_real_power = types.Double(value=measurements.get('total_actual_real_power', None)),
                     total_actual_reactive_power = types.Double(value=measurements.get('total_actual_reactive_power', None)),
                     total_actual_apparent_power = types.Double(value=measurements.get('total_actual_apparent_power', None)),
-                    active_power_output_limit = types.Double(value=measurements.get('active_power_output_limit', None)),
+                    #active_power_output_limit = types.Double(value=measurements.get('active_power_output_limit', None)),
                     current_power_production = types.Double(value=measurements.get('current_power_production', None)),
                     ac_current_phase_a = types.Double(value=measurements.get('ac_current_phase_a', None)),
                     ac_current_phase_b = types.Double(value=measurements.get('ac_current_phase_b', None)),
