@@ -30,7 +30,7 @@ class Baseline_Controller:
         end_time = datetime.datetime.utcnow()
         start_time = end_time - datetime.timedelta(minutes=self.historical_data_interval)
 
-        input_df = self.data_manager.get_timeseries_from_config(config='baseline', start_time=start_time, end_time=end_time)
+        input_df = self.data_manager.get_timeseries_from_config(config='baseline', start_time=start_time, end_time=end_time).dropna()
         average_values = input_df.last('5T')
 
         solar_production = average_values.pv_generation.values[0]
