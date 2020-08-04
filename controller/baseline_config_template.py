@@ -24,9 +24,9 @@ config={
         "baseline": {
             "type": "influxdb",
             "variables": {
-                "building_load": {"uuid": "d2004400-349c-5015-8f20-e249953295a7", "window": "5m", "agg": "last", "measurement": "timeseries"},
+                "building_load": {"uuid": "d2004400-349c-5015-8f20-e249953295a7", "window": "5m", "agg": "mean", "measurement": "timeseries"},
                 "battery_soc": {"uuid": "0efc4fa5-755c-5c45-863a-c0c776ab7538", "window": "5m", "agg": "last", "measurement": "timeseries"},
-                "pv_generation": {"uuid": "fdfd7bbb-d2da-5b11-a8fa-58b231ab9802", "window": "5m", "agg": "last", "measurement": "timeseries"}
+                "pv_generation": {"uuid": "fdfd7bbb-d2da-5b11-a8fa-58b231ab9802", "window": "5m", "agg": "mean", "measurement": "timeseries"}
             }
         },
         "data_sink": {
