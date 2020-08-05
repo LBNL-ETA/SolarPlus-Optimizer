@@ -138,7 +138,7 @@ if __name__ == '__main__':
         time.sleep(1)
         t = datetime.datetime.now()
         print(t)
-        if (t.minute%1==0) and (t.minute != minute):
+        if (t.minute%15==0) and (t.minute != minute):
             minute = t.minute
             try:
                 mpc_controller.run()
