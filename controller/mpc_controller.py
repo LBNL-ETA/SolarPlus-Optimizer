@@ -31,19 +31,21 @@ class MPC_Controller:
             os.mkdir(self.outdir)
             
         #if controller is 'mpc':
-        config = self.mpc_config.get_config()
-        self.controller = mpc(config['model_config'],
-                         config['opt_config'],
-                         config['system_config'],
-                         weather_config = config['weather_config'],
-                         control_config = config['control_config'],
-                         setpoints_config = config['setpoints_config'],
-                         constraint_config = config['constraint_config'],
-                         data_manager_config = config['data_manager_config'],
-                         price_config = config['price_config'])
+        self.config = self.mpc_config.get_config()
         print('The MPC controller has been instantiated.')
             
     def run(self):
+
+        controller = mpc(self.config['model_config'],
+                              self.config['opt_config'],
+                              self.config['system_config'],
+                              weather_config=self.config['weather_config'],
+                              control_config=self.config['control_config'],
+                              setpoints_config=self.config['setpoints_config'],
+                              constraint_config=self.config['constraint_config'],
+                              data_manager_config=self.config['data_manager_config'],
+                              price_config=self.config['price_config'])
+
         start = datetime.datetime.now()
         start_time = start.strftime("%Y-%m-%d %H:%M:00")
         start_time_utc = pd.to_datetime(start_time).tz_localize(self.tz_computer).tz_convert('UTC')
@@ -56,7 +58,7 @@ class MPC_Controller:
         print('\n')
         
         final_time_utc = start_time_utc + datetime.timedelta(seconds=self.mpc_horizon)
-        control, measurements, other_outputs, statistics = self.controller.optimize(start_time_utc, final_time_utc)
+        control, measurements, other_outputs, statistics = controller.optimize(start_time_utc, final_time_utc)
         # Save optimization result data
         control.to_csv(self.outdir+'/control_{0}.csv'.format(start_time))
         measurements.to_csv(self.outdir+'/measurements_{0}.csv'.format(start_time))
@@ -64,7 +66,7 @@ class MPC_Controller:
         with open(self.outdir+'/optimal_statistics_{0}.txt'.format(start_time), 'a') as f:
             f.write(str(start_time) + ': ' +  str(statistics) + '\n')
         # Push setpoints
-        setpoints = self.controller.set_setpoints(control, measurements)
+        setpoints = controller.set_setpoints(control, measurements)
         setpoints.to_csv(self.outdir+'/setpoints_{0}.txt'.format(start_time))
         # check if setpoints have been pushed successefully
         end_time = datetime.datetime.now()
