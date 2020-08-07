@@ -1454,7 +1454,7 @@ package SolarPlus "This package contains models for MPC control optimization."
       model Store
         extends BaseClasses.partialStore(store(
             TSpRtuEast=293.65,
-            TSpRtuWest=293.65,
+            TSpRtuWest=294.65,
             TSpRef=273.15,
             TSpFre=251.15));
         Modelica.Blocks.Interfaces.RealInput uHeat
@@ -1916,7 +1916,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         annotation (Placement(transformation(extent={{140,-80},{160,-60}})));
         Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor senTfre
         annotation (Placement(transformation(extent={{142,-160},{162,-140}})));
-        Modelica.Blocks.Sources.Constant gamingHeat(k=30000)
+        Modelica.Blocks.Sources.Constant gamingHeat(k=25000)
           annotation (Placement(transformation(extent={{-160,50},{-140,70}})));
         Modelica.Blocks.Interfaces.RealOutput Grtu_west "West RTU gas power"
           annotation (Placement(transformation(extent={{200,110},{220,130}}),
@@ -2748,7 +2748,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         "Cooling signal input for freezer"
         annotation (Placement(transformation(extent={{-140,-240},{-100,-200}}),
               iconTransformation(extent={{-120,-220},{-100,-200}})));
-        Modelica.Blocks.Math.MultiSum multiSum1(k={1.5,1.5,1,1},
+        Modelica.Blocks.Math.MultiSum multiSum1(k={1.5,1,1,1},
                                                              nu=4)
           annotation (Placement(transformation(extent={{44,-214},{56,-202}})));
         Modelica.Blocks.Math.Product squareTrtu

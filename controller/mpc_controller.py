@@ -32,10 +32,11 @@ class MPC_Controller:
 
         #if controller is 'mpc':
         self.config = self.mpc_config.get_config()
-        print('The MPC controller has been instantiated.')
 
     def run(self):
-
+        print('\n')
+        print('The MPC controller has been instantiated.')
+        print('\n')
         controller = mpc(self.config['model_config'],
                               self.config['opt_config'],
                               self.config['system_config'],
