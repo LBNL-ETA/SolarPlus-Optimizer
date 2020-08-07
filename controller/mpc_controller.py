@@ -17,23 +17,23 @@ from mpc import mpc
 class MPC_Controller:
     def __init__(self, mpc_config, tz_computer, islanding):
         self.mpc_config = mpc_config
-        
+
         # Initialize
         # ==============================================================================
         # Create output folder under the current directory
         self.outdir = os.path.abspath(os.path.join(__file__,'..','output'))
-        
+
         self.mpc_horizon = 12*3600
         self.tz_computer = tz_computer
         self.islanding = islanding
-        
+
         if not os.path.exists(self.outdir):
             os.mkdir(self.outdir)
-            
+
         #if controller is 'mpc':
         self.config = self.mpc_config.get_config()
         print('The MPC controller has been instantiated.')
-            
+
     def run(self):
 
         controller = mpc(self.config['model_config'],
@@ -56,7 +56,7 @@ class MPC_Controller:
         if self.islanding:
             print ("Running in islanding mode")
         print('\n')
-        
+
         final_time_utc = start_time_utc + datetime.timedelta(seconds=self.mpc_horizon)
         control, measurements, other_outputs, statistics = controller.optimize(start_time_utc, final_time_utc)
         # Save optimization result data
@@ -72,7 +72,7 @@ class MPC_Controller:
         end_time = datetime.datetime.now()
         control_loop_time = (end_time - start).total_seconds()
         print('This control loop has taken {} min'.format(control_loop_time/60))
-        
+
 
 # def run():
     # # Setup
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         time.sleep(1)
         t = datetime.datetime.now()
         print(t)
-        if (t.minute%15==0) and (t.minute != minute):
+        if (t.minute%5==0) and (t.minute != minute):
             minute = t.minute
             try:
                 mpc_controller.run()
