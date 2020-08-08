@@ -2700,7 +2700,10 @@ package SolarPlus "This package contains models for MPC control optimization."
 
       model Whole_Inputs
         extends BaseClasses.Whole_partial(
-          pv(A=300, eff=0.3),
+          pv(
+            A=272.6,
+            eff=0.26,
+            effDcAc=0.98),
           thermal(
             RTUWestHeatingCap=29300,
             RTUEastHeatingCap=29300,

@@ -250,6 +250,10 @@ class mpc(object):
             # Get the estimated value
             value = self.model.display_measurements('Measured')[self.init_vm[par]].get_values()[-1]
             time = self.model.display_measurements('Measured')[self.init_vm[par]].index[-1]
+            if par == 'Trtu_east_0' and value >=73.9:
+                value = 73.9
+            if par == 'Trtu_west_0' and value >=73.9:
+                value = 73.9
             if par == 'Tfre_0' and value > -2.2:
                 value = -3
             if par == 'Tref_0' and value > 36.5:
