@@ -23,7 +23,7 @@ class MPC_Controller:
         # Create output folder under the current directory
         self.outdir = os.path.abspath(os.path.join(__file__,'..','output'))
 
-        self.mpc_horizon = 12*3600
+        self.mpc_horizon = 24*3600
         self.tz_computer = tz_computer
         self.islanding = islanding
 
