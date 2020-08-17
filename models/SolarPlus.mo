@@ -2707,10 +2707,10 @@ package SolarPlus "This package contains models for MPC control optimization."
           thermal(
             RTUWestHeatingCap=29300,
             RTUEastHeatingCap=29300,
-            RTUWestCoolingCap(displayUnit="kW") = 15000,
-            RTUEastCoolingCap(displayUnit="kW") = 15000,
-            RTUWestCoolingCOP=2,
-            RTUEastCoolingCOP=3,
+            RTUWestCoolingCap(displayUnit="kW") = 20000,
+            RTUEastCoolingCap(displayUnit="kW") = 20000,
+            RTUWestCoolingCOP=3,
+            RTUEastCoolingCOP=4,
             Rrtu_west=0.0005,
             Rrtu_east=0.0005,
             Rwest_east=0.01,
@@ -2751,8 +2751,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         "Cooling signal input for freezer"
         annotation (Placement(transformation(extent={{-140,-240},{-100,-200}}),
               iconTransformation(extent={{-120,-220},{-100,-200}})));
-        Modelica.Blocks.Math.MultiSum multiSum1(k={1.5,1,1,1},
-                                                             nu=4)
+        Modelica.Blocks.Math.MultiSum multiSum1(k={1,1,1,1}, nu=4)
           annotation (Placement(transformation(extent={{44,-214},{56,-202}})));
         Modelica.Blocks.Math.Product squareTrtu
         annotation (Placement(transformation(extent={{14,-172},{20,-166}})));
