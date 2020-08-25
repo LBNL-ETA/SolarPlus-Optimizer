@@ -1,0 +1,8 @@
+database:
+    host: 
+    port: 
+    username: 
+    password: 
+    ssl: 
+    verify_ssl: 
+    database: xbos
