@@ -1986,7 +1986,7 @@ package SolarPlus "This package contains models for MPC control optimization."
           "Cooling signal input for RTU on the east side" annotation (Placement(
               transformation(extent={{-228,-54},{-200,-26}}),
               iconTransformation(extent={{-114,-26},{-100,-12}})));
-        Modelica.Blocks.Math.Gain gaiHeaToPow(k=1.3)
+        Modelica.Blocks.Math.Gain gaiHeaToPow(k=1.0)
           "Considering 80% of power is transmited to heat"
           annotation (Placement(transformation(extent={{-20,60},{0,80}})));
       equation
