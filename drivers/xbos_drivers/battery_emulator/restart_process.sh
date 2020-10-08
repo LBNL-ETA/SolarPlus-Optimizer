@@ -47,3 +47,11 @@ while IFS=, read -r id st et is_baseline; do
 	echo ''
 done < /home/solarplus/Solarplus-Optimizer/controller/test_schedule.csv
 
+if [[ $pid -ne -1 ]];
+then
+	echo "killing python process pid=$pid"
+	kill -9 
+fi
+
+python3 battery_driver.py battery_driver_config.yaml 
+pid=$!
