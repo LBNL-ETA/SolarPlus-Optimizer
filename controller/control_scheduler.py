@@ -46,3 +46,16 @@ for index, row in df.iterrows():
         time.sleep(10)
         time_now = tz_utc.localize(datetime.datetime.utcnow())
         print("time_now = {0}".format(time_now.strftime("%Y-%m-%d %H:%M:%S")))
+
+minute = -1
+while True:
+    time.sleep(10)
+    t = datetime.datetime.now()
+    print(t)
+    if (t.minute%5==0) and (t.minute != minute):
+        minute = t.minute
+        try:
+            mpc_controller.run()
+            print('Run ended ok.')
+        except Exception as e :
+            print('Run ended in error, error={0}'.format(str(e)))
