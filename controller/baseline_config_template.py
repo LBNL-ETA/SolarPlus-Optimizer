@@ -3,12 +3,12 @@
 # change this file to baseline_config.py before executing
 
 config={
-    'max_battery_rate': 21000,
-    'min_battery_rate': -21000,
+    'max_battery_rate': 109000,
+    'min_battery_rate': -109000,
     'max_battery_soc': 0.95,
     'min_battery_soc': 0.25,
     'historical_data_interval_minutes': 15,
-    'battery_total_capacity': 40500,
+    'battery_total_capacity': 174000,
     'default_flexstat_hsp': 68,
     'default_flexstat_csp': 70,
     'default_freezer_sp': -7,
