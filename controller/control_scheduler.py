@@ -20,8 +20,8 @@ mpc_controller = MPC_Controller(mpc_config=mpc_config, tz_computer=tz_computer, 
 for index, row in df.iterrows():
     st = tz_local.localize(row['start_time']).astimezone(tz_utc)
     et = tz_local.localize(row['end_time']).astimezone(tz_utc)
-    print("start_time = ", st)
-    print("end time = ", et)
+    # print("start_time = ", st)
+    # print("end time = ", et)
     is_baseline = bool(row['is_baseline'])
     
     time_now = tz_utc.localize(datetime.datetime.utcnow())
