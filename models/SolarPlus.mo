@@ -657,7 +657,7 @@ package SolarPlus "This package contains models for MPC control optimization."
         eta=1.0,
         SOC_0=0.5)
         annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
-      Modelica.Blocks.Math.Gain gain(k=1/14000)
+      Modelica.Blocks.Math.Gain gain(k=1/109000)
         annotation (Placement(transformation(extent={{-80,-10},{-60,10}})));
       Modelica.Blocks.Interfaces.RealInput PSet
         "Power setpoint from the controller" annotation (Placement(
