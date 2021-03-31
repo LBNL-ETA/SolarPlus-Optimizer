@@ -18,6 +18,6 @@ device_config:
     initial_poa_pv: 0
     dark_sky_topic: dark_sky/blr
     default_real_power_setpoint: 0
-    min_real_power_setpoint: -21000
-    max_real_power_setpoint: 21000
+    min_real_power_setpoint: -109000
+    max_real_power_setpoint: 109000
     time_threshold_revert_to_default: 14400

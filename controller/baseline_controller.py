@@ -11,11 +11,11 @@ class Baseline_Controller:
         self.data_manager_config = self.config.get('data_manager_config')
         self.data_manager = Data_Manager(data_manager_config=self.data_manager_config)
 
-        self.max_battery_rate = self.config.get('max_battery_rate', 21000)
-        self.min_battery_rate = self.config.get('min_battery_rate', -21000)
+        self.max_battery_rate = self.config.get('max_battery_rate', 109000)
+        self.min_battery_rate = self.config.get('min_battery_rate', -109000)
         self.max_battery_soc = self.config.get('max_battery_soc', 0.95)
         self.min_battery_soc = self.config.get('min_battery_soc', 0.25)
-        self.battery_total_capacity = self.config.get('battery_total_capacity', 40500)
+        self.battery_total_capacity = self.config.get('battery_total_capacity', 174000)
 
         self.default_flexstat_hsp = self.config.get('default_flexstat_hsp', 68)
         self.default_flexstat_csp = self.config.get('default_flexstat_csp', 70)
