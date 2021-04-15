@@ -947,8 +947,8 @@
     },
     {
         "type": "price-rtp",
-        "start-date": "2020-04-15T00:00:00Z",
-        "end-date": "2020-04-16T00:00:00Z",
+        "start-date": "2020-04-16T00:00:00Z",
+        "end-date": "2020-04-17T00:00:00Z",
         "data":
           {
             "energy_prices": [
@@ -979,10 +979,10 @@
       },
     {
         "type": "dr-shift",
-        "start-date-take": "2021-04-15T09:00:00Z",
-        "end-date-take": "2021-04-15T14:00:00Z",
-        "start-date-relax": "2021-04-15T16:00:00Z",
-        "end-date-relax": "2021-04-15T21:00:00Z",
+        "start-date-take": "2021-04-16T09:00:00Z",
+        "end-date-take": "2021-04-16T14:00:00Z",
+        "start-date-relax": "2021-04-16T16:00:00Z",
+        "end-date-relax": "2021-04-16T21:00:00Z",
         "data":
           {
               "power-take": 20000,
