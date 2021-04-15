@@ -1015,6 +1015,7 @@
             ]
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 659347871211157344caa58c825402e767253242
 =======
     },
@@ -1022,11 +1023,21 @@
         "type": "price-tou",
         "start-date": "2021-04-02T00:00:00Z",
         "end-date": "2021-04-05T00:00:00Z",
+=======
+    },
+    {
+        "type": "price-tou",
+        "start-date": "2021-04-07T00:00:00Z",
+        "end-date": "2021-04-10T00:00:00Z",
+>>>>>>> a8501a5de215303e4c01d52f9cdce0329f3849f1
         "data":
         {
             "tariff-json": "u14328_Commercial_B-19_TOU_gridlevelSecondary_revised.json"
         }
+<<<<<<< HEAD
 >>>>>>> 7139b7aebe4a312601ec1f1ab3fbb340a5e0a1da
+=======
+>>>>>>> a8501a5de215303e4c01d52f9cdce0329f3849f1
     }
 
 ]
