@@ -36,6 +36,8 @@ uuid_dict = {
     'hvac_west_power': uuid_map['xbos/wattnode/hvac_west_comp/PowerSum'],
     'hvac_east_power': uuid_map['xbos/wattnode/hvac_east_comp/PowerSum'],
     
+    'building_energy': uuid_map['xbos/wattnode/building_main/EnergySum'],
+    
     'east_temperature': uuid_map['xbos/flexstat/thermostat_east/space_temp'],
     'west_temperature': uuid_map['xbos/flexstat/thermostat_west/space_temp'],
     'freezer_temperature': uuid_map['xbos/parker/freezer/CabinetTemperature'],
@@ -69,6 +71,11 @@ uuid_dict = {
     'price_demand_dr': '90928e8d-df40-5e75-9ddb-7ee444bc187f',
     'pmax_dr': '522605a9-77b1-57e3-9fac-06dd83ab8e89',
     'pmin_dr': '6b42adf8-3a48-5ae7-bdc3-19226e602865',
+    
+    'bess_power_rtac': '02e68dd9-3802-537d-9156-e8a6066643fc',
+    'island_type_rtac': '961bd5ae-2136-5d77-a2dc-b79cddddb42f',
+    'pv_generation_rtac': 'd4102860-1f55-5e14-b02d-8bdb9e987676',
+    'islanding_state_rtac': '97e29244-b2e3-5a7d-9971-ea9026cbc696'
 }
 
 def parse_dt_utc(dt):

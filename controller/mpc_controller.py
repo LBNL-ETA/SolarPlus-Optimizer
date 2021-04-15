@@ -33,7 +33,7 @@ class MPC_Controller:
         #if controller is 'mpc':
         self.config = self.mpc_config.get_config()
 
-    def run(self):
+    def run(self, start_time_str=None):
         print('\n')
         print('The MPC controller has been instantiated.')
         print('\n')
@@ -47,10 +47,13 @@ class MPC_Controller:
                               data_manager_config=self.config['data_manager_config'],
                               price_config=self.config['price_config'])
 
-        start = datetime.datetime.now()
+        if start_time_str is None:
+            start = datetime.datetime.now()
+        else:
+            start  = datetime.datetime.strptime(start_time_str, "%Y-%m-%d %H:%M:00")
+
         start_time = start.strftime("%Y-%m-%d %H:%M:00")
         start_time_utc = pd.to_datetime(start_time).tz_localize(self.tz_computer).tz_convert('UTC')
-        # mpc_step = 3600
         print('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
         print("The Solar+ Optimizer has begun its operation at {0} UTC...".format(start_time_utc))
         print("The prediction horizon is {} hours.".format(self.mpc_horizon/3600))
@@ -74,63 +77,6 @@ class MPC_Controller:
         control_loop_time = (end_time - start).total_seconds()
         print('This control loop has taken {} min'.format(control_loop_time/60))
 
-
-# def run():
-    # # Setup
-    # # ==============================================================================
-    # controller = 'mpc'
-    # start = datetime.datetime.now()
-    # start_time = start.strftime("%Y-%m-%d %H:%M:00")
-    # start_time_utc = pd.to_datetime(start_time).tz_localize(tz_computer).tz_convert('UTC')
-    # mpc_horizon = 12*3600
-    # # mpc_step = 3600
-    # print('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-    # print("The Solar+ Optimizer has begun its operation at {0} UTC...".format(start_time_utc))
-    # print("The prediction horizon is {} hours.".format(mpc_horizon/3600))
-    # if islanding:
-    #     print ("Running in islading mode")
-
-    # print('\n')
-
-    # # Initialize
-    # # ==============================================================================
-    # # Create output folder under the current directory
-    # outdir = os.path.abspath(os.path.join(__file__,'..','output'))
-    # if not os.path.exists(outdir):
-    #     os.mkdir(outdir)
-
-    # Instantiate controller
-    # if controller is 'mpc':
-    #     config = mpc_config.get_config()
-    #     controller = mpc(config['model_config'],
-    #                      config['opt_config'],
-    #                      config['system_config'],
-    #                      weather_config = config['weather_config'],
-    #                      control_config = config['control_config'],
-    #                      setpoints_config = config['setpoints_config'],
-    #                      constraint_config = config['constraint_config'],
-    #                      data_manager_config = config['data_manager_config'],
-    #                      price_config = config['price_config'])
-    #     print('The controller is instantiating...')
-
-    # Control Loop
-    # ==============================================================================
-    # Solve optimal control problem
-    # final_time_utc = start_time_utc + datetime.timedelta(seconds=mpc_horizon)
-    # control, measurements, other_outputs, statistics = controller.optimize(start_time_utc, final_time_utc)
-    # Save optimization result data
-    # control.to_csv(outdir+'/control_{0}.csv'.format(start_time))
-    # measurements.to_csv(outdir+'/measurements_{0}.csv'.format(start_time))
-    # other_outputs.to_csv(outdir+'/other_outputs_{0}.csv'.format(start_time))
-    # with open(outdir+'/optimal_statistics_{0}.txt'.format(start_time), 'a') as f:
-    #     f.write(str(start_time) + ': ' +  str(statistics) + '\n')
-    # # Push setpoints
-    # setpoints = controller.set_setpoints(control, measurements)
-    # setpoints.to_csv(outdir+'/setpoints_{0}.txt'.format(start_time))
-    # # check if setpoints have been pushed successefully
-    # end_time = datetime.datetime.now()
-    # control_loop_time = (end_time - start).total_seconds()
-    # print('This control loop has taken {} min'.format(control_loop_time/60))
 
 if __name__ == '__main__':
     minute = -1
