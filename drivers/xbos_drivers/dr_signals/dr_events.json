@@ -1035,6 +1035,7 @@
             "tariff-json": "u14328_Commercial_B-19_TOU_gridlevelSecondary_revised.json"
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
     },
     {
         "type": "price-rtp",
@@ -1094,6 +1095,11 @@
           }
 =======
 <<<<<<< HEAD
+>>>>>>> 7139b7aebe4a312601ec1f1ab3fbb340a5e0a1da
+=======
+>>>>>>> a8501a5de215303e4c01d52f9cdce0329f3849f1
+>>>>>>> 685df8bb282ffd89d6ee03e7e4e3b8b373464978
+=======
 >>>>>>> 7139b7aebe4a312601ec1f1ab3fbb340a5e0a1da
 =======
 >>>>>>> a8501a5de215303e4c01d52f9cdce0329f3849f1
