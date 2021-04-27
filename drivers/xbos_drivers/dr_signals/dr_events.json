@@ -1025,8 +1025,8 @@
     },
     {
         "type": "price-rtp",
-        "start-date": "2021-04-24T00:00:00Z",
-        "end-date": "2021-04-26T00:00:00Z",
+        "start-date": "2021-04-28T00:00:00Z",
+        "end-date": "2021-04-30T00:00:00Z",
         "data":
           {
             "energy_prices": [
@@ -1077,8 +1077,8 @@
     },
     {
         "type": "dr-track",
-        "start-date": "2021-04-24T00:00:00Z",
-        "end-date": "2021-04-25T00:00:00Z",
+        "start-date": "2021-04-28T00:00:00Z",
+        "end-date": "2021-04-29T00:00:00Z",
         "data":
         {
             "profile": [
