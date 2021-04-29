@@ -1096,6 +1096,15 @@
             ],
             "tolerance": 3000
         }
+    },
+    {
+        "type": "price-tou",
+        "start-date": "2021-04-30T00:00:00Z",
+        "end-date": "2021-05-03T00:00:00Z",
+        "data":
+        {
+            "tariff-json": "u14328_Commercial_B-19_TOU_gridlevelSecondary_revised.json"
+        }
     }
     
 
