@@ -1255,6 +1255,16 @@
         {
             "tariff-json": "u14328_Commercial_B-19_TOU_gridlevelSecondary_revised.json"
         }
-    }
+    },
+    {
+    "type": "price-tou",
+           "start-date": "2021-07-12T00:00:00Z",
+           "end-date": "2021-09-10T00:00:00Z",
+           "data":
+           {
+               "tariff-json": "u14328_Commercial_B-19_TOU_gridlevelSecondary_revised.json"
+           }
+       }
+
 
 ]
