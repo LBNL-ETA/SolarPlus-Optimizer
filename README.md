@@ -63,6 +63,14 @@ Large edits, enhancements, new features, and bug fixes should be made on separat
 4) Merge latest master to the new branch locally and ensure proper operation.
 5) Merge branch to master through a pull request.
 
+## Relevant Publications
+
+*  Krishnan Prakash, A.; Zhang, K.; Gupta, P.; Blum, D.; Marshall, M.; Fierro, G.; Alstone, P.; Zoellick, J.; Brown, R.; Pritoni, M. Solar+ Optimizer: A Model Predictive Control Optimization Platform for Grid Responsive Building Microgrids. Energies 2020, 13, 3093. https://doi.org/10.3390/en13123093 
+*  Alstone, Peter, Brown, Richard, Zoellick, Jim, Pritoni, Marco, Blum, David, Radecsky, Kristen, Zhang, Kun, Prakash, Anand, and Perez, Pol. Resilient buildings for fire-adapted landscapes: EE and flexible loads integrated with solar and storage microgrids. United States: N. p., 2020. https://www.osti.gov/biblio/1713313
+*  Kun Zhang, Anand Prakash, Lazlo Paul, David Blum, Peter Alstone, James Zoellick, Richard Brown, Marco Pritoni, Model predictive control for demand flexibility: Real-world operation of a commercial building with photovoltaic and battery systems, Advances in Applied Energy, Volume 7, 2022, 100099, ISSN 2666-7924, https://doi.org/10.1016/j.adapen.2022.100099.
+*  Paul, L., Prakash, A., Zhang, K., Pritoni, M., & Brown, R. (2022). SolarPlus Optimizer: Integrated Control of Solar, Batteries, and Flexible Loads for Small Commercial Buildings. Lawrence Berkeley National Laboratory. Retrieved from https://escholarship.org/uc/item/5zm0d09s 
+
+
 ## Copyright Notice
 
 SolarPlus-Optimizer Copyright (c) 2022, The Regents of the University
